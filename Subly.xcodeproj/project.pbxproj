@@ -1,0 +1,391 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */ = {isa = PBXBuildFile; productRef = DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */; };
+		2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124542706504627C05A31D7 /* SublyApp.swift */; };
+		4847E56243A919BA33F95368 /* LogoService in Frameworks */ = {isa = PBXBuildFile; productRef = 4125BA4396A89B774859EEE5 /* LogoService */; };
+		4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */ = {isa = PBXBuildFile; productRef = F682B7F3898CBF29726418B8 /* NotificationEngine */; };
+		76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 3F563A9C8C22DF54EFDD273B /* EmailEngine */; };
+		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
+		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
+		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		52660D70847350379CA95657 /* EmailEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EmailEngine; path = Packages/EmailEngine; sourceTree = SOURCE_ROOT; };
+		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
+		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
+		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
+		FA91B5213420B1387EF10798 /* NotificationEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NotificationEngine; path = Packages/NotificationEngine; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */,
+				29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */,
+				BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */,
+				4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */,
+				4847E56243A919BA33F95368 /* LogoService in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4C0B164B7A75DD4A9A40C1B6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B1042D755D5117EE14B9CA3D /* Subly.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		84129931BAAB99A2CC3285E8 = {
+			isa = PBXGroup;
+			children = (
+				B5734A41E0D149EE60763C79 /* Packages */,
+				E60BE3B5234F4EF499AF0CB7 /* Subly */,
+				4C0B164B7A75DD4A9A40C1B6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B5734A41E0D149EE60763C79 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				52660D70847350379CA95657 /* EmailEngine */,
+				845A1AFB35613B0BBCA5AA27 /* LogoService */,
+				FA91B5213420B1387EF10798 /* NotificationEngine */,
+				88724751DD683D8021D2B1A5 /* SubscriptionStore */,
+				F4190BCC05AEE42E895FA79F /* TrialEngine */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		E60BE3B5234F4EF499AF0CB7 /* Subly */ = {
+			isa = PBXGroup;
+			children = (
+				46C27551FBD7D8F0A3E32A75 /* ContentView.swift */,
+				2124542706504627C05A31D7 /* SublyApp.swift */,
+			);
+			path = Subly;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0E5F3A6E0CB4817D871DE8C2 /* Subly */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1F8EA3BDC37EBFD5B2C3D069 /* Build configuration list for PBXNativeTarget "Subly" */;
+			buildPhases = (
+				F9D69CFB32D5B0CC49553AC0 /* Sources */,
+				AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Subly;
+			packageProductDependencies = (
+				3F563A9C8C22DF54EFDD273B /* EmailEngine */,
+				DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */,
+				8997EAEBC73EFB0F1D6454DC /* TrialEngine */,
+				F682B7F3898CBF29726418B8 /* NotificationEngine */,
+				4125BA4396A89B774859EEE5 /* LogoService */,
+			);
+			productName = Subly;
+			productReference = B1042D755D5117EE14B9CA3D /* Subly.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C31C23BD58A7ED4DF259FD25 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 1D43EA570A8D48BC54C3FE63 /* Build configuration list for PBXProject "Subly" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 84129931BAAB99A2CC3285E8;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				122CC77727332BA362CCB471 /* XCLocalSwiftPackageReference "Packages/EmailEngine" */,
+				39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */,
+				FF8D1D533A8BB1B52EAFD9A6 /* XCLocalSwiftPackageReference "Packages/NotificationEngine" */,
+				09CEC8CF485092179CE20A2D /* XCLocalSwiftPackageReference "Packages/SubscriptionStore" */,
+				EC891433965CDE866B412AB6 /* XCLocalSwiftPackageReference "Packages/TrialEngine" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4C0B164B7A75DD4A9A40C1B6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0E5F3A6E0CB4817D871DE8C2 /* Subly */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F9D69CFB32D5B0CC49553AC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
+				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1F60FEF4B5810FFB65CF7C66 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.subly.Subly;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		22322F71419DF4F3583A341C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		52D1A01E4FB05761FED86430 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.subly.Subly;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6B57A71B2EFAF4F5C0E0E8A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D43EA570A8D48BC54C3FE63 /* Build configuration list for PBXProject "Subly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				52D1A01E4FB05761FED86430 /* Debug */,
+				1F60FEF4B5810FFB65CF7C66 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1F8EA3BDC37EBFD5B2C3D069 /* Build configuration list for PBXNativeTarget "Subly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				22322F71419DF4F3583A341C /* Debug */,
+				6B57A71B2EFAF4F5C0E0E8A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		09CEC8CF485092179CE20A2D /* XCLocalSwiftPackageReference "Packages/SubscriptionStore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SubscriptionStore;
+		};
+		122CC77727332BA362CCB471 /* XCLocalSwiftPackageReference "Packages/EmailEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/EmailEngine;
+		};
+		39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LogoService;
+		};
+		EC891433965CDE866B412AB6 /* XCLocalSwiftPackageReference "Packages/TrialEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TrialEngine;
+		};
+		FF8D1D533A8BB1B52EAFD9A6 /* XCLocalSwiftPackageReference "Packages/NotificationEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/NotificationEngine;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3F563A9C8C22DF54EFDD273B /* EmailEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EmailEngine;
+		};
+		4125BA4396A89B774859EEE5 /* LogoService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogoService;
+		};
+		8997EAEBC73EFB0F1D6454DC /* TrialEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TrialEngine;
+		};
+		DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SubscriptionStore;
+		};
+		F682B7F3898CBF29726418B8 /* NotificationEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NotificationEngine;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = C31C23BD58A7ED4DF259FD25 /* Project object */;
+}
