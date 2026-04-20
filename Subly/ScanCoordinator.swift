@@ -117,16 +117,21 @@ public actor ScanCoordinator {
         return ((try? modelContext.fetch(descriptor))?.first) != nil
     }
 
-    /// Upserts by sender domain — one row per service. Newer events override older ones.
+    /// Upserts by (senderDomain, accountIdentifier). Two X Premium subs on the
+    /// same account become separate rows when each receipt names a different
+    /// handle. Falls back to domain-only dedup when no account identifier
+    /// distinguishes them.
     private func upsert(_ parsed: ParsedSubscription) -> UpsertResult {
         let domain = parsed.senderDomain
+        let accountID = parsed.accountIdentifier
         var descriptor = FetchDescriptor<Subscription>(
-            predicate: #Predicate { $0.senderDomain == domain }
+            predicate: #Predicate {
+                $0.senderDomain == domain && $0.accountIdentifier == accountID
+            }
         )
         descriptor.fetchLimit = 1
 
         if let existing = (try? modelContext.fetch(descriptor))?.first {
-            // Only apply update if this email is newer than what we had.
             guard parsed.detectedAt >= existing.detectedAt else { return .skipped }
             applyUpdate(to: existing, from: parsed)
             return .updated
@@ -136,6 +141,7 @@ public actor ScanCoordinator {
             id: UUID(),
             serviceName: parsed.serviceName,
             senderDomain: parsed.senderDomain,
+            accountIdentifier: parsed.accountIdentifier,
             logoURL: nil,
             status: mapStatus(parsed.event),
             amount: parsed.amount,

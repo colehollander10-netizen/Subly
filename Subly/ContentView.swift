@@ -175,8 +175,15 @@ private struct SubscriptionRow: View {
                 .foregroundStyle(statusColor)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(subscription.serviceName)
-                    .font(.body)
+                HStack(spacing: 6) {
+                    Text(subscription.serviceName)
+                        .font(.body)
+                    if !subscription.accountIdentifier.isEmpty {
+                        Text(accountLabel)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 HStack(spacing: 6) {
                     Text(statusLabel)
                     if let introEnd = subscription.introPriceEndDate,
@@ -228,6 +235,13 @@ private struct SubscriptionRow: View {
         case .paused: return "Paused"
         case .canceled: return "Canceled"
         }
+    }
+
+    private var accountLabel: String {
+        let id = subscription.accountIdentifier
+        if id.contains("@") { return id }
+        if id.count == 4, Int(id) != nil { return "•••• \(id)" }
+        return "@\(id)"
     }
 
     private var statusIcon: String {

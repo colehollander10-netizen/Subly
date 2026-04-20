@@ -14,6 +14,9 @@ public final class Subscription {
     public var id: UUID
     public var serviceName: String
     public var senderDomain: String
+    /// Per-account identifier within a sender (handle, billed-to email, or last-4).
+    /// Empty string when nothing distinguishes accounts on the same service.
+    public var accountIdentifier: String
     public var logoURL: URL?
     public var status: SubscriptionStatus
     public var amount: Decimal?
@@ -36,6 +39,7 @@ public final class Subscription {
         id: UUID,
         serviceName: String,
         senderDomain: String,
+        accountIdentifier: String = "",
         logoURL: URL?,
         status: SubscriptionStatus,
         amount: Decimal?,
@@ -50,6 +54,7 @@ public final class Subscription {
         self.id = id
         self.serviceName = serviceName
         self.senderDomain = senderDomain
+        self.accountIdentifier = accountIdentifier
         self.logoURL = logoURL
         self.status = status
         self.amount = amount

@@ -195,6 +195,15 @@ public struct GmailMessage: Decodable, Sendable {
     public let threadId: String
     public let payload: MessagePayload?
     public let snippet: String?
+    /// Gmail-assigned internal date in milliseconds since epoch (as a string).
+    /// Use for intro-pricing duration math because it's present even when the
+    /// Date: header is missing or malformed.
+    public let internalDate: String?
+
+    public var sentDate: Date? {
+        guard let internalDate, let ms = Double(internalDate) else { return nil }
+        return Date(timeIntervalSince1970: ms / 1000)
+    }
 }
 
 public struct MessagePayload: Decodable, Sendable {
