@@ -1,7 +1,5 @@
 import Foundation
 
-/// Result of classifying a Gmail message. Everything optional because
-/// real-world email is messy — callers decide whether a partial hit is enough.
 public struct ParsedSubscription: Sendable, Equatable {
     public enum EventKind: String, Sendable {
         case welcome
@@ -21,6 +19,8 @@ public struct ParsedSubscription: Sendable, Equatable {
     public let senderDomain: String
     public let event: EventKind
     public let amount: Decimal?
+    public let regularAmount: Decimal?
+    public let introPriceEndDate: Date?
     public let billing: BillingInterval
     public let trialEndDate: Date?
     public let sourceMessageID: String
@@ -31,6 +31,8 @@ public struct ParsedSubscription: Sendable, Equatable {
         senderDomain: String,
         event: EventKind,
         amount: Decimal?,
+        regularAmount: Decimal?,
+        introPriceEndDate: Date?,
         billing: BillingInterval,
         trialEndDate: Date?,
         sourceMessageID: String,
@@ -40,6 +42,8 @@ public struct ParsedSubscription: Sendable, Equatable {
         self.senderDomain = senderDomain
         self.event = event
         self.amount = amount
+        self.regularAmount = regularAmount
+        self.introPriceEndDate = introPriceEndDate
         self.billing = billing
         self.trialEndDate = trialEndDate
         self.sourceMessageID = sourceMessageID
@@ -48,52 +52,59 @@ public struct ParsedSubscription: Sendable, Equatable {
 }
 
 public enum SubscriptionParser {
-    /// Fast metadata-only pass. Returns nil when nothing about the sender or
-    /// subject looks subscription-shaped; otherwise returns a ParsedSubscription
-    /// with whatever could be inferred from headers alone (no amount yet).
-    public static func classifyMetadata(_ message: GmailMessage, now: Date = Date()) -> ParsedSubscription? {
+    /// Metadata-only pre-filter. Returns true when the email is worth pulling
+    /// the body for. Keeps ScanCoordinator from wasting API calls on obvious junk.
+    public static func shouldFetchBody(_ message: GmailMessage) -> Bool {
         let headers = message.payload?.headers ?? []
         let from = header(headers, "From") ?? ""
         let subject = header(headers, "Subject") ?? ""
-        let snippet = message.snippet ?? ""
+        let domain = senderDomain(from: from)
+        if domain.isEmpty || isNoiseSenderDomain(domain) { return false }
+        if isExcludedCategory(subject: subject, domain: domain, body: nil) { return false }
+        return hasSubscriptionSignal(subject) || hasSubscriptionSignal(message.snippet ?? "")
+    }
+
+    /// Full classification. Returns nil when the email doesn't meet the bar
+    /// for being surfaced as a real subscription (no amount, excluded category,
+    /// phantom trial, etc.). Caller treats nil as "drop silently."
+    public static func classify(_ message: GmailMessage, now: Date = Date()) -> ParsedSubscription? {
+        let headers = message.payload?.headers ?? []
+        let from = header(headers, "From") ?? ""
+        let subject = header(headers, "Subject") ?? ""
+        let body = decodedBody(message.payload) ?? message.snippet ?? ""
 
         let domain = senderDomain(from: from)
-        guard !domain.isEmpty, !isNoiseDomain(domain) else { return nil }
+        guard !domain.isEmpty, !isNoiseSenderDomain(domain) else { return nil }
+        if isExcludedCategory(subject: subject, domain: domain, body: body) { return nil }
 
-        let event = classifyEvent(subject: subject, snippet: snippet)
-        let isSubjectSignal = hasSubscriptionSignal(subject) || hasSubscriptionSignal(snippet)
-        guard event != .unknown || isSubjectSignal else { return nil }
+        let event = classifyEvent(subject: subject, body: body)
+        let amount = extractPrimaryAmount(body)
+        let (regularAmount, introEnd) = extractIntroPricing(body, reference: now)
+        let billing = parseBilling(body)
+        let trialEnd = parseTrialEndDate(body, reference: now)
+
+        // Hard rule: require evidence of a real paid subscription.
+        // Either a charge amount, or a trial that clearly has end dating.
+        switch event {
+        case .canceled, .paused:
+            break // Keep — needed to update existing rows even without a new charge
+        case .trialStart:
+            guard trialEnd != nil || amount != nil else { return nil }
+        case .welcome, .renewal, .receipt, .unknown:
+            guard let found = amount, found > 0 else { return nil }
+        }
 
         return ParsedSubscription(
             serviceName: serviceName(fromDomain: domain, from: from),
             senderDomain: domain,
             event: event,
-            amount: nil,
-            billing: .unknown,
-            trialEndDate: nil,
-            sourceMessageID: message.id,
-            detectedAt: now
-        )
-    }
-
-    /// Full-body pass. Extracts amount + billing interval + trial end where possible.
-    /// Falls back to metadata-level info if the body doesn't add anything.
-    public static func classifyFull(_ message: GmailMessage, now: Date = Date()) -> ParsedSubscription? {
-        guard let base = classifyMetadata(message, now: now) else { return nil }
-        let body = decodedBody(message.payload) ?? message.snippet ?? ""
-        let amount = parseAmount(body)
-        let billing = parseBilling(body)
-        let trialEnd = parseTrialEndDate(body, reference: now)
-
-        return ParsedSubscription(
-            serviceName: base.serviceName,
-            senderDomain: base.senderDomain,
-            event: base.event,
             amount: amount,
+            regularAmount: regularAmount,
+            introPriceEndDate: introEnd,
             billing: billing,
             trialEndDate: trialEnd,
-            sourceMessageID: base.sourceMessageID,
-            detectedAt: base.detectedAt
+            sourceMessageID: message.id,
+            detectedAt: now
         )
     }
 }
@@ -111,9 +122,9 @@ private func senderDomain(from: String) -> String {
     return cleaned.lowercased()
 }
 
-private func isNoiseDomain(_ domain: String) -> Bool {
-    let noise = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "me.com"]
-    return noise.contains(domain)
+private func isNoiseSenderDomain(_ domain: String) -> Bool {
+    let personal = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "me.com"]
+    return personal.contains(domain)
 }
 
 private func serviceName(fromDomain domain: String, from: String) -> String {
@@ -129,21 +140,71 @@ private func serviceName(fromDomain domain: String, from: String) -> String {
 }
 
 private func parseDisplayName(_ from: String) -> String? {
-    // "Netflix <info@netflix.com>" → "Netflix"
     guard let angle = from.firstIndex(of: "<") else { return nil }
     let name = from[..<angle]
         .trimmingCharacters(in: CharacterSet(charactersIn: "\" "))
     return name.isEmpty ? nil : name
 }
 
-// MARK: - Subject/snippet classification
+// MARK: - Category exclusions
+
+private let bankNewsletterDomains: Set<String> = [
+    // Newsletter platforms
+    "substack.com", "beehiiv.com", "mailchimp.com", "mc.sendgrid.net",
+    "constantcontact.com", "convertkit.com", "campaignmonitor.com",
+    "mailerlite.com", "moosend.com",
+]
+
+private let excludedSubjectPhrases: [String] = [
+    // Bank / card transaction alerts
+    "transaction alert", "fraud alert", "account alert", "deposit alert",
+    "withdrawal alert", "purchase alert", "balance alert", "debit alert",
+    "your card was used", "payment posted", "statement available",
+    "credit card statement", "minimum payment", "payment due",
+    // Shipping
+    "has shipped", "shipping confirmation", "delivery update",
+    "out for delivery", "tracking number", "package arrived",
+    // Donations
+    "donation receipt", "tithe", "contribution receipt", "gift receipt",
+    "thank you for your donation", "thank you for your gift",
+]
+
+private let excludedSenderHints: [String] = [
+    "newsletter@", "digest@", "daily@", "weekly@",
+]
+
+private func isExcludedCategory(subject: String, domain: String, body: String?) -> Bool {
+    let subjectLower = subject.lowercased()
+    let domainLower = domain.lowercased()
+
+    if bankNewsletterDomains.contains(domainLower) { return true }
+    if excludedSenderHints.contains(where: { subjectLower.contains($0) }) { return true }
+    if excludedSubjectPhrases.contains(where: { subjectLower.contains($0) }) { return true }
+
+    if let body {
+        let bodyLower = body.lowercased()
+        let donationSignals = ["donation", "tithe", "501(c)", "nonprofit", "charitable contribution"]
+        if donationSignals.contains(where: { bodyLower.contains($0) }) { return true }
+
+        // Bank statement / credit card bill — if body talks about "available balance"
+        // or "interest charge" without a subscription amount line, drop it.
+        let bankSignals = ["available balance", "posted to your account", "current balance",
+                          "interest charged", "minimum payment due", "statement closing date"]
+        let bankHitCount = bankSignals.filter { bodyLower.contains($0) }.count
+        if bankHitCount >= 2 { return true }
+    }
+
+    return false
+}
+
+// MARK: - Signals
 
 private let subscriptionSignalTerms: [String] = [
     "subscription", "subscribed", "renewal", "renew", "auto-renew", "auto renew",
-    "receipt", "invoice", "payment", "billing", "billed", "charge",
-    "membership", "premium", "plan", "upgrade", "downgrade",
-    "welcome", "confirmation", "confirmed", "trial", "free trial",
-    "canceled", "cancelled", "paused", "refund",
+    "receipt", "invoice", "payment", "billing", "billed", "charged",
+    "membership", "premium", "plan", "upgrade",
+    "welcome", "confirmation", "trial", "free trial",
+    "canceled", "cancelled", "paused",
     "thanks for subscribing", "your order",
 ]
 
@@ -152,21 +213,23 @@ private func hasSubscriptionSignal(_ text: String) -> Bool {
     return subscriptionSignalTerms.contains { lower.contains($0) }
 }
 
-private func classifyEvent(subject: String, snippet: String) -> ParsedSubscription.EventKind {
-    let text = (subject + " " + snippet).lowercased()
+private func classifyEvent(subject: String, body: String) -> ParsedSubscription.EventKind {
+    let text = (subject + " " + body).lowercased()
     if text.contains("cancel") { return .canceled }
     if text.contains("paused") || text.contains("on hold") { return .paused }
-    if text.contains("free trial") || text.contains("trial started") || text.contains("your trial") {
+    if text.contains("free trial") || text.contains("trial started") ||
+       text.contains("your trial") || text.contains("trial period") {
         return .trialStart
     }
     if text.contains("renew") || text.contains("auto-renew") || text.contains("auto renew") {
         return .renewal
     }
+    if text.contains("receipt") || text.contains("invoice") || text.contains("payment received") ||
+       text.contains("you paid") || text.contains("amount charged") || text.contains("billed") {
+        return .receipt
+    }
     if text.contains("welcome") || text.contains("thanks for subscribing") || text.contains("confirmation") {
         return .welcome
-    }
-    if text.contains("receipt") || text.contains("invoice") || text.contains("payment") || text.contains("billed") {
-        return .receipt
     }
     return .unknown
 }
@@ -192,33 +255,102 @@ private func base64URLDecode(_ input: String) -> String? {
     return String(data: data, encoding: .utf8)
 }
 
-// MARK: - Amount / billing / trial extraction
+// MARK: - Amount extraction
 
-private func parseAmount(_ body: String) -> Decimal? {
-    // Matches $12, $12.99, US$12.99, USD 12.99
+/// Finds the primary charged amount. Prefers labeled totals over the first
+/// dollar sign in the body. Ignores lines that look like subtotals, tax, credits,
+/// or savings.
+private func extractPrimaryAmount(_ body: String) -> Decimal? {
+    let lines = body.components(separatedBy: .newlines)
+    let preferredLabels = [
+        "total charged", "amount charged", "total paid", "you paid",
+        "grand total", "amount due", "order total", "total amount", "total:",
+        "charged to your card", "payment amount",
+    ]
+    let avoidLabels = [
+        "subtotal", "tax", "discount", "credit", "savings", "refund",
+        "you saved", "promo", "shipping",
+    ]
+
+    // Pass 1: labeled totals
+    for line in lines {
+        let lower = line.lowercased()
+        guard preferredLabels.contains(where: { lower.contains($0) }) else { continue }
+        if avoidLabels.contains(where: { lower.contains($0) }) { continue }
+        if let amount = firstDollarAmount(line), amount > 0 { return amount }
+    }
+
+    // Pass 2: any line with a per-month/per-year cadence signal
+    for line in lines {
+        let lower = line.lowercased()
+        if avoidLabels.contains(where: { lower.contains($0) }) { continue }
+        let cadenceSignal = ["/month", "/mo", "per month", "/year", "/yr", "per year", "monthly", "yearly"]
+        guard cadenceSignal.contains(where: { lower.contains($0) }) else { continue }
+        if let amount = firstDollarAmount(line), amount > 0 { return amount }
+    }
+
+    // No confident anchor — return nil rather than guessing.
+    return nil
+}
+
+private func firstDollarAmount(_ text: String) -> Decimal? {
     let pattern = #"(?:US\$|USD\s*|\$)\s*(\d+(?:\.\d{1,2})?)"#
     guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { return nil }
-    let range = NSRange(body.startIndex..<body.endIndex, in: body)
-    guard let match = regex.firstMatch(in: body, options: [], range: range),
+    let range = NSRange(text.startIndex..<text.endIndex, in: text)
+    guard let match = regex.firstMatch(in: text, options: [], range: range),
           match.numberOfRanges > 1,
-          let valueRange = Range(match.range(at: 1), in: body)
+          let valueRange = Range(match.range(at: 1), in: text)
     else { return nil }
-    return Decimal(string: String(body[valueRange]))
+    return Decimal(string: String(text[valueRange]))
 }
+
+// MARK: - Intro pricing
+
+private func extractIntroPricing(_ body: String, reference: Date) -> (regularAmount: Decimal?, endDate: Date?) {
+    let lower = body.lowercased()
+    let promoSignals = ["first month", "first 2 months", "first two months", "for the first",
+                       "introductory price", "promotional rate", "intro price", "then $",
+                       "after that", "afterwards"]
+    guard promoSignals.contains(where: { lower.contains($0) }) else { return (nil, nil) }
+
+    // Try to find "then $X/month" — that's the regular price.
+    let thenPattern = #"then\s+(?:US\$|USD\s*|\$)\s*(\d+(?:\.\d{1,2})?)"#
+    let regular: Decimal? = {
+        guard let regex = try? NSRegularExpression(pattern: thenPattern, options: [.caseInsensitive]) else { return nil }
+        let range = NSRange(body.startIndex..<body.endIndex, in: body)
+        guard let match = regex.firstMatch(in: body, options: [], range: range),
+              match.numberOfRanges > 1,
+              let valueRange = Range(match.range(at: 1), in: body)
+        else { return nil }
+        return Decimal(string: String(body[valueRange]))
+    }()
+
+    // End date: use the first future date in the body as a heuristic.
+    let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
+    let range = NSRange(body.startIndex..<body.endIndex, in: body)
+    let endDate = detector?.matches(in: body, options: [], range: range)
+        .compactMap { $0.date }
+        .first { $0 > reference }
+
+    return (regular, endDate)
+}
+
+// MARK: - Billing / trial
 
 private func parseBilling(_ body: String) -> ParsedSubscription.BillingInterval {
     let lower = body.lowercased()
-    if lower.contains("per year") || lower.contains("/year") || lower.contains("annual") || lower.contains("yearly") {
+    if lower.contains("per year") || lower.contains("/year") || lower.contains("/yr") ||
+       lower.contains("annual") || lower.contains("yearly") {
         return .annual
     }
-    if lower.contains("per month") || lower.contains("/month") || lower.contains("monthly") {
+    if lower.contains("per month") || lower.contains("/month") || lower.contains("/mo") ||
+       lower.contains("monthly") {
         return .monthly
     }
     return .unknown
 }
 
 private func parseTrialEndDate(_ body: String, reference: Date) -> Date? {
-    // Look for "trial ends on Mar 15" / "free until 2026-04-30" — good-enough heuristic for v1.
     let lower = body.lowercased()
     guard lower.contains("trial") || lower.contains("free until") else { return nil }
 

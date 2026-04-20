@@ -7,7 +7,11 @@ import UIKit
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SubscriptionStore.self) private var store
-    @Query(sort: \Subscription.detectedAt, order: .reverse) private var subscriptions: [Subscription]
+    @Query(
+        filter: #Predicate<Subscription> { !$0.userDismissed },
+        sort: \Subscription.detectedAt,
+        order: .reverse
+    ) private var subscriptions: [Subscription]
 
     @State private var isSignedIn = EmailEngine.shared.isSignedIn
     @State private var connectedEmail = EmailEngine.shared.connectedEmail
@@ -76,7 +80,7 @@ struct ContentView: View {
 
             if let summary = lastSummary {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Last scan: \(summary.subscriptionsAdded) new, \(summary.messagesInspected) emails checked")
+                    Text("Last scan: \(summary.subscriptionsAdded) new, \(summary.subscriptionsUpdated) updated, \(summary.messagesInspected) emails checked")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -97,12 +101,18 @@ struct ContentView: View {
         Section {
             ForEach(subscriptions) { sub in
                 SubscriptionRow(subscription: sub)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            dismiss(sub)
+                        } label: {
+                            Label("Not a subscription", systemImage: "xmark.bin")
+                        }
+                    }
             }
-            .onDelete(perform: delete)
         } header: {
             Text("Detected (\(subscriptions.count))")
         } footer: {
-            Text("Swipe to remove anything that isn't yours.")
+            Text("Swipe any row that isn't a real subscription to remove it.")
         }
     }
 
@@ -143,10 +153,8 @@ struct ContentView: View {
         scanState = .done
     }
 
-    private func delete(at offsets: IndexSet) {
-        for index in offsets {
-            store.delete(subscriptions[index])
-        }
+    private func dismiss(_ subscription: Subscription) {
+        subscription.userDismissed = true
         try? store.save()
     }
 
@@ -170,19 +178,55 @@ private struct SubscriptionRow: View {
                 Text(subscription.serviceName)
                     .font(.body)
                 HStack(spacing: 6) {
-                    Text(subscription.status.rawValue.capitalized)
-                    if let cycle = subscription.billingCycle, cycle != .unknown {
-                        Text("· \(cycle.rawValue)")
+                    Text(statusLabel)
+                    if let introEnd = subscription.introPriceEndDate,
+                       subscription.regularAmount != nil {
+                        Text("· intro until \(introEnd.formatted(.dateTime.month().day()))")
+                            .foregroundStyle(.orange)
+                    } else if let trialEnd = subscription.trialEndDate,
+                              subscription.status == .trial {
+                        Text("· ends \(trialEnd.formatted(.dateTime.month().day()))")
                     }
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
             }
             Spacer()
-            if let amount = subscription.amount {
-                Text(format(amount))
+            priceBadge
+        }
+    }
+
+    @ViewBuilder
+    private var priceBadge: some View {
+        if shouldShowPrice, let amount = subscription.amount {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(formatPrice(amount))
                     .font(.body.monospacedDigit())
+                if let regular = subscription.regularAmount, regular != amount {
+                    Text("then \(formatPrice(regular))")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
             }
+        }
+    }
+
+    private var shouldShowPrice: Bool {
+        // Only show price for currently-active / trial rows with a real amount.
+        switch subscription.status {
+        case .active, .trial:
+            return subscription.amount != nil
+        case .paused, .canceled:
+            return false
+        }
+    }
+
+    private var statusLabel: String {
+        switch subscription.status {
+        case .active: return "Active"
+        case .trial: return "Trial"
+        case .paused: return "Paused"
+        case .canceled: return "Canceled"
         }
     }
 
@@ -204,10 +248,15 @@ private struct SubscriptionRow: View {
         }
     }
 
-    private func format(_ value: Decimal) -> String {
+    private func formatPrice(_ value: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "USD"
-        return formatter.string(from: value as NSDecimalNumber) ?? "$\(value)"
+        let base = formatter.string(from: value as NSDecimalNumber) ?? "$\(value)"
+        switch subscription.billingCycle ?? .unknown {
+        case .monthly: return "\(base)/mo"
+        case .annual: return "\(base)/yr"
+        case .unknown: return base
+        }
     }
 }
