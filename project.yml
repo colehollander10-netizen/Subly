@@ -61,3 +61,8 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLSchemes:
               - com.googleusercontent.apps.332703006085-tb86ofvs1h5mjiftsp182h779b813tll
+        UIBackgroundModes:
+          - fetch
+          - processing
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.subly.scan.refresh

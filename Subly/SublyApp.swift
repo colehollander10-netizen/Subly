@@ -26,6 +26,8 @@ struct SublyApp: App {
         EmailEngine.shared.configure(
             clientID: "332703006085-tb86ofvs1h5mjiftsp182h779b813tll.apps.googleusercontent.com"
         )
+        ScanScheduler.register(modelContainer: Self.modelContainer)
+        ScanScheduler.scheduleNext()
     }
 
     var body: some Scene {

@@ -76,8 +76,17 @@ public final class EmailEngine: @unchecked Sendable {
 
     /// Fetch the full body of a single message.
     public func fetchMessage(id: String) async throws -> GmailMessage {
+        try await fetchMessage(id: id, format: "full")
+    }
+
+    /// Fetch only headers + snippet (cheap; used for first-pass filtering).
+    public func fetchMessageMetadata(id: String) async throws -> GmailMessage {
+        try await fetchMessage(id: id, format: "metadata")
+    }
+
+    private func fetchMessage(id: String, format: String) async throws -> GmailMessage {
         let token = try await freshAccessToken()
-        let url = URL(string: "https://gmail.googleapis.com/gmail/v1/users/me/messages/\(id)?format=full")!
+        let url = URL(string: "https://gmail.googleapis.com/gmail/v1/users/me/messages/\(id)?format=\(format)")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -149,8 +158,23 @@ private enum GmailScope {
     static let readonly = "https://www.googleapis.com/auth/gmail.readonly"
 }
 
-private enum GmailQuery {
-    static let subscriptions = "subject:(welcome OR confirmation OR \"your subscription\" OR \"free trial\" OR \"trial started\" OR canceled OR paused)"
+enum GmailQuery {
+    /// Broad net of subscription/billing/trial signals. Intentionally noisy —
+    /// the metadata pass + parser narrow results before we touch full bodies.
+    static let subscriptions: String = {
+        let subjectTerms = [
+            "subscription", "renewal", "auto-renew", "auto renew",
+            "receipt", "invoice", "payment", "billing", "billed",
+            "membership", "premium", "plan", "upgrade",
+            "welcome", "confirmation", "trial", "free trial",
+            "canceled", "cancelled", "paused", "refund",
+            "your order", "thanks for subscribing",
+        ]
+        let quoted = subjectTerms.map { term -> String in
+            term.contains(" ") ? "\"\(term)\"" : term
+        }
+        return "subject:(\(quoted.joined(separator: " OR ")))"
+    }()
 }
 
 // MARK: - Response models
