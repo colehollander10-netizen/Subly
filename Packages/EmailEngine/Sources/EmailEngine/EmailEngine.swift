@@ -54,11 +54,14 @@ public final class EmailEngine: @unchecked Sendable {
 
     /// Fetch a page of Gmail message IDs matching the subscription query.
     /// Silently refreshes the access token before the call.
-    public func fetchMessageList(pageToken: String? = nil) async throws -> MessageListResponse {
+    public func fetchMessageList(
+        query: String = GmailQuery.subscriptionsRecent,
+        pageToken: String? = nil
+    ) async throws -> MessageListResponse {
         let token = try await freshAccessToken()
         var components = URLComponents(string: "https://gmail.googleapis.com/gmail/v1/users/me/messages")!
         var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "q", value: GmailQuery.subscriptions),
+            URLQueryItem(name: "q", value: query),
             URLQueryItem(name: "maxResults", value: "50"),
         ]
         if let pageToken {
@@ -158,10 +161,10 @@ private enum GmailScope {
     static let readonly = "https://www.googleapis.com/auth/gmail.readonly"
 }
 
-enum GmailQuery {
+public enum GmailQuery {
     /// Broad net of subscription/billing/trial signals. Intentionally noisy —
     /// the metadata pass + parser narrow results before we touch full bodies.
-    static let subscriptions: String = {
+    private static let subjectFilter: String = {
         let subjectTerms = [
             "subscription", "renewal", "auto-renew", "auto renew",
             "receipt", "invoice", "payment", "billing", "billed",
@@ -175,6 +178,14 @@ enum GmailQuery {
         }
         return "subject:(\(quoted.joined(separator: " OR ")))"
     }()
+
+    /// Past 30 days — first-pass scan. Anything still active must have billed
+    /// at least once recently (most subs are monthly or more frequent).
+    public static let subscriptionsRecent: String = "\(subjectFilter) newer_than:30d"
+
+    /// Past year — second pass for annual subs that didn't surface in recent.
+    /// Anything older than a year is, by definition, not an active subscription.
+    public static let subscriptionsYear: String = "\(subjectFilter) newer_than:1y older_than:30d"
 }
 
 // MARK: - Response models

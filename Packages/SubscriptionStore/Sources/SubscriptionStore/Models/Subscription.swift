@@ -35,6 +35,21 @@ public final class Subscription {
     /// Hidden from the main list but kept so we don't re-detect the same email.
     public var userDismissed: Bool
 
+    /// Parser's confidence this row is a real active subscription (0.0–1.0).
+    /// ≥0.7 = shown in "Detected"; 0.4–0.7 = shown in "Review these".
+    public var confidence: Double
+
+    /// User's verdict. nil = untouched, true = thumbed up (promote to Detected),
+    /// false = thumbed down (same as userDismissed — kept separate so we can
+    /// distinguish explicit rejection from pre-confirmation state).
+    public var userConfirmed: Bool?
+
+    /// True when the source email shows a card/PayPal on file and an automatic
+    /// future charge. Drives the "Will charge $X on [date]" warning in the UI
+    /// and the cancel-before-charge reminder. Defaults to false so existing
+    /// SwiftData rows from before this field migrate cleanly.
+    public var willAutoCharge: Bool = false
+
     public init(
         id: UUID,
         serviceName: String,
@@ -49,7 +64,10 @@ public final class Subscription {
         trialEndDate: Date?,
         regularAmount: Decimal? = nil,
         introPriceEndDate: Date? = nil,
-        userDismissed: Bool = false
+        userDismissed: Bool = false,
+        confidence: Double = 0.5,
+        userConfirmed: Bool? = nil,
+        willAutoCharge: Bool = false
     ) {
         self.id = id
         self.serviceName = serviceName
@@ -65,5 +83,8 @@ public final class Subscription {
         self.regularAmount = regularAmount
         self.introPriceEndDate = introPriceEndDate
         self.userDismissed = userDismissed
+        self.confidence = confidence
+        self.userConfirmed = userConfirmed
+        self.willAutoCharge = willAutoCharge
     }
 }

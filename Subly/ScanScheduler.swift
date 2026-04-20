@@ -38,7 +38,7 @@ public enum ScanScheduler {
                 task.setTaskCompleted(success: false)
                 return
             }
-            let summary = await coordinator.runScan(maxPages: 2)
+            let summary = await coordinator.runScan(maxPagesPerWindow: 2)
             task.setTaskCompleted(success: summary.errorMessage == nil)
         }
 

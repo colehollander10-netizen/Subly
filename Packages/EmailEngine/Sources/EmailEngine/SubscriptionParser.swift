@@ -27,8 +27,14 @@ public struct ParsedSubscription: Sendable, Equatable {
     public let introPriceEndDate: Date?
     public let billing: BillingInterval
     public let trialEndDate: Date?
+    /// True when the email shows a card/PayPal/billing method on file and an
+    /// automatic future charge. Gates `.trialStart` — "no credit card needed"
+    /// trials (Granola/Loom/Zapier) never reach Detected.
+    public let willAutoCharge: Bool
     public let sourceMessageID: String
     public let detectedAt: Date
+    /// 0.0–1.0. ≥0.7 = "Detected" tier, 0.4–0.7 = "Review these" tier, <0.4 dropped.
+    public let confidence: Double
 
     public init(
         serviceName: String,
@@ -40,8 +46,10 @@ public struct ParsedSubscription: Sendable, Equatable {
         introPriceEndDate: Date?,
         billing: BillingInterval,
         trialEndDate: Date?,
+        willAutoCharge: Bool,
         sourceMessageID: String,
-        detectedAt: Date
+        detectedAt: Date,
+        confidence: Double
     ) {
         self.serviceName = serviceName
         self.senderDomain = senderDomain
@@ -52,9 +60,26 @@ public struct ParsedSubscription: Sendable, Equatable {
         self.introPriceEndDate = introPriceEndDate
         self.billing = billing
         self.trialEndDate = trialEndDate
+        self.willAutoCharge = willAutoCharge
         self.sourceMessageID = sourceMessageID
         self.detectedAt = detectedAt
+        self.confidence = confidence
     }
+}
+
+public enum ClassificationRejection: String, Sendable {
+    case noDomain
+    case bankDomain
+    case noiseSenderDomain
+    case excludedSubject
+    case newsletterPlatform
+    case bankBodyContent
+    case paypalPersonalPayment
+    case oneTimeDonation
+    case missingAmount
+    case missingRecurrenceEvidence
+    case missingTrialInfo
+    case trialNoCardOnFile
 }
 
 public enum SubscriptionParser {
@@ -64,48 +89,145 @@ public enum SubscriptionParser {
         let subject = header(headers, "Subject") ?? ""
         let domain = senderDomain(from: from)
 
-        if domain.isEmpty { return false }
-        if isExcludedBankDomain(domain) { return false }
-        if isNoiseSenderDomain(domain) { return false }
-        if isExcludedSubject(subject) { return false }
-        if isNewsletterPlatform(domain) { return false }
-        return hasSubscriptionSignal(subject) || hasSubscriptionSignal(message.snippet ?? "")
+        if domain.isEmpty {
+            logPreFilter(reason: "noDomain", subject: subject, domain: "", messageID: message.id)
+            return false
+        }
+        if isExcludedBankDomain(domain) {
+            logPreFilter(reason: "bankDomain", subject: subject, domain: domain, messageID: message.id)
+            return false
+        }
+        if isNoiseSenderDomain(domain) {
+            logPreFilter(reason: "noiseSenderDomain", subject: subject, domain: domain, messageID: message.id)
+            return false
+        }
+        if isExcludedSubject(subject) {
+            logPreFilter(reason: "excludedSubject", subject: subject, domain: domain, messageID: message.id)
+            return false
+        }
+        if isNewsletterPlatform(domain) {
+            logPreFilter(reason: "newsletterPlatform", subject: subject, domain: domain, messageID: message.id)
+            return false
+        }
+        let passesSignal = hasSubscriptionSignal(subject) || hasSubscriptionSignal(message.snippet ?? "")
+        if !passesSignal {
+            logPreFilter(reason: "noSubscriptionSignal", subject: subject, domain: domain, messageID: message.id)
+        }
+        return passesSignal
     }
 
     public static func classify(_ message: GmailMessage, now: Date = Date()) -> ParsedSubscription? {
+        switch classifyWithDiagnostics(message, now: now) {
+        case .success(let parsed): return parsed
+        case .rejected(let reason, let subject, let domain):
+            logRejection(reason: reason, subject: subject, domain: domain, messageID: message.id)
+            return nil
+        }
+    }
+
+    public enum ClassifyResult {
+        case success(ParsedSubscription)
+        case rejected(reason: ClassificationRejection, subject: String, domain: String)
+    }
+
+    public static func classifyWithDiagnostics(_ message: GmailMessage, now: Date = Date()) -> ClassifyResult {
         let headers = message.payload?.headers ?? []
         let from = header(headers, "From") ?? ""
         let subject = header(headers, "Subject") ?? ""
         let body = decodedBody(message.payload) ?? message.snippet ?? ""
 
         let domain = senderDomain(from: from)
-        guard !domain.isEmpty else { return nil }
-        if isExcludedBankDomain(domain) { return nil }
-        if isNoiseSenderDomain(domain) { return nil }
-        if isExcludedSubject(subject) { return nil }
-        if isNewsletterPlatform(domain) { return nil }
-        if isBankBodyContent(body) { return nil }
-        if isPaypalPersonalPayment(body: body, subject: subject) { return nil }
-        if isDonationContent(body: body) { return nil }
+        guard !domain.isEmpty else {
+            return .rejected(reason: .noDomain, subject: subject, domain: "")
+        }
+        if isExcludedBankDomain(domain) {
+            return .rejected(reason: .bankDomain, subject: subject, domain: domain)
+        }
+        if isNoiseSenderDomain(domain) {
+            return .rejected(reason: .noiseSenderDomain, subject: subject, domain: domain)
+        }
+        if isExcludedSubject(subject) {
+            return .rejected(reason: .excludedSubject, subject: subject, domain: domain)
+        }
+        if isNewsletterPlatform(domain) {
+            return .rejected(reason: .newsletterPlatform, subject: subject, domain: domain)
+        }
+        if isBankBodyContent(body) {
+            return .rejected(reason: .bankBodyContent, subject: subject, domain: domain)
+        }
+        if isPaypalPersonalPayment(body: body, subject: subject) {
+            return .rejected(reason: .paypalPersonalPayment, subject: subject, domain: domain)
+        }
 
-        let event = classifyEvent(subject: subject, body: body)
+        let event = classifyEvent(subject: subject, body: body, trialEndDate: parseTrialEndDate(body, reference: now))
         let amount = extractPrimaryAmount(body)
         let sentDate = message.sentDate ?? now
         let intro = extractIntroPricing(body: body, sentDate: sentDate)
         let billing = parseBilling(body)
         let trialEnd = parseTrialEndDate(body, reference: now)
         let accountID = extractAccountIdentifier(body: body, domain: domain)
+        let strongCharge = hasChargeConfirmation(subject: subject, body: body)
+        let weakRecurrence = hasRecurrenceEvidence(subject: subject, body: body)
+        let marketingCTA = isMarketingCTA(subject: subject)
+        let willAutoCharge = detectAutoCharge(subject: subject, body: body)
+
+        // One-time donation receipts are filtered; recurring donations (like a
+        // monthly sponsorship) have recurrence markers and are kept.
+        if isDonationContent(body: body) && !strongCharge {
+            return .rejected(reason: .oneTimeDonation, subject: subject, domain: domain)
+        }
+
+        // Pure marketing CTAs ("Get Premium for $9.99", "Unlock Pro") are killed
+        // even if the body mentions "/mo" or "cancel anytime" — those phrases
+        // show up in upgrade footers too.
+        if marketingCTA && !strongCharge {
+            return .rejected(reason: .missingRecurrenceEvidence, subject: subject, domain: domain)
+        }
 
         switch event {
         case .canceled, .paused:
             break
         case .trialStart:
-            guard trialEnd != nil || amount != nil else { return nil }
-        case .welcome, .renewal, .receipt, .unknown:
-            guard let found = amount, found > 0 else { return nil }
+            guard trialEnd != nil || amount != nil else {
+                return .rejected(reason: .missingTrialInfo, subject: subject, domain: domain)
+            }
+            // Subly is ONLY interested in trials that will charge the user if
+            // they don't cancel. "No credit card needed" trials (Granola/Loom/
+            // Zapier) get dropped here — they're not recurring revenue risks.
+            guard willAutoCharge else {
+                return .rejected(reason: .trialNoCardOnFile, subject: subject, domain: domain)
+            }
+        case .renewal:
+            guard let found = amount, found > 0 else {
+                return .rejected(reason: .missingAmount, subject: subject, domain: domain)
+            }
+        case .welcome, .receipt, .unknown:
+            guard let found = amount, found > 0 else {
+                return .rejected(reason: .missingAmount, subject: subject, domain: domain)
+            }
+            // Require either a strong charge-confirmation phrase, OR weak
+            // recurrence evidence combined with a receipt-shaped subject.
+            // MLB / Kahoot / MyPanera marketing emails fail this gate because
+            // their subjects are CTAs ("Try Premium for $X") — not receipts.
+            let subjectLooksLikeReceipt = receiptSubjectSignal(subject)
+            guard strongCharge || (weakRecurrence && subjectLooksLikeReceipt) else {
+                return .rejected(reason: .missingRecurrenceEvidence, subject: subject, domain: domain)
+            }
         }
 
-        return ParsedSubscription(
+        let confidence = scoreConfidence(
+            event: event,
+            strongCharge: strongCharge,
+            weakRecurrence: weakRecurrence,
+            marketingCTA: marketingCTA,
+            receiptSubject: receiptSubjectSignal(subject),
+            hasAmount: amount != nil,
+            hasTrialEnd: trialEnd != nil,
+            hasAccountID: !accountID.isEmpty,
+            knownSender: isKnownSubscriptionSender(domain)
+        )
+
+        let parsed = ParsedSubscription(
             serviceName: serviceName(fromDomain: domain, from: from),
             senderDomain: domain,
             accountIdentifier: accountID,
@@ -115,10 +237,284 @@ public enum SubscriptionParser {
             introPriceEndDate: intro.endDate,
             billing: billing,
             trialEndDate: trialEnd,
+            willAutoCharge: willAutoCharge,
             sourceMessageID: message.id,
-            detectedAt: now
+            detectedAt: now,
+            confidence: confidence
         )
+        logAccept(
+            domain: domain,
+            subject: subject,
+            event: "\(event)",
+            amount: amount.map { "\($0)" } ?? "nil",
+            messageID: message.id
+        )
+        return .success(parsed)
     }
+}
+
+private func logRejection(reason: ClassificationRejection, subject: String, domain: String, messageID: String) {
+    let trimmedSubject = subject.prefix(80)
+    print("[Subly parser] rejected id=\(messageID) domain=\(domain) reason=\(reason.rawValue) subject=\"\(trimmedSubject)\"")
+}
+
+private func logPreFilter(reason: String, subject: String, domain: String, messageID: String) {
+    let trimmedSubject = subject.prefix(80)
+    print("[Subly pre-filter] skipped id=\(messageID) domain=\(domain) reason=\(reason) subject=\"\(trimmedSubject)\"")
+}
+
+private func logAccept(domain: String, subject: String, event: String, amount: String, messageID: String) {
+    let trimmedSubject = subject.prefix(80)
+    print("[Subly parser] accepted id=\(messageID) domain=\(domain) event=\(event) amount=\(amount) subject=\"\(trimmedSubject)\"")
+}
+
+/// **Strong** evidence of an actual charge. These phrases virtually never appear
+/// in marketing emails — they appear in receipts, renewal confirmations, and
+/// payment notifications. A single hit here is enough to classify as a real sub.
+private func hasChargeConfirmation(subject: String, body: String) -> Bool {
+    let text = (subject + " " + body).lowercased()
+    let phrases = [
+        "you were charged", "you've been charged", "you have been charged",
+        "payment of $", "payment of us$", "payment of usd",
+        "your card was charged", "your card has been charged",
+        "successfully charged", "charge of $", "charged $",
+        "receipt for your subscription", "receipt from",
+        "subscription renewed", "has been renewed",
+        "auto-renewed", "automatically renewed",
+        "payment received", "payment confirmation",
+        "thanks for your payment", "thank you for your payment",
+        "invoice paid", "invoice for",
+        "your subscription has renewed", "your membership has renewed",
+        "next billing date", "next charge date",
+        "order confirmation for your subscription",
+    ]
+    return phrases.contains { text.contains($0) }
+}
+
+/// True when the email shows a billing method on file and an automatic future
+/// charge. Used to gate `.trialStart` — Subly only cares about trials that
+/// will charge the user if they forget to cancel.
+///
+/// Accept signals (any → true, unless a hard negative trips first):
+///   - "will be charged to [card/PayPal/your card]"
+///   - "starting [date], your payment of $X will be charged"
+///   - "we'll charge [card/the card on file]"
+///   - "automatically [every N] month(s)/year(s)" or "every 1 month"
+///   - "your subscription will continue until you cancel"
+///   - A receipt that was already charged (strongCharge==true is handled by
+///     the receipt path, not here — this function is for trial/welcome gating).
+/// Hard negatives (any → false, overrides positives):
+///   - "no credit card needed", "no credit card required", "no payment info"
+///   - "automatically switch to free", "downgrade to free"
+///   - "add payment details by [date] to continue"
+///   - "add a payment method" / "add payment method to keep" (card NOT on file)
+///
+/// Fixture expectations (for the future test target):
+///   M365 Personal — "Starting Monday, October 19, 2026, your payment of
+///     USD 4.99 … will be charged to PayPal automatically every 1 month."
+///     → TRUE
+///   Anthropic Stripe receipt $20 Mar 11 → TRUE (strongCharge path also hits)
+///   Google Cloud $300 credit trial — card-on-file + auto-charge after trial
+///     → TRUE
+///   Granola Business — "The trial ends automatically when it expires, no
+///     credit card needed." → FALSE
+///   Loom — "no payment info required" → FALSE
+///   Zapier — free trial with no card → FALSE
+private func detectAutoCharge(subject: String, body: String) -> Bool {
+    let text = (subject + " " + body).lowercased()
+
+    let hardNegatives = [
+        "no credit card needed", "no credit card required",
+        "no payment info", "no payment info required",
+        "no payment method required", "no payment required",
+        "without a credit card",
+        "automatically switch to free", "automatically switch to the free",
+        "downgrade to free", "downgrade to the free",
+        "will switch to the free plan", "will switch to free plan",
+        "revert to the free plan", "revert to free plan",
+        "add payment details by", "add payment method by",
+        "add a payment method to continue", "add a payment method to keep",
+        "add a payment method to avoid",
+        "to continue using", // "add payment method to continue using" territory
+    ]
+    // "to continue using" is fuzzy on its own — only treat as negative when
+    // paired with an add-payment prompt.
+    let addPaymentPhrases = [
+        "add a payment method", "add payment method",
+        "add a credit card", "add a card",
+    ]
+    let hasAddPaymentPrompt = addPaymentPhrases.contains { text.contains($0) }
+    if hasAddPaymentPrompt { return false }
+
+    for neg in hardNegatives where neg != "to continue using" {
+        if text.contains(neg) { return false }
+    }
+
+    let positives = [
+        "will be charged to", "will be automatically charged",
+        "we'll charge", "we will charge",
+        "your card will be charged", "your card on file will be charged",
+        "charged to paypal automatically",
+        "charged automatically every",
+        "automatically every 1 month", "automatically every month",
+        "automatically every 1 year", "automatically every year",
+        "billed automatically",
+        "continue until you cancel", "until you cancel",
+        "your payment of $", "your payment of us$", "your payment of usd",
+        "starting ", // weak on its own — paired below with a charge verb
+    ]
+
+    // "starting " is too weak alone (newsletters say "starting next week").
+    // Require it to co-occur with a charge verb in the same body.
+    let startingPaired = text.contains("starting ") &&
+        (text.contains("will be charged") ||
+         text.contains("your payment of") ||
+         text.contains("charged to"))
+    if startingPaired { return true }
+
+    for pos in positives where pos != "starting " {
+        if text.contains(pos) { return true }
+    }
+    return false
+}
+
+/// **Weak** recurrence markers. These appear in BOTH real subscription receipts
+/// AND marketing emails. Never accept on weak alone — combine with a
+/// receipt-shaped subject or a strong charge-confirmation phrase.
+private func hasRecurrenceEvidence(subject: String, body: String) -> Bool {
+    let text = (subject + " " + body).lowercased()
+    let markers = [
+        "auto-renew", "auto renew", "will renew", "renews on", "renews automatically",
+        "next billing", "next charge", "next payment", "next renewal",
+        "recurring", "recurring payment", "recurring billing",
+        "subscription renews", "your subscription will",
+        "billed monthly", "billed annually", "billed yearly",
+        "per month", "per year", "/month", "/year", "/mo", "/yr",
+        "monthly subscription", "annual subscription", "yearly subscription",
+        "membership fee", "monthly membership", "annual membership",
+        "trial period", "trial ends",
+        "cancel your subscription", "manage your subscription",
+    ]
+    return markers.contains { text.contains($0) }
+}
+
+/// True when the subject line looks like a real receipt/renewal/welcome —
+/// not a marketing CTA. Gate combines with weak recurrence markers.
+private func receiptSubjectSignal(_ subject: String) -> Bool {
+    let subj = subject.lowercased()
+    let signals = [
+        "receipt", "invoice", "renewal", "renewed", "auto-renew", "auto renew",
+        "payment", "you paid", "amount charged", "thanks for your payment",
+        "subscription confirmation", "subscription renewed",
+        "welcome to", "thanks for subscribing", "you're now subscribed",
+        "your order", "order confirmation",
+    ]
+    return signals.contains { subj.contains($0) }
+}
+
+/// True when the subject is a pure marketing/upgrade CTA. These should be
+/// rejected even if the body contains recurrence markers.
+private func isMarketingCTA(subject: String) -> Bool {
+    let subj = subject.lowercased()
+    let ctaPhrases = [
+        "get premium", "try premium", "unlock premium",
+        "get pro", "try pro", "unlock pro", "go pro",
+        "upgrade to", "upgrade now", "upgrade today",
+        "join premium", "join pro", "join now",
+        "save ", "save up to", "limited time",
+        "don't miss", "last chance", "ends soon",
+        "for only $", "for just $", "only $",
+        "free for", "try free", "start free",
+        "special offer", "exclusive offer", "member exclusive",
+        // Fantasy / contest / newsletter CTAs
+        "morning lineup", "daily fantasy", "pick 'em", "contest",
+        // Loyalty promos
+        "your coffee for", "free drink", "buy one get",
+    ]
+    let hasCTA = ctaPhrases.contains { subj.contains($0) }
+    // Receipt-shaped subjects override marketing suspicion ("Your receipt for
+    // premium" isn't a CTA even though it contains "premium").
+    return hasCTA && !receiptSubjectSignal(subject)
+}
+
+/// Known subscription senders — boosts confidence. Not a whitelist; unknown
+/// senders can still reach Detected with a strong charge-confirmation phrase.
+private let knownSubscriptionDomains: Set<String> = [
+    "apple.com", "email.apple.com", "itunes.com",
+    "google.com", "mail.google.com", "accounts.google.com", "payments.google.com",
+    "amazon.com", "primevideo.com", "kindle.com",
+    "netflix.com",
+    "spotify.com",
+    "hulu.com",
+    "disneyplus.com", "disney.com",
+    "youtube.com",
+    "anthropic.com",
+    "openai.com",
+    "perplexity.ai",
+    "nytimes.com", "wsj.com", "economist.com",
+    "stripe.com", "paddle.com", "paddle.net",
+    "paypal.com", "service.paypal.com",
+    "github.com",
+    "dropbox.com",
+    "notion.so",
+    "linear.app",
+    "1password.com", "agilebits.com",
+    "adobe.com",
+    "microsoft.com", "office.com",
+]
+
+private func isKnownSubscriptionSender(_ domain: String) -> Bool {
+    knownSubscriptionDomains.contains { domain == $0 || domain.hasSuffix("." + $0) }
+}
+
+/// Scores the parsed row on 0.0–1.0. Tuned so that:
+///   ≥0.7 = Detected (trustworthy without review)
+///   0.4–0.7 = Review these (user confirms)
+///   <0.4 = parser should reject upstream; never reached here
+private func scoreConfidence(
+    event: ParsedSubscription.EventKind,
+    strongCharge: Bool,
+    weakRecurrence: Bool,
+    marketingCTA: Bool,
+    receiptSubject: Bool,
+    hasAmount: Bool,
+    hasTrialEnd: Bool,
+    hasAccountID: Bool,
+    knownSender: Bool
+) -> Double {
+    var score = 0.0
+
+    // Lifecycle events are high-confidence when subject-driven.
+    switch event {
+    case .canceled, .paused:
+        score += 0.8
+    case .trialStart:
+        score += hasTrialEnd ? 0.7 : 0.5
+    case .renewal:
+        score += 0.6
+    case .receipt:
+        score += 0.5
+    case .welcome:
+        score += 0.4
+    case .unknown:
+        score += 0.2
+    }
+
+    if strongCharge { score += 0.3 }
+    if receiptSubject { score += 0.1 }
+    if hasAmount { score += 0.1 }
+    if hasAccountID { score += 0.05 }
+    if knownSender { score += 0.15 }
+
+    // Weak recurrence alone is not a plus — it's the minimum bar. But weak WITH
+    // strong charge is redundant, so don't double-count.
+    if weakRecurrence && !strongCharge { score += 0.05 }
+
+    // Marketing CTA subjects cap out in Review territory even if everything
+    // else lines up — we want the user to confirm these.
+    if marketingCTA { score = min(score, 0.65) }
+
+    return min(1.0, max(0.0, score))
 }
 
 // MARK: - Header helpers
@@ -308,22 +704,89 @@ private func hasSubscriptionSignal(_ text: String) -> Bool {
     return subscriptionSignalTerms.contains { lower.contains($0) }
 }
 
-private func classifyEvent(subject: String, body: String) -> ParsedSubscription.EventKind {
-    let text = (subject + " " + body).lowercased()
-    if text.contains("cancel") { return .canceled }
-    if text.contains("paused") || text.contains("on hold") { return .paused }
-    if text.contains("free trial") || text.contains("trial started") ||
-       text.contains("your trial") || text.contains("trial period") {
-        return .trialStart
-    }
-    if text.contains("renew") || text.contains("auto-renew") || text.contains("auto renew") {
+/// Subject line is the most reliable lifecycle signal — "Your subscription was
+/// canceled" in the subject means canceled; "cancel anytime" in the footer of
+/// a renewal receipt does not. Subject wins, body is only a fallback with
+/// phrase-anchored matches.
+private func classifyEvent(subject: String, body: String, trialEndDate: Date?) -> ParsedSubscription.EventKind {
+    let subj = subject.lowercased()
+    let bod = body.lowercased()
+
+    // --- Subject-driven lifecycle (highest confidence) ---
+    let canceledSubjectPhrases = [
+        "has been canceled", "has been cancelled",
+        "was canceled", "was cancelled",
+        "subscription canceled", "subscription cancelled",
+        "membership canceled", "membership cancelled",
+        "cancellation confirmation", "cancellation confirmed",
+        "you've canceled", "you have canceled",
+        "we've canceled", "we have canceled",
+    ]
+    if canceledSubjectPhrases.contains(where: { subj.contains($0) }) { return .canceled }
+
+    let pausedSubjectPhrases = [
+        "has been paused", "was paused", "subscription paused",
+        "membership paused", "on hold",
+    ]
+    if pausedSubjectPhrases.contains(where: { subj.contains($0) }) { return .paused }
+
+    // Trial classifier: require ACTIVE trial wording in the subject (not just
+    // the phrase "free trial" which shows up in upgrade CTA footers), OR the
+    // body explicitly references a trial end date. Prevents Perplexity-type
+    // false trials where the user is already paying monthly.
+    let activeTrialSubjectPhrases = [
+        "your free trial has started", "trial started", "your free trial",
+        "trial has started", "welcome to your trial",
+        "your trial activated", "trial activated",
+        "free trial begins", "trial period begins",
+    ]
+    if activeTrialSubjectPhrases.contains(where: { subj.contains($0) }) { return .trialStart }
+    if trialEndDate != nil && bod.contains("trial") { return .trialStart }
+
+    let renewalSubjectPhrases = [
+        "auto-renew", "auto renew", "renewal", "subscription renewed",
+        "your subscription renews", "will renew", "has been renewed",
+    ]
+    if renewalSubjectPhrases.contains(where: { subj.contains($0) }) { return .renewal }
+
+    let receiptSubjectPhrases = [
+        "receipt", "invoice", "payment received", "you paid",
+        "amount charged", "thanks for your payment", "payment confirmation",
+    ]
+    if receiptSubjectPhrases.contains(where: { subj.contains($0) }) { return .receipt }
+
+    let welcomeSubjectPhrases = [
+        "welcome to", "thanks for subscribing", "subscription confirmation",
+        "your new subscription", "you're now subscribed",
+    ]
+    if welcomeSubjectPhrases.contains(where: { subj.contains($0) }) { return .welcome }
+
+    // --- Body fallback (phrase-anchored, avoid "cancel anytime" footer trap) ---
+    let canceledBodyPhrases = [
+        "has been canceled", "has been cancelled",
+        "subscription is canceled", "subscription is cancelled",
+        "we've canceled your", "we have canceled your",
+        "your cancellation is confirmed", "cancellation is complete",
+        "you will no longer be charged",
+    ]
+    if canceledBodyPhrases.contains(where: { bod.contains($0) }) { return .canceled }
+
+    let trialBodyPhrases = [
+        "your free trial has started", "your trial has started",
+        "welcome to your free trial", "your trial period begins",
+        "trial activated",
+    ]
+    if trialBodyPhrases.contains(where: { bod.contains($0) }) { return .trialStart }
+
+    if bod.contains("auto-renew") || bod.contains("auto renew") ||
+       bod.contains("will renew on") || bod.contains("renews on") {
         return .renewal
     }
-    if text.contains("receipt") || text.contains("invoice") || text.contains("payment received") ||
-       text.contains("you paid") || text.contains("amount charged") || text.contains("billed") {
+    if bod.contains("payment received") || bod.contains("you paid") ||
+       bod.contains("amount charged") || bod.contains("thanks for your payment") {
         return .receipt
     }
-    if text.contains("welcome") || text.contains("thanks for subscribing") || text.contains("confirmation") {
+    if bod.contains("thanks for subscribing") || bod.contains("you're now subscribed") {
         return .welcome
     }
     return .unknown
@@ -424,6 +887,7 @@ private func extractPrimaryAmount(_ body: String) -> Decimal? {
     let avoidLabels = [
         "subtotal", "tax", "discount", "credit", "savings", "refund",
         "you saved", "promo", "shipping",
+        "/hour", "/hr", "per hour", "hourly rate",
     ]
 
     for line in lines {

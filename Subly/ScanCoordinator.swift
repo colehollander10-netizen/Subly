@@ -17,45 +17,60 @@ public actor ScanCoordinator {
         public let errorMessage: String?
     }
 
-    public func runScan(maxPages: Int = 4) async -> Summary {
+    public func runScan(maxPagesPerWindow: Int = 4) async -> Summary {
         var pagesScanned = 0
         var messagesInspected = 0
         var subscriptionsAdded = 0
         var subscriptionsUpdated = 0
 
         setStatus(.scanning, error: nil)
-        let startingToken = currentScanState()?.nextPageToken
 
-        var pageToken: String? = startingToken
+        // Two-pass scan:
+        //   1) newer_than:30d — catches anything active (most subs bill monthly)
+        //   2) 31d–1y — catches annual subs that haven't billed in 30 days
+        // Anything older than a year isn't active, full stop.
+        let queries = [
+            GmailQuery.subscriptionsRecent,
+            GmailQuery.subscriptionsYear,
+        ]
+
         do {
-            repeat {
-                let page = try await EmailEngine.shared.fetchMessageList(pageToken: pageToken)
-                pagesScanned += 1
+            for query in queries {
+                var pageToken: String? = nil
+                var pagesThisWindow = 0
+                repeat {
+                    let page = try await EmailEngine.shared.fetchMessageList(
+                        query: query,
+                        pageToken: pageToken
+                    )
+                    pagesScanned += 1
+                    pagesThisWindow += 1
 
-                for ref in page.messages ?? [] {
-                    messagesInspected += 1
-                    if alreadyProcessed(sourceID: ref.id) { continue }
+                    for ref in page.messages ?? [] {
+                        messagesInspected += 1
+                        if alreadyProcessed(sourceID: ref.id) { continue }
 
-                    let meta = try await EmailEngine.shared.fetchMessageMetadata(id: ref.id)
-                    guard SubscriptionParser.shouldFetchBody(meta) else { continue }
+                        let meta = try await EmailEngine.shared.fetchMessageMetadata(id: ref.id)
+                        guard SubscriptionParser.shouldFetchBody(meta) else { continue }
 
-                    let full = try await EmailEngine.shared.fetchMessage(id: ref.id)
-                    guard let parsed = SubscriptionParser.classify(full) else { continue }
-                    if alreadyProcessed(sourceID: parsed.sourceMessageID) { continue }
+                        let full = try await EmailEngine.shared.fetchMessage(id: ref.id)
+                        guard let parsed = SubscriptionParser.classify(full) else { continue }
+                        if alreadyProcessed(sourceID: parsed.sourceMessageID) { continue }
 
-                    let result = upsert(parsed)
-                    switch result {
-                    case .inserted: subscriptionsAdded += 1
-                    case .updated: subscriptionsUpdated += 1
-                    case .skipped: break
+                        let result = upsert(parsed)
+                        switch result {
+                        case .inserted: subscriptionsAdded += 1
+                        case .updated: subscriptionsUpdated += 1
+                        case .skipped: break
+                        }
                     }
-                }
 
-                pageToken = page.nextPageToken
-                updateScanState(nextPageToken: pageToken)
-                try modelContext.save()
-            } while pageToken != nil && pagesScanned < maxPages
+                    pageToken = page.nextPageToken
+                    try modelContext.save()
+                } while pageToken != nil && pagesThisWindow < maxPagesPerWindow
+            }
 
+            updateScanState(nextPageToken: nil)
             setStatus(.idle, error: nil)
             return Summary(
                 pagesScanned: pagesScanned,
@@ -150,7 +165,9 @@ public actor ScanCoordinator {
             sourceEmailID: parsed.sourceMessageID,
             trialEndDate: parsed.trialEndDate,
             regularAmount: parsed.regularAmount,
-            introPriceEndDate: parsed.introPriceEndDate
+            introPriceEndDate: parsed.introPriceEndDate,
+            confidence: parsed.confidence,
+            willAutoCharge: parsed.willAutoCharge
         )
         modelContext.insert(subscription)
         return .inserted
@@ -183,6 +200,16 @@ public actor ScanCoordinator {
         }
         if parsed.introPriceEndDate != nil {
             existing.introPriceEndDate = parsed.introPriceEndDate
+        }
+        // Latch on once true — a later marketing email lacking the phrase
+        // shouldn't flip the warning off after a real trial-start receipt set it.
+        if parsed.willAutoCharge {
+            existing.willAutoCharge = true
+        }
+        // Keep the highest confidence we've seen — a later high-confidence
+        // receipt shouldn't be downgraded by a subsequent marketing email.
+        if parsed.confidence > existing.confidence {
+            existing.confidence = parsed.confidence
         }
     }
 

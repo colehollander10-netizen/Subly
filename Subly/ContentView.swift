@@ -11,7 +11,27 @@ struct ContentView: View {
         filter: #Predicate<Subscription> { !$0.userDismissed },
         sort: \Subscription.detectedAt,
         order: .reverse
-    ) private var subscriptions: [Subscription]
+    ) private var allSubscriptions: [Subscription]
+
+    private var activeSubscriptions: [Subscription] {
+        allSubscriptions.filter { $0.status != .canceled }
+    }
+
+    /// High-confidence OR user-confirmed rows. These are shown in "Detected".
+    private var detectedSubscriptions: [Subscription] {
+        activeSubscriptions.filter { sub in
+            if sub.userConfirmed == true { return true }
+            if sub.userConfirmed == false { return false }
+            return sub.confidence >= 0.7
+        }
+    }
+
+    /// Medium-confidence rows awaiting user verdict.
+    private var reviewSubscriptions: [Subscription] {
+        activeSubscriptions.filter { sub in
+            sub.userConfirmed == nil && sub.confidence >= 0.4 && sub.confidence < 0.7
+        }
+    }
 
     @State private var isSignedIn = EmailEngine.shared.isSignedIn
     @State private var connectedEmail = EmailEngine.shared.connectedEmail
@@ -28,7 +48,8 @@ struct ContentView: View {
             List {
                 connectionSection
                 if isSignedIn { scanSection }
-                if !subscriptions.isEmpty { detectedSection }
+                if !detectedSubscriptions.isEmpty { detectedSection }
+                if !reviewSubscriptions.isEmpty { reviewSection }
             }
             .navigationTitle("Subly")
             .task { await refreshSignInState() }
@@ -99,7 +120,7 @@ struct ContentView: View {
     @ViewBuilder
     private var detectedSection: some View {
         Section {
-            ForEach(subscriptions) { sub in
+            ForEach(detectedSubscriptions) { sub in
                 SubscriptionRow(subscription: sub)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
@@ -110,9 +131,26 @@ struct ContentView: View {
                     }
             }
         } header: {
-            Text("Detected (\(subscriptions.count))")
+            Text("Detected (\(detectedSubscriptions.count))")
         } footer: {
             Text("Swipe any row that isn't a real subscription to remove it.")
+        }
+    }
+
+    @ViewBuilder
+    private var reviewSection: some View {
+        Section {
+            ForEach(reviewSubscriptions) { sub in
+                ReviewRow(
+                    subscription: sub,
+                    onConfirm: { confirm(sub) },
+                    onReject: { dismiss(sub) }
+                )
+            }
+        } header: {
+            Text("Review these (\(reviewSubscriptions.count))")
+        } footer: {
+            Text("These look like they might be subscriptions. Tap ✓ to keep or ✗ to remove.")
         }
     }
 
@@ -155,6 +193,12 @@ struct ContentView: View {
 
     private func dismiss(_ subscription: Subscription) {
         subscription.userDismissed = true
+        subscription.userConfirmed = false
+        try? store.save()
+    }
+
+    private func confirm(_ subscription: Subscription) {
+        subscription.userConfirmed = true
         try? store.save()
     }
 
@@ -197,10 +241,35 @@ private struct SubscriptionRow: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                if let chargeWarning {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text(chargeWarning)
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                }
             }
             Spacer()
             priceBadge
         }
+    }
+
+    /// "Will charge $4.99 on Oct 19" — only when this is a card-on-file trial
+    /// with a known charge date. Silent when the trial is no-card or we don't
+    /// know the date, so the user only sees the warning when it's actionable.
+    private var chargeWarning: String? {
+        guard subscription.status == .trial,
+              subscription.willAutoCharge,
+              let chargeDate = subscription.trialEndDate
+        else { return nil }
+        let amountText = subscription.regularAmount.map(formatPrice)
+            ?? subscription.amount.map(formatPrice)
+        let dateText = chargeDate.formatted(.dateTime.month(.abbreviated).day())
+        if let amountText {
+            return "Will charge \(amountText) on \(dateText)"
+        }
+        return "Will charge on \(dateText)"
     }
 
     @ViewBuilder
@@ -260,6 +329,67 @@ private struct SubscriptionRow: View {
         case .paused: return .gray
         case .canceled: return .red
         }
+    }
+
+    private func formatPrice(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        let base = formatter.string(from: value as NSDecimalNumber) ?? "$\(value)"
+        switch subscription.billingCycle ?? .unknown {
+        case .monthly: return "\(base)/mo"
+        case .annual: return "\(base)/yr"
+        case .unknown: return base
+        }
+    }
+}
+
+private struct ReviewRow: View {
+    let subscription: Subscription
+    let onConfirm: () -> Void
+    let onReject: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(subscription.serviceName)
+                    .font(.body)
+                HStack(spacing: 6) {
+                    if let amount = subscription.amount {
+                        Text(formatPrice(amount))
+                            .font(.caption.monospacedDigit())
+                    }
+                    Text("· \(subscription.senderDomain)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            HStack(spacing: 8) {
+                Button {
+                    onReject()
+                } label: {
+                    Image(systemName: "hand.thumbsdown.fill")
+                        .foregroundStyle(.red)
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red.opacity(0.15))
+
+                Button {
+                    onConfirm()
+                } label: {
+                    Image(systemName: "hand.thumbsup.fill")
+                        .foregroundStyle(.green)
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.bordered)
+                .tint(.green.opacity(0.15))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 2)
     }
 
     private func formatPrice(_ value: Decimal) -> String {
