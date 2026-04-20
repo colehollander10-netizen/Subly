@@ -14,6 +14,7 @@
 		76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 3F563A9C8C22DF54EFDD273B /* EmailEngine */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		D235DCB6BDE05E3438821E91 /* MockupPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E3FAE8E401588F6421A254 /* MockupPreviews.swift */; };
+		D249D2083C380B7FD09971F5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */; };
 		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -22,9 +23,11 @@
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		52660D70847350379CA95657 /* EmailEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EmailEngine; path = Packages/EmailEngine; sourceTree = SOURCE_ROOT; };
+		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
 		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		FA91B5213420B1387EF10798 /* NotificationEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NotificationEngine; path = Packages/NotificationEngine; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -78,6 +81,8 @@
 			isa = PBXGroup;
 			children = (
 				46C27551FBD7D8F0A3E32A75 /* ContentView.swift */,
+				CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */,
+				7D86B6F6DE128CC1639F74AB /* Info.plist */,
 				13E3FAE8E401588F6421A254 /* MockupPreviews.swift */,
 				2124542706504627C05A31D7 /* SublyApp.swift */,
 			);
@@ -92,6 +97,7 @@
 			buildConfigurationList = 1F8EA3BDC37EBFD5B2C3D069 /* Build configuration list for PBXNativeTarget "Subly" */;
 			buildPhases = (
 				F9D69CFB32D5B0CC49553AC0 /* Sources */,
+				42167084FFF17860C12BF75D /* Resources */,
 				AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */,
 			);
 			buildRules = (
@@ -146,6 +152,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		42167084FFF17860C12BF75D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D249D2083C380B7FD09971F5 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F9D69CFB32D5B0CC49553AC0 /* Sources */ = {
@@ -228,6 +245,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Subly/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -312,6 +330,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Subly/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

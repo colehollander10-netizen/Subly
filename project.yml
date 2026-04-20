@@ -47,9 +47,17 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: Subly
+    resources:
+      - path: Subly/GoogleService-Info.plist
     dependencies:
       - package: EmailEngine
       - package: SubscriptionStore
       - package: TrialEngine
       - package: NotificationEngine
       - package: LogoService
+    info:
+      path: Subly/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - com.googleusercontent.apps.332703006085-tb86ofvs1h5mjiftsp182h779b813tll

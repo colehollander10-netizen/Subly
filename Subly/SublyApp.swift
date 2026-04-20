@@ -22,10 +22,19 @@ struct SublyApp: App {
         }
     }()
 
+    init() {
+        EmailEngine.shared.configure(
+            clientID: "332703006085-tb86ofvs1h5mjiftsp182h779b813tll.apps.googleusercontent.com"
+        )
+    }
+
     var body: some Scene {
         WindowGroup {
             SubscriptionStoreEnvironment()
                 .modelContainer(Self.modelContainer)
+                .onOpenURL { url in
+                    EmailEngine.shared.handle(url)
+                }
         }
     }
 }
