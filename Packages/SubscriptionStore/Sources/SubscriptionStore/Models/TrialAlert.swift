@@ -9,6 +9,7 @@ public enum AlertType: Sendable, Equatable, Hashable {
     case threeDaysBefore
     case dayOf
     case dayBefore
+    case followUp
     case custom(days: Int)
 
     public var storageKind: String {
@@ -16,6 +17,7 @@ public enum AlertType: Sendable, Equatable, Hashable {
         case .threeDaysBefore: return "threeDaysBefore"
         case .dayOf: return "dayOf"
         case .dayBefore: return "dayBefore"
+        case .followUp: return "followUp"
         case .custom: return "custom"
         }
     }
@@ -30,6 +32,7 @@ public enum AlertType: Sendable, Equatable, Hashable {
         case "threeDaysBefore": return .threeDaysBefore
         case "dayOf": return .dayOf
         case "dayBefore": return .dayBefore
+        case "followUp": return .followUp
         case "custom": return .custom(days: days ?? 0)
         default: return .dayOf
         }

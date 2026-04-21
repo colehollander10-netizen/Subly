@@ -8,11 +8,13 @@ import UserNotifications
 ///
 /// Must be stored as a `let` property on `SublyApp` so it isn't
 /// deallocated before UNUserNotificationCenter fires callbacks.
-final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     private let modelContainer: ModelContainer
+    private let appRouter: AppRouter
 
-    init(modelContainer: ModelContainer) {
+    init(modelContainer: ModelContainer, appRouter: AppRouter) {
         self.modelContainer = modelContainer
+        self.appRouter = appRouter
     }
 
     // Called when a notification fires while the app is in the foreground.
@@ -31,7 +33,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Se
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        markDelivered(identifier: response.notification.request.identifier)
+        markDeliveredAndRoute(identifier: response.notification.request.identifier)
         completionHandler()
     }
 
@@ -52,6 +54,25 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Se
             guard let alert = (try? context.fetch(descriptor))?.first else { return }
             alert.delivered = true
             try? context.save()
+        }
+    }
+
+    /// Marks delivered and routes the user into the matching trial flow when
+    /// the notification was explicitly tapped.
+    private func markDeliveredAndRoute(identifier: String) {
+        guard let alertID = UUID(uuidString: identifier) else { return }
+        let container = modelContainer
+        let router = appRouter
+        Task { @MainActor in
+            let context = ModelContext(container)
+            var descriptor = FetchDescriptor<TrialAlert>(
+                predicate: #Predicate { $0.id == alertID }
+            )
+            descriptor.fetchLimit = 1
+            guard let alert = (try? context.fetch(descriptor))?.first else { return }
+            alert.delivered = true
+            try? context.save()
+            router.pendingCancelTrialID = alert.trialID
         }
     }
 }

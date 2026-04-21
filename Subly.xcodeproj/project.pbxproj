@@ -12,6 +12,7 @@
 		2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124542706504627C05A31D7 /* SublyApp.swift */; };
 		4847E56243A919BA33F95368 /* LogoService in Frameworks */ = {isa = PBXBuildFile; productRef = 4125BA4396A89B774859EEE5 /* LogoService */; };
 		4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */ = {isa = PBXBuildFile; productRef = F682B7F3898CBF29726418B8 /* NotificationEngine */; };
+		5A6B7C8D9E0F1A2B3C4D5E6F /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B7C8D9E0F1A2B3C4D5E70 /* Sheets.swift */; };
 		76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 3F563A9C8C22DF54EFDD273B /* EmailEngine */; };
 		97AD9AF714BC5ABA25A0E353 /* ScanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
@@ -31,6 +32,7 @@
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
 		2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCoordinator.swift; sourceTree = "<group>"; };
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5A6B7C8D9E0F1A2B3C4D5E70 /* Sheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sheets.swift; sourceTree = "<group>"; };
 		52660D70847350379CA95657 /* EmailEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EmailEngine; path = Packages/EmailEngine; sourceTree = SOURCE_ROOT; };
 		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
@@ -108,6 +110,7 @@
 				C3A3B3C3D3E3F303A3B3C304 /* SettingsView.swift */,
 				C4A4B4C4D4E4F404A4B4C405 /* OnboardingView.swift */,
 				C5A5B5C5D5E5F505A5B5C506 /* GlassComponents.swift */,
+				5A6B7C8D9E0F1A2B3C4D5E70 /* Sheets.swift */,
 				2124542706504627C05A31D7 /* SublyApp.swift */,
 			);
 			path = Subly;
@@ -203,6 +206,7 @@
 				C3A3B3C3D3E3F303A3B3C303 /* SettingsView.swift in Sources */,
 				C4A4B4C4D4E4F404A4B4C404 /* OnboardingView.swift in Sources */,
 				C5A5B5C5D5E5F505A5B5C505 /* GlassComponents.swift in Sources */,
+				5A6B7C8D9E0F1A2B3C4D5E6F /* Sheets.swift in Sources */,
 				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

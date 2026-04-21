@@ -1,62 +1,96 @@
-import EmailEngine
+import Observation
 import NotificationEngine
 import SubscriptionStore
 import SwiftData
 import SwiftUI
 import UIKit
 
-/// Root view. Gates on onboarding (must connect at least one Gmail account)
-/// then shows the three-tab liquid-glass shell: Home / Trials / Settings.
+@MainActor
+@Observable
+final class AppRouter {
+    var pendingCancelTrialID: UUID?
+}
+
 struct ContentView: View {
     let notificationEngine: NotificationEngine
-    @Environment(\.modelContext) private var modelContext
     @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
+    @State private var showingDemoPreview = false
+    @State private var onboardingComplete = false
 
     var body: some View {
         Group {
-            if accounts.isEmpty {
-                OnboardingView()
+            if shouldShowOnboarding {
+                OnboardingView(
+                    onPreviewDemo: {
+                        showingDemoPreview = true
+                    },
+                    onFinish: {
+                        onboardingComplete = true
+                    }
+                )
             } else {
                 RootTabView(notificationEngine: notificationEngine)
             }
         }
+        .onAppear {
+            if !accounts.isEmpty {
+                onboardingComplete = true
+            }
+        }
+        .onChange(of: accounts.count) { _, newValue in
+            if newValue > 0 {
+                onboardingComplete = true
+            }
+        }
+    }
+
+    private var shouldShowOnboarding: Bool {
+        accounts.isEmpty && !showingDemoPreview && !onboardingComplete
     }
 }
 
-// MARK: - Tab shell
-
 private struct RootTabView: View {
+    enum Tab {
+        case home
+        case trials
+    }
+
+    @Environment(AppRouter.self) private var appRouter
     let notificationEngine: NotificationEngine
+    @State private var selection: Tab = .home
 
     init(notificationEngine: NotificationEngine) {
         self.notificationEngine = notificationEngine
-        // Tab bar: liquid glass appearance
         let appearance = UITabBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        appearance.backgroundColor = UIColor(SublyTheme.background).withAlphaComponent(0.92)
         appearance.shadowColor = UIColor.white.withAlphaComponent(0.08)
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
     var body: some View {
-        TabView {
-            HomeView(notificationEngine: notificationEngine)
-                .tabItem { Label("Home", systemImage: "house.fill") }
+        TabView(selection: $selection) {
+            HomeView(
+                notificationEngine: notificationEngine,
+                onSeeAllTrials: { selection = .trials }
+            )
+            .tabItem { Label("Home", systemImage: "house.fill") }
+            .tag(Tab.home)
 
             TrialsView()
                 .tabItem { Label("Trials", systemImage: "timer") }
-
-            SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(Tab.trials)
         }
-        .tint(.white)
+        .tint(SublyTheme.primaryText)
+        .onChange(of: appRouter.pendingCancelTrialID) { _, newValue in
+            if newValue != nil {
+                selection = .home
+            }
+        }
     }
 }
 
-// MARK: - Helpers used across tabs
-
-/// UIKit root view controller lookup for Google Sign-In presentation.
 enum PresentingHost {
     static func rootViewController() -> UIViewController? {
         UIApplication.shared.connectedScenes
@@ -66,8 +100,6 @@ enum PresentingHost {
     }
 }
 
-/// Used by Home and Trials for price formatting. Pure function so tests can
-/// verify output without a SwiftUI environment.
 func formatUSD(_ value: Decimal) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .currency
@@ -76,8 +108,8 @@ func formatUSD(_ value: Decimal) -> String {
 }
 
 func daysUntil(_ date: Date, from now: Date = Date()) -> Int {
-    let cal = Calendar.current
-    let d1 = cal.startOfDay(for: now)
-    let d2 = cal.startOfDay(for: date)
-    return cal.dateComponents([.day], from: d1, to: d2).day ?? 0
+    let calendar = Calendar.current
+    let d1 = calendar.startOfDay(for: now)
+    let d2 = calendar.startOfDay(for: date)
+    return calendar.dateComponents([.day], from: d1, to: d2).day ?? 0
 }

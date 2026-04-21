@@ -25,10 +25,19 @@ actor TrialAlertCoordinator {
     func replanAll(now: Date = Date()) async {
         let context = ModelContext(modelContainer)
 
-        let trials = fetchActiveTrials(context: context, now: now)
+        let trials = fetchSchedulableTrials(context: context, now: now)
+        let trialMap = fetchTrialMap(context: context)
+        let schedulableTrialIDs = Set(trials.map(\.id))
+
+        pruneUndeliveredAlerts(
+            context: context,
+            trialMap: trialMap,
+            schedulableTrialIDs: schedulableTrialIDs,
+            now: now
+        )
 
         for trial in trials {
-            deleteUndeliveredAlerts(for: trial.id, context: context)
+            deleteUndeliveredPlannedAlerts(for: trial.id, context: context)
 
             let planned = TrialEngine.plan(
                 trialID: trial.id,
@@ -50,20 +59,29 @@ actor TrialAlertCoordinator {
 
         try? context.save()
 
-        await scheduleNotifications(context: context, now: now)
+        await scheduleNotifications(
+            context: context,
+            trialMap: fetchTrialMap(context: context),
+            schedulableTrialIDs: schedulableTrialIDs,
+            now: now
+        )
     }
 
     // MARK: - Private helpers
 
-    private func fetchActiveTrials(context: ModelContext, now: Date) -> [Trial] {
-        let descriptor = FetchDescriptor<Trial>(
-            predicate: #Predicate { !$0.userDismissed }
-        )
+    private func fetchSchedulableTrials(context: ModelContext, now: Date) -> [Trial] {
+        let descriptor = FetchDescriptor<Trial>()
         let all = (try? context.fetch(descriptor)) ?? []
-        return all.filter { $0.trialEndDate > now }
+        return all.filter { !$0.userDismissed && !$0.isLead && $0.trialEndDate > now }
     }
 
-    private func deleteUndeliveredAlerts(for trialID: UUID, context: ModelContext) {
+    private func fetchTrialMap(context: ModelContext) -> [UUID: Trial] {
+        let descriptor = FetchDescriptor<Trial>()
+        let trials = (try? context.fetch(descriptor)) ?? []
+        return Dictionary(uniqueKeysWithValues: trials.map { ($0.id, $0) })
+    }
+
+    private func deleteUndeliveredPlannedAlerts(for trialID: UUID, context: ModelContext) {
         let descriptor = FetchDescriptor<TrialAlert>(
             predicate: #Predicate {
                 $0.trialID == trialID && !$0.delivered
@@ -71,29 +89,55 @@ actor TrialAlertCoordinator {
         )
         let existing = (try? context.fetch(descriptor)) ?? []
         for alert in existing {
-            context.delete(alert)
+            if replansOnScan(alert.alertType) {
+                context.delete(alert)
+            }
         }
     }
 
-    private func scheduleNotifications(context: ModelContext, now: Date) async {
+    private func pruneUndeliveredAlerts(
+        context: ModelContext,
+        trialMap: [UUID: Trial],
+        schedulableTrialIDs: Set<UUID>,
+        now: Date
+    ) {
+        let descriptor = FetchDescriptor<TrialAlert>(
+            predicate: #Predicate { !$0.delivered }
+        )
+        let alerts = (try? context.fetch(descriptor)) ?? []
+
+        for alert in alerts {
+            guard let trial = trialMap[alert.trialID] else {
+                context.delete(alert)
+                continue
+            }
+
+            if trial.userDismissed || trial.isLead || trial.trialEndDate <= now {
+                context.delete(alert)
+                continue
+            }
+
+            if replansOnScan(alert.alertType) && !schedulableTrialIDs.contains(trial.id) {
+                context.delete(alert)
+            }
+        }
+    }
+
+    private func scheduleNotifications(
+        context: ModelContext,
+        trialMap: [UUID: Trial],
+        schedulableTrialIDs: Set<UUID>,
+        now: Date
+    ) async {
         let descriptor = FetchDescriptor<TrialAlert>(
             predicate: #Predicate { !$0.delivered }
         )
         let pending = (try? context.fetch(descriptor)) ?? []
 
-        let trialIDs = Set(pending.map(\.trialID))
-        var trialMap: [UUID: Trial] = [:]
-        for id in trialIDs {
-            let d = FetchDescriptor<Trial>(
-                predicate: #Predicate { $0.id == id }
-            )
-            if let trial = (try? context.fetch(d))?.first {
-                trialMap[id] = trial
-            }
-        }
-
         let scheduled: [ScheduledAlert] = pending.compactMap { alert in
             guard let trial = trialMap[alert.trialID] else { return nil }
+            guard !trial.userDismissed, !trial.isLead, trial.trialEndDate > now else { return nil }
+            guard schedulableTrialIDs.contains(trial.id) || alert.alertType == .followUp else { return nil }
             let (title, body) = notificationCopy(for: alert.alertType, trial: trial)
             return ScheduledAlert(
                 id: alert.id.uuidString,
@@ -113,6 +157,15 @@ actor TrialAlertCoordinator {
         }
     }
 
+    private func replansOnScan(_ alertType: AlertType) -> Bool {
+        switch alertType {
+        case .threeDaysBefore, .dayOf, .dayBefore, .custom:
+            return true
+        case .followUp:
+            return false
+        }
+    }
+
     /// Builds notification copy using the service name and charge amount.
     private func notificationCopy(
         for alertType: AlertType,
@@ -123,17 +176,17 @@ actor TrialAlertCoordinator {
 
         switch alertType {
         case .threeDaysBefore:
-            let title = "\(name) trial ends in 3 days"
+            let title = "\(name) charges in 3 days"
             let body = amountString.map {
-                "You'll be charged \($0) unless you cancel before your trial ends."
-            } ?? "Cancel before your trial ends to avoid being charged."
+                "Cancel before renewal day to avoid the \($0) charge."
+            } ?? "Cancel before renewal day to avoid being charged."
             return (title, body)
 
         case .dayOf:
-            let title = "\(name) trial ends today"
+            let title = "\(name) charges today"
             let body = amountString.map {
-                "Your \(name) trial ends today. Cancel now to avoid the \($0) charge."
-            } ?? "Your \(name) trial ends today. Cancel now to avoid being charged."
+                "Last chance: cancel now to avoid the \($0) charge."
+            } ?? "Last chance: cancel now to avoid being charged."
             return (title, body)
 
         case .dayBefore:
@@ -149,6 +202,13 @@ actor TrialAlertCoordinator {
             let body = amountString.map {
                 "You'll be charged \($0) in \(days) \(dayWord)."
             } ?? "Cancel before your trial ends to avoid being charged."
+            return (title, body)
+
+        case .followUp:
+            let title = "Still need to cancel \(name)?"
+            let body = amountString.map {
+                "Open Subly for the cancel steps before the \($0) charge lands."
+            } ?? "Open Subly for the cancel steps before the charge lands."
             return (title, body)
         }
     }

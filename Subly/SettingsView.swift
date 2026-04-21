@@ -1,169 +1,117 @@
 import EmailEngine
+import NotificationEngine
 import SubscriptionStore
 import SwiftData
 import SwiftUI
+import UIKit
+import UserNotifications
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
 
     @State private var errorMessage: String?
+    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var isUpdatingNotifications = false
 
     var body: some View {
-        ZStack {
-            LiquidGlassBackground()
+        NavigationStack {
+            ScreenFrame {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        TerminalSectionLabel(title: "Connected emails", trailing: "\(accounts.count)")
+                            .padding(.top, 12)
+                        HairlineDivider()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Settings")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(.white)
-                        Text("Manage your connected inboxes")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.white.opacity(0.50))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 24)
-                    .padding(.horizontal, 24)
-
-                    // Accounts section
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "Connected emails")
-                            .padding(.horizontal, 24)
-                            .padding(.top, 32)
-
-                        GlassCard(padding: 0) {
-                            VStack(spacing: 0) {
-                                ForEach(accounts) { account in
-                                    accountRow(account)
-                                    if account != accounts.last {
-                                        Divider()
-                                            .background(.white.opacity(0.10))
-                                            .padding(.leading, 68)
-                                    }
-                                }
-
-                                // Add account row
-                                Divider()
-                                    .background(.white.opacity(0.10))
-
-                                Button {
-                                    Task { await connectAdditional() }
-                                } label: {
-                                    HStack(spacing: 14) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.sublyBlue.opacity(0.20))
-                                                .frame(width: 38, height: 38)
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 14, weight: .semibold))
-                                                .foregroundStyle(Color.sublyBlue)
-                                        }
-                                        Text("Add another email")
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundStyle(Color.sublyBlue)
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                }
+                        ForEach(accounts) { account in
+                            accountRow(account)
+                            if account.id != accounts.last?.id {
+                                HairlineDivider()
                             }
                         }
-                        .padding(.horizontal, 20)
-                    }
 
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundStyle(Color.sublyRed.opacity(0.9))
-                            .padding(.horizontal, 24)
-                            .padding(.top, 8)
-                    }
+                        Button {
+                            Task { await connectAdditional() }
+                        } label: {
+                            Text("Add another email")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
 
-                    // About section
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "About")
-                            .padding(.horizontal, 24)
-                            .padding(.top, 32)
+                        if let errorMessage {
+                            Text(errorMessage)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(SublyTheme.critical)
+                        }
 
-                        GlassCard(padding: 20) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Subly tracks paid free trials — the ones where you entered a credit card — and reminds you to cancel before you're charged.")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.white.opacity(0.65))
-                                    .lineSpacing(3)
+                        TerminalSectionLabel(title: "Notifications", trailing: notificationStatusLabel)
+                        HairlineDivider()
 
-                                Divider().background(.white.opacity(0.10))
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(notificationSummary)
+                                .font(.system(size: 15))
+                                .foregroundStyle(SublyTheme.secondaryText)
 
+                            Button {
+                                Task { await handleNotificationAction() }
+                            } label: {
                                 HStack {
-                                    Text("Version")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(.white.opacity(0.45))
-                                    Spacer()
-                                    Text("0.3.0")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundStyle(.white.opacity(0.45))
+                                    if isUpdatingNotifications {
+                                        ProgressView()
+                                            .tint(.white)
+                                    }
+                                    Text(notificationActionTitle)
+                                        .frame(maxWidth: .infinity)
                                 }
                             }
+                            .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+                            .disabled(isUpdatingNotifications)
                         }
-                        .padding(.horizontal, 20)
-                    }
 
-                    Spacer(minLength: 60)
+                        TerminalSectionLabel(title: "About")
+                        HairlineDivider()
+
+                        Text("Subly tracks paid free trials from Gmail, keeps the scan local to your device, and warns you before you get charged.")
+                            .font(.system(size: 15))
+                            .foregroundStyle(SublyTheme.secondaryText)
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done") { dismiss() }
+                            .foregroundStyle(SublyTheme.primaryText)
+                    }
                 }
             }
         }
+        .presentationDetents([.large])
+        .task {
+            await refreshNotificationStatus()
+        }
     }
-
-    // MARK: - Account row
 
     @ViewBuilder
     private func accountRow(_ account: ConnectedAccount) -> some View {
-        HStack(spacing: 14) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(Color.sublyPurple.opacity(0.25))
-                    .frame(width: 38, height: 38)
-                Text(String(account.email.prefix(1)).uppercased())
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.sublyPurple)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(account.email)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                if let last = account.lastScannedAt {
-                    Text("Scanned \(last.formatted(.relative(presentation: .named)))")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.40))
-                } else {
-                    Text("Not scanned yet")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.40))
-                }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(SublyTheme.primaryText)
+                Text(account.lastScannedAt.map { "Scanned \($0.formatted(.relative(presentation: .named)))" } ?? "Not scanned yet")
+                    .font(.system(size: 12))
+                    .foregroundStyle(SublyTheme.secondaryText)
             }
-
             Spacer()
-
-            Button(role: .destructive) {
+            Button("Disconnect") {
                 disconnect(account)
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.white.opacity(0.25))
             }
+            .buttonStyle(SecondaryTerminalButtonStyle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
     }
-
-    // MARK: - Actions
 
     private func connectAdditional() async {
         errorMessage = nil
@@ -185,5 +133,83 @@ struct SettingsView: View {
         EmailEngine.shared.disconnect(accountID: account.id)
         modelContext.delete(account)
         try? modelContext.save()
+    }
+
+    private var notificationStatusLabel: String {
+        switch notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return "On"
+        case .denied:
+            return "Off"
+        case .notDetermined:
+            return "Setup"
+        @unknown default:
+            return "Unknown"
+        }
+    }
+
+    private var notificationSummary: String {
+        switch notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return "Subly will remind you before a trial charges and can send a follow-up nudge if you put cancellation off."
+        case .denied:
+            return "Alerts are off right now. Turn them back on in iPhone Settings so Subly can warn you before a free trial bills your card."
+        case .notDetermined:
+            return "Turn on alerts so Subly can catch upcoming charges in time and follow up if you meant to cancel later."
+        @unknown default:
+            return "Subly uses notifications to warn you before trial charges land."
+        }
+    }
+
+    private var notificationActionTitle: String {
+        switch notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return "Refresh alerts"
+        case .denied:
+            return "Open iPhone Settings"
+        case .notDetermined:
+            return "Enable notifications"
+        @unknown default:
+            return "Check notifications"
+        }
+    }
+
+    @MainActor
+    private func refreshNotificationStatus() async {
+        notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    @MainActor
+    private func handleNotificationAction() async {
+        errorMessage = nil
+        isUpdatingNotifications = true
+        defer { isUpdatingNotifications = false }
+
+        switch notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            let coordinator = TrialAlertCoordinator(
+                modelContainer: modelContext.container,
+                notificationEngine: NotificationEngine()
+            )
+            await coordinator.replanAll()
+
+        case .notDetermined:
+            let granted = await NotificationEngine().requestAuthorization()
+            await refreshNotificationStatus()
+            if granted || notificationStatus == .authorized {
+                let coordinator = TrialAlertCoordinator(
+                    modelContainer: modelContext.container,
+                    notificationEngine: NotificationEngine()
+                )
+                await coordinator.replanAll()
+            }
+
+        case .denied:
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { break }
+            _ = await UIApplication.shared.open(url)
+
+        @unknown default:
+            await refreshNotificationStatus()
+        }
     }
 }

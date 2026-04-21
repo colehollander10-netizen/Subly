@@ -39,15 +39,22 @@ struct SublyApp: App {
 
     /// Retained for the lifetime of the app — UNUserNotificationCenter holds
     /// a weak reference so the delegate must outlive it.
+    private let appRouter: AppRouter
     private let notificationDelegate: NotificationDelegate
     private let notificationEngine = NotificationEngine()
 
     init() {
+        let router = AppRouter()
+        self.appRouter = router
+
         EmailEngine.shared.configure(
             clientID: "332703006085-tb86ofvs1h5mjiftsp182h779b813tll.apps.googleusercontent.com"
         )
 
-        let delegate = NotificationDelegate(modelContainer: Self.modelContainer)
+        let delegate = NotificationDelegate(
+            modelContainer: Self.modelContainer,
+            appRouter: router
+        )
         self.notificationDelegate = delegate
         UNUserNotificationCenter.current().delegate = delegate
 
@@ -67,12 +74,6 @@ struct SublyApp: App {
             // nudges the user back to onboarding to reconnect.
             await Self.reconcileConnectedAccounts(container: container)
 
-            let center = UNUserNotificationCenter.current()
-            let settings = await center.notificationSettings()
-            if settings.authorizationStatus == .notDetermined {
-                await engine.requestAuthorization()
-            }
-
             let coordinator = TrialAlertCoordinator(
                 modelContainer: container,
                 notificationEngine: engine
@@ -85,6 +86,7 @@ struct SublyApp: App {
         WindowGroup {
             TrialStoreEnvironment(notificationEngine: notificationEngine)
                 .modelContainer(Self.modelContainer)
+                .environment(appRouter)
                 .onOpenURL { url in
                     EmailEngine.shared.handle(url)
                 }
