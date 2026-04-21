@@ -28,6 +28,17 @@ struct ContentView: View {
 private struct RootTabView: View {
     let notificationEngine: NotificationEngine
 
+    init(notificationEngine: NotificationEngine) {
+        self.notificationEngine = notificationEngine
+        // Tab bar: liquid glass appearance
+        let appearance = UITabBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        appearance.shadowColor = UIColor.white.withAlphaComponent(0.08)
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     var body: some View {
         TabView {
             HomeView(notificationEngine: notificationEngine)

@@ -6,15 +6,12 @@ import SwiftUI
 
 private let scanLog = Logger(subsystem: "com.subly.Subly", category: "scan")
 
-/// Home tab: scan state + the soonest-ending trial + quick stats.
-/// "The glanceable screen" — gives the user the one piece of info they'd
-/// open the app for. Anything deeper lives in the Trials tab.
 struct HomeView: View {
     let notificationEngine: NotificationEngine
 
     @Environment(\.modelContext) private var modelContext
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed },
+        filter: #Predicate<Trial> { !$0.userDismissed && !$0.isLead },
         sort: \Trial.trialEndDate,
         order: .forward
     ) private var activeTrials: [Trial]
@@ -28,100 +25,152 @@ struct HomeView: View {
         ZStack {
             LiquidGlassBackground()
 
-            ScrollView {
-                VStack(spacing: 20) {
-                    greetingCard
-                    nextTrialCard
-                    statsCard
-                    scanButton
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Hero section
+                    heroSection
+                        .padding(.top, 24)
+                        .padding(.horizontal, 24)
+
+                    // Featured trial
+                    featuredTrialSection
+                        .padding(.top, 32)
+                        .padding(.horizontal, 24)
+
+                    // Stats row
+                    statsRow
+                        .padding(.top, 20)
+                        .padding(.horizontal, 24)
+
+                    // Scan CTA
+                    scanSection
+                        .padding(.top, 28)
+                        .padding(.horizontal, 24)
+
+                    // Last scan result
                     if let lastSummary {
-                        lastScanCard(lastSummary)
+                        lastScanRow(lastSummary)
+                            .padding(.top, 16)
+                            .padding(.horizontal, 24)
                     }
+
                     if let errorMessage {
                         Text(errorMessage)
                             .font(.caption)
-                            .foregroundStyle(.red.opacity(0.9))
-                            .padding(.horizontal, 12)
+                            .foregroundStyle(Color.sublyRed.opacity(0.9))
+                            .padding(.top, 8)
+                            .padding(.horizontal, 24)
                     }
+
+                    Spacer(minLength: 48)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 40)
             }
         }
     }
 
-    // MARK: - Cards
+    // MARK: - Hero
 
     @ViewBuilder
-    private var greetingCard: some View {
-        GlassCard(padding: 20) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(greeting)
-                    .font(.title2.weight(.semibold))
+    private var heroSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(greeting)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.white.opacity(0.55))
+
+            // Big at-risk number
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(totalAtRisk)
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
-                Text("\(accounts.count) \(accounts.count == 1 ? "inbox" : "inboxes") connected")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.75))
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
             }
+
+            Text("at risk from active trials")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(.white.opacity(0.50))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    // MARK: - Featured trial
+
     @ViewBuilder
-    private var nextTrialCard: some View {
-        GlassCard {
-            if let next = activeTrials.first {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("NEXT TRIAL ENDING")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white.opacity(0.65))
-                        .kerning(1.5)
+    private var featuredTrialSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Next ending")
 
-                    Text(next.serviceName)
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(.white)
-
+            if let next = activeTrials.first(where: { !$0.isLead }) {
+                let days = daysUntil(next.trialEndDate)
+                UrgencyCard(daysLeft: days) {
                     HStack(spacing: 16) {
-                        countdownBadge(days: daysUntil(next.trialEndDate))
-                        if let amount = next.chargeAmount {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Will charge")
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.7))
-                                Text(formatUSD(amount))
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(.white)
+                        ServiceIcon(name: next.serviceName, size: 48)
+
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(next.serviceName)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(.white)
+                            Text("Ends \(next.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.white.opacity(0.60))
+                            if let amount = next.chargeAmount {
+                                Text("Will charge \(formatUSD(amount))")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(days <= 7 ? Color.sublyAmber : .white.opacity(0.75))
+                            }
+                        }
+
+                        Spacer()
+
+                        VStack(spacing: 4) {
+                            Text(days <= 0 ? "Today" : "\(days)")
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                            if days > 0 {
+                                Text("days")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.55))
                             }
                         }
                     }
-
-                    Text("Ends \(next.trialEndDate.formatted(.dateTime.weekday(.wide).month().day()))")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.8))
                 }
             } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("No trials tracked yet")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                    Text("Run a scan or add one manually from the Trials tab.")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.75))
+                GlassCard {
+                    HStack(spacing: 14) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 22, weight: .light))
+                            .foregroundStyle(.white.opacity(0.5))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("No trials tracked yet")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.white)
+                            Text("Scan your inbox or add one manually.")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.white.opacity(0.55))
+                        }
+                    }
                 }
             }
         }
     }
 
+    // MARK: - Stats
+
     @ViewBuilder
-    private var statsCard: some View {
-        GlassCard(padding: 18) {
-            HStack(spacing: 16) {
+    private var statsRow: some View {
+        GlassCard(padding: 0) {
+            HStack(spacing: 0) {
                 statCell(value: "\(activeTrials.count)", label: "Active")
-                Divider().background(.white.opacity(0.2))
-                statCell(value: totalAtRisk, label: "At risk")
-                Divider().background(.white.opacity(0.2))
+                Rectangle()
+                    .fill(.white.opacity(0.12))
+                    .frame(width: 1, height: 36)
                 statCell(value: "\(endingThisWeekCount)", label: "This week")
+                Rectangle()
+                    .fill(.white.opacity(0.12))
+                    .frame(width: 1, height: 36)
+                statCell(value: totalAtRisk, label: "At risk")
             }
+            .padding(.vertical, 18)
         }
     }
 
@@ -129,89 +178,91 @@ struct HomeView: View {
     private func statCell(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.title2.weight(.semibold))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.7))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.white.opacity(0.50))
         }
         .frame(maxWidth: .infinity)
     }
 
-    @ViewBuilder
-    private func countdownBadge(days: Int) -> some View {
-        let label: String = {
-            if days <= 0 { return "Today" }
-            if days == 1 { return "1 day" }
-            return "\(days) days"
-        }()
-        let color: Color = days <= 3 ? .red : (days <= 7 ? .orange : .white.opacity(0.25))
+    // MARK: - Scan
 
-        Text(label)
-            .font(.title3.weight(.bold))
+    @ViewBuilder
+    private var scanSection: some View {
+        Button {
+            Task { await runScan() }
+        } label: {
+            HStack(spacing: 10) {
+                if isScanning {
+                    ProgressView().tint(.white).scaleEffect(0.85)
+                } else {
+                    Image(systemName: "sparkles.magnifyingglass")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                Text(isScanning ? "Scanning…" : "Scan for trials")
+                    .font(.system(size: 16, weight: .semibold))
+            }
             .foregroundStyle(.white)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(color.opacity(0.9))
-                    .overlay(Capsule().stroke(.white.opacity(0.25), lineWidth: 1))
-            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.sublyBlue.opacity(0.70),
+                                Color.sublyPurple.opacity(0.60),
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(.white.opacity(0.25), lineWidth: 1)
+                    }
+            }
+            .shadow(color: Color.sublyBlue.opacity(0.4), radius: 16, y: 6)
+        }
+        .disabled(isScanning)
     }
 
     @ViewBuilder
-    private func lastScanCard(_ summary: ScanCoordinator.Summary) -> some View {
-        GlassCard(padding: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("LAST SCAN")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .kerning(1.2)
-                Text("\(summary.accountsScanned) \(summary.accountsScanned == 1 ? "inbox" : "inboxes") · \(summary.messagesInspected) emails checked")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                if summary.trialsAdded + summary.trialsUpdated > 0 {
-                    Text("\(summary.trialsAdded) new · \(summary.trialsUpdated) updated")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.75))
-                } else {
-                    Text("No new trials found — that's normal if nothing's ending soon.")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
+    private func lastScanRow(_ summary: ScanCoordinator.Summary) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 13))
+                .foregroundStyle(.white.opacity(0.45))
+            Text("\(summary.accountsScanned == 1 ? "1 inbox" : "\(summary.accountsScanned) inboxes") · \(summary.messagesInspected) emails checked")
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.45))
+            if summary.trialsAdded > 0 {
+                Text("· \(summary.trialsAdded) new")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.sublyBlue.opacity(0.85))
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
-    private var scanButton: some View {
-        GlassButton(
-            title: isScanning ? "Scanning your inboxes…" : "Scan for trials now",
-            systemImage: "sparkles.magnifyingglass",
-            isBusy: isScanning
-        ) {
-            Task { await runScan() }
-        }
-    }
-
-    // MARK: - Derived values
+    // MARK: - Derived
 
     private var greeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        let base: String
-        switch hour {
-        case 5..<12: base = "Good morning"
-        case 12..<17: base = "Good afternoon"
-        case 17..<22: base = "Good evening"
-        default: base = "Hey"
+        let h = Calendar.current.component(.hour, from: Date())
+        switch h {
+        case 5..<12: return "Good morning"
+        case 12..<17: return "Good afternoon"
+        case 17..<22: return "Good evening"
+        default: return "Hey"
         }
-        return base
     }
 
     private var totalAtRisk: String {
-        let total = activeTrials
-            .compactMap { $0.chargeAmount }
-            .reduce(Decimal(0), +)
+        let total = activeTrials.compactMap { $0.chargeAmount }.reduce(Decimal(0), +)
         return formatUSD(total)
     }
 
@@ -219,27 +270,21 @@ struct HomeView: View {
         activeTrials.filter { daysUntil($0.trialEndDate) <= 7 }.count
     }
 
-    // MARK: - Actions
+    // MARK: - Scan action
 
     private func runScan() async {
         scanLog.info("runScan START — accounts=\(accounts.count, privacy: .public)")
         errorMessage = nil
-        isScanning = true
+        withAnimation(.spring(response: 0.3)) { isScanning = true }
         defer {
-            isScanning = false
+            withAnimation(.spring(response: 0.3)) { isScanning = false }
             scanLog.info("runScan END")
         }
 
         let coordinator = ScanCoordinator(modelContainer: modelContext.container)
         let summary = await coordinator.runScan()
-        scanLog.info("""
-            runScan summary — accountsScanned=\(summary.accountsScanned, privacy: .public) \
-            messagesInspected=\(summary.messagesInspected, privacy: .public) \
-            added=\(summary.trialsAdded, privacy: .public) \
-            updated=\(summary.trialsUpdated, privacy: .public) \
-            error=\(summary.errorMessage ?? "nil", privacy: .public)
-            """)
-        lastSummary = summary
+        scanLog.info("runScan summary — accountsScanned=\(summary.accountsScanned, privacy: .public) messagesInspected=\(summary.messagesInspected, privacy: .public) added=\(summary.trialsAdded, privacy: .public) updated=\(summary.trialsUpdated, privacy: .public) error=\(summary.errorMessage ?? "nil", privacy: .public)")
+        withAnimation(.spring(response: 0.4)) { lastSummary = summary }
         if let err = summary.errorMessage { errorMessage = err }
 
         let alertCoordinator = TrialAlertCoordinator(
