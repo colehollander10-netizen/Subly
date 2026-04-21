@@ -15,13 +15,18 @@
 		76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 3F563A9C8C22DF54EFDD273B /* EmailEngine */; };
 		97AD9AF714BC5ABA25A0E353 /* ScanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
-		D235DCB6BDE05E3438821E91 /* MockupPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E3FAE8E401588F6421A254 /* MockupPreviews.swift */; };
 		D249D2083C380B7FD09971F5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */; };
 		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* TrialAlertCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F3 /* TrialAlertCoordinator.swift */; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A4 /* NotificationDelegate.swift */; };
+		C1A1B1C1D1E1F101A1B1C101 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1B1C1D1E1F101A1B1C102 /* HomeView.swift */; };
+		C2A2B2C2D2E2F202A2B2C202 /* TrialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A2B2C2D2E2F202A2B2C203 /* TrialsView.swift */; };
+		C3A3B3C3D3E3F303A3B3C303 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3A3B3C3D3E3F303A3B3C304 /* SettingsView.swift */; };
+		C4A4B4C4D4E4F404A4B4C404 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A4B4C4D4E4F404A4B4C405 /* OnboardingView.swift */; };
+		C5A5B5C5D5E5F505A5B5C505 /* GlassComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A5B5C5D5E5F505A5B5C506 /* GlassComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13E3FAE8E401588F6421A254 /* MockupPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockupPreviews.swift; sourceTree = "<group>"; };
 		1CCF45AE9D426C51826045A0 /* ScanScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanScheduler.swift; sourceTree = "<group>"; };
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
 		2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCoordinator.swift; sourceTree = "<group>"; };
@@ -34,6 +39,13 @@
 		CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		FA91B5213420B1387EF10798 /* NotificationEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NotificationEngine; path = Packages/NotificationEngine; sourceTree = SOURCE_ROOT; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A4 /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
+		C1A1B1C1D1E1F101A1B1C102 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C2A2B2C2D2E2F202A2B2C203 /* TrialsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialsView.swift; sourceTree = "<group>"; };
+		C3A3B3C3D3E3F303A3B3C304 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C4A4B4C4D4E4F404A4B4C405 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C5A5B5C5D5E5F505A5B5C506 /* GlassComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassComponents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,9 +99,15 @@
 				46C27551FBD7D8F0A3E32A75 /* ContentView.swift */,
 				CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */,
 				7D86B6F6DE128CC1639F74AB /* Info.plist */,
-				13E3FAE8E401588F6421A254 /* MockupPreviews.swift */,
 				2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */,
 				1CCF45AE9D426C51826045A0 /* ScanScheduler.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* TrialAlertCoordinator.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A4 /* NotificationDelegate.swift */,
+				C1A1B1C1D1E1F101A1B1C102 /* HomeView.swift */,
+				C2A2B2C2D2E2F202A2B2C203 /* TrialsView.swift */,
+				C3A3B3C3D3E3F303A3B3C304 /* SettingsView.swift */,
+				C4A4B4C4D4E4F404A4B4C405 /* OnboardingView.swift */,
+				C5A5B5C5D5E5F505A5B5C506 /* GlassComponents.swift */,
 				2124542706504627C05A31D7 /* SublyApp.swift */,
 			);
 			path = Subly;
@@ -176,9 +194,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
-				D235DCB6BDE05E3438821E91 /* MockupPreviews.swift in Sources */,
 				97AD9AF714BC5ABA25A0E353 /* ScanCoordinator.swift in Sources */,
 				2D7D87AD2653A856A3EE667D /* ScanScheduler.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* TrialAlertCoordinator.swift in Sources */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* NotificationDelegate.swift in Sources */,
+				C1A1B1C1D1E1F101A1B1C101 /* HomeView.swift in Sources */,
+				C2A2B2C2D2E2F202A2B2C202 /* TrialsView.swift in Sources */,
+				C3A3B3C3D3E3F303A3B3C303 /* SettingsView.swift in Sources */,
+				C4A4B4C4D4E4F404A4B4C404 /* OnboardingView.swift in Sources */,
+				C5A5B5C5D5E5F505A5B5C505 /* GlassComponents.swift in Sources */,
 				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

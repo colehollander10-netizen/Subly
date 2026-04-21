@@ -1,15 +1,19 @@
 import BackgroundTasks
 import EmailEngine
 import Foundation
+import NotificationEngine
 import SwiftData
 
-/// Registers + schedules the BGAppRefreshTask that runs ScanCoordinator in the background.
-/// The task identifier must match the BGTaskSchedulerPermittedIdentifiers entry in Info.plist.
+/// Registers + schedules the BGAppRefreshTask that runs ScanCoordinator in
+/// the background. The task identifier must match the
+/// BGTaskSchedulerPermittedIdentifiers entry in Info.plist.
 public enum ScanScheduler {
     public static let taskIdentifier = "com.subly.scan.refresh"
 
-    /// Call once during app launch, before application(_:didFinishLaunching...).
-    public static func register(modelContainer: ModelContainer) {
+    public static func register(
+        modelContainer: ModelContainer,
+        notificationEngine: NotificationEngine
+    ) {
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: taskIdentifier,
             using: nil
@@ -18,27 +22,35 @@ public enum ScanScheduler {
                 task.setTaskCompleted(success: false)
                 return
             }
-            handle(task: refreshTask, modelContainer: modelContainer)
+            handle(task: refreshTask, modelContainer: modelContainer, notificationEngine: notificationEngine)
         }
     }
 
-    /// Schedule the next background refresh. Safe to call after every foreground scan.
     public static func scheduleNext() {
         let request = BGAppRefreshTaskRequest(identifier: taskIdentifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 4 * 60 * 60)
         try? BGTaskScheduler.shared.submit(request)
     }
 
-    private static func handle(task: BGAppRefreshTask, modelContainer: ModelContainer) {
+    private static func handle(
+        task: BGAppRefreshTask,
+        modelContainer: ModelContainer,
+        notificationEngine: NotificationEngine
+    ) {
         scheduleNext()
 
         let coordinator = ScanCoordinator(modelContainer: modelContainer)
+        let alertCoordinator = TrialAlertCoordinator(
+            modelContainer: modelContainer,
+            notificationEngine: notificationEngine
+        )
         let workItem = Task { @Sendable in
             guard EmailEngine.shared.isSignedIn else {
                 task.setTaskCompleted(success: false)
                 return
             }
-            let summary = await coordinator.runScan(maxPagesPerWindow: 2)
+            let summary = await coordinator.runScan(maxPagesPerAccount: 2)
+            await alertCoordinator.replanAll()
             task.setTaskCompleted(success: summary.errorMessage == nil)
         }
 

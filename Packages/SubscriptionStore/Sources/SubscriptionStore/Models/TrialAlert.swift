@@ -1,39 +1,37 @@
 import Foundation
 import SwiftData
 
-public enum AlertType: Codable, Sendable, Equatable {
+/// Public alert-kind enum used by the engine and UI. Not stored directly on
+/// the SwiftData model — SwiftData's built-in coder trips on `Codable` enums
+/// with associated values, so `TrialAlert` persists flat scalars and exposes
+/// `alertType` as a computed property.
+public enum AlertType: Sendable, Equatable, Hashable {
+    case threeDaysBefore
+    case dayOf
     case dayBefore
     case custom(days: Int)
 
-    private enum CodingKeys: String, CodingKey {
-        case kind
-        case days
-    }
-
-    private enum Kind: String, Codable {
-        case dayBefore
-        case custom
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let kind = try container.decode(Kind.self, forKey: .kind)
-        switch kind {
-        case .dayBefore:
-            self = .dayBefore
-        case .custom:
-            self = .custom(days: try container.decode(Int.self, forKey: .days))
+    public var storageKind: String {
+        switch self {
+        case .threeDaysBefore: return "threeDaysBefore"
+        case .dayOf: return "dayOf"
+        case .dayBefore: return "dayBefore"
+        case .custom: return "custom"
         }
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .dayBefore:
-            try container.encode(Kind.dayBefore, forKey: .kind)
-        case .custom(let days):
-            try container.encode(Kind.custom, forKey: .kind)
-            try container.encode(days, forKey: .days)
+    public var storageDays: Int? {
+        if case .custom(let d) = self { return d }
+        return nil
+    }
+
+    public static func from(kind: String, days: Int?) -> AlertType {
+        switch kind {
+        case "threeDaysBefore": return .threeDaysBefore
+        case "dayOf": return .dayOf
+        case "dayBefore": return .dayBefore
+        case "custom": return .custom(days: days ?? 0)
+        default: return .dayOf
         }
     }
 }
@@ -41,22 +39,35 @@ public enum AlertType: Codable, Sendable, Equatable {
 @Model
 public final class TrialAlert {
     public var id: UUID
-    public var subscriptionID: UUID
+    /// The Trial this alert belongs to.
+    public var trialID: UUID
     public var triggerDate: Date
-    public var alertType: AlertType
+    /// Raw kind string — do not set directly; use `alertType`.
+    public var alertKind: String
+    /// Days offset for `.custom`; nil for other kinds.
+    public var alertDays: Int?
     public var delivered: Bool
+
+    public var alertType: AlertType {
+        get { AlertType.from(kind: alertKind, days: alertDays) }
+        set {
+            alertKind = newValue.storageKind
+            alertDays = newValue.storageDays
+        }
+    }
 
     public init(
         id: UUID,
-        subscriptionID: UUID,
+        trialID: UUID,
         triggerDate: Date,
         alertType: AlertType,
         delivered: Bool
     ) {
         self.id = id
-        self.subscriptionID = subscriptionID
+        self.trialID = trialID
         self.triggerDate = triggerDate
-        self.alertType = alertType
+        self.alertKind = alertType.storageKind
+        self.alertDays = alertType.storageDays
         self.delivered = delivered
     }
 }
