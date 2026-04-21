@@ -75,6 +75,15 @@ public enum TrialParser {
             return nil
         }
 
+        // Gate 0.5: marketing/promo subject — reject emails inviting the user to
+        // *start* a trial (vs. confirming one started). These otherwise slip
+        // through gates 1-4 because the body is full of "will be charged",
+        // "payment method", and "X day" phrasing describing the future offer.
+        if isMarketingSubject(subject) {
+            parserLog.info("reject[\(msgID, privacy: .public)] gate0.5=marketing-subject domain=\(domain, privacy: .public) subject=\(subject, privacy: .public)")
+            return nil
+        }
+
         guard let bodyRaw = decodedBody(message.payload) else {
             parserLog.debug("reject[\(msgID, privacy: .public)] gate0=no-body domain=\(domain, privacy: .public) subject=\(subject, privacy: .public)")
             return nil
@@ -104,19 +113,22 @@ public enum TrialParser {
 
         // Gate 3: card / billing method on file.
         guard hasCardOnFile(body: body) else {
-            parserLog.info("reject[\(msgID, privacy: .public)] gate3=no-card-on-file domain=\(domain, privacy: .public) subject=\(subject, privacy: .public)")
+            let preview = String(bodyRaw.prefix(500))
+            parserLog.info("reject[\(msgID, privacy: .public)] gate3=no-card-on-file domain=\(domain, privacy: .public) subject=\(subject, privacy: .public) bodyLen=\(bodyLen, privacy: .public) preview=\(preview, privacy: .public)")
             return nil
         }
 
         // Gate 4: auto-charge language.
         guard hasAutoChargeLanguage(body: body) else {
-            parserLog.info("reject[\(msgID, privacy: .public)] gate4=no-auto-charge domain=\(domain, privacy: .public) subject=\(subject, privacy: .public)")
+            let preview = String(bodyRaw.prefix(500))
+            parserLog.info("reject[\(msgID, privacy: .public)] gate4=no-auto-charge domain=\(domain, privacy: .public) subject=\(subject, privacy: .public) bodyLen=\(bodyLen, privacy: .public) preview=\(preview, privacy: .public)")
             return nil
         }
 
         let chargeAmount = extractAmount(body: bodyRaw)
         let service = serviceName(fromDomain: domain, from: from)
-        parserLog.info("accept[\(msgID, privacy: .public)] service=\(service, privacy: .public) domain=\(domain, privacy: .public) endDate=\(trialEndDate, privacy: .public)")
+        let acceptPreview = String(bodyRaw.prefix(3000))
+        parserLog.info("accept[\(msgID, privacy: .public)] service=\(service, privacy: .public) domain=\(domain, privacy: .public) subject=\(subject, privacy: .public) endDate=\(trialEndDate, privacy: .public) bodyLen=\(bodyLen, privacy: .public) preview=\(acceptPreview, privacy: .public)")
 
         return DetectedTrial(
             serviceName: service,
@@ -130,6 +142,46 @@ public enum TrialParser {
 }
 
 // MARK: - Gates
+
+/// A trial *confirmation* reads like "Your trial has started" — possessive,
+/// past-tense, about the user's existing account. A marketing/promo email
+/// reads like "Claim a 2 month free trial" — imperative, inviting, about an
+/// offer the user hasn't accepted yet. We only care about confirmations.
+private func isMarketingSubject(_ subject: String) -> Bool {
+    let lower = subject.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    if lower.isEmpty { return false }
+
+    // Leading imperative verbs that signal an offer, not a confirmation.
+    let promoVerbs = [
+        "claim",
+        "unlock",
+        "score",
+        "grab",
+        "get ",        // "get 2 months free" — trailing space avoids "getting started"
+        "try ",
+        "start your",  // "Start your free trial today" = promo CTA
+        "don't miss",
+        "dont miss",
+        "last chance",
+        "limited time",
+        "save ",
+        "introducing",
+        "meet ",
+    ]
+    if promoVerbs.contains(where: { lower.hasPrefix($0) }) { return true }
+
+    // Promo phrases that can appear anywhere in the subject.
+    let promoMarkers = [
+        "limited time",
+        "for a limited",
+        "offer ends",
+        "% off",
+        "months free",       // "5 months free" / "2 months free" = promo
+        "free months",
+        "exclusive offer",
+    ]
+    return promoMarkers.contains { lower.contains($0) }
+}
 
 private func mentionsTrial(subject: String, body: String) -> Bool {
     let phrases = [

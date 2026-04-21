@@ -99,10 +99,8 @@ public actor ScanCoordinator {
             } catch let err as EmailEngineError {
                 scanLog.error("account \(account.email, privacy: .public) failed: \(String(describing: err), privacy: .public)")
                 switch err {
-                case .refreshTokenRevoked, .refreshTokenUnavailable:
+                case .refreshTokenRevoked, .refreshTokenUnavailable, .notSignedIn:
                     lastError = "Reconnect \(account.email) in Settings."
-                case .notSignedIn:
-                    continue
                 default:
                     lastError = err.localizedDescription
                 }
