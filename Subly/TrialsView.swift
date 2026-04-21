@@ -1,6 +1,7 @@
 import SubscriptionStore
 import SwiftData
 import SwiftUI
+import UIKit
 
 /// Trials tab: full list of all active trials with a "+" for manual entry.
 struct TrialsView: View {
@@ -51,17 +52,37 @@ struct TrialsView: View {
 
     @ViewBuilder
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Image(systemName: "timer")
                 .font(.system(size: 56, weight: .light))
                 .foregroundStyle(.white.opacity(0.7))
             Text("No trials yet")
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(.white)
-            Text("Scan your inbox from the Home tab,\nor add a trial manually with +.")
+            Text("Subly scans your inbox automatically.\nMissing one? Add it yourself in seconds.")
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
+            Button {
+                showingAddSheet = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Add a trial manually")
+                        .fontWeight(.semibold)
+                }
+                .font(.body)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 22)
+                .padding(.vertical, 14)
+                .background {
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(Capsule().stroke(.white.opacity(0.4), lineWidth: 1))
+                }
+                .shadow(color: .black.opacity(0.25), radius: 8, y: 3)
+            }
+            .padding(.top, 4)
         }
         .padding(.horizontal, 32)
     }
@@ -157,22 +178,44 @@ private struct TrialCard: View {
 private struct AddTrialSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var serviceNameFocused: Bool
 
     @State private var serviceName = ""
     @State private var trialEndDate = Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
     @State private var chargeAmountText = ""
+    @State private var pasteFeedback: String?
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Button {
+                        applyClipboard()
+                    } label: {
+                        HStack {
+                            Image(systemName: "doc.on.clipboard")
+                            Text("Paste email to prefill")
+                            Spacer()
+                        }
+                    }
+                    if let pasteFeedback {
+                        Text(pasteFeedback)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } footer: {
+                    Text("Copy a trial-start email, then tap to auto-fill what we can detect.")
+                }
                 Section("Service") {
                     TextField("e.g. Cursor Pro", text: $serviceName)
+                        .focused($serviceNameFocused)
+                        .submitLabel(.next)
                 }
                 Section("Trial ends") {
                     DatePicker("", selection: $trialEndDate, displayedComponents: .date)
                         .labelsHidden()
                 }
-                Section("Charge amount (optional)") {
+                Section("Charge amount") {
                     TextField("20.00", text: $chargeAmountText)
                         .keyboardType(.decimalPad)
                 }
@@ -185,6 +228,11 @@ private struct AddTrialSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .disabled(serviceName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    serviceNameFocused = true
                 }
             }
         }
@@ -204,5 +252,97 @@ private struct AddTrialSheet: View {
         modelContext.insert(trial)
         try? modelContext.save()
         dismiss()
+    }
+
+    private func applyClipboard() {
+        guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
+            pasteFeedback = "Clipboard is empty."
+            return
+        }
+        let extracted = ManualTrialExtractor.extract(from: raw)
+        var filled: [String] = []
+        if let name = extracted.serviceName, serviceName.isEmpty {
+            serviceName = name
+            filled.append("service")
+        }
+        if let end = extracted.trialEndDate {
+            trialEndDate = end
+            filled.append("end date")
+        }
+        if let amount = extracted.chargeAmount, chargeAmountText.isEmpty {
+            chargeAmountText = amount
+            filled.append("amount")
+        }
+        pasteFeedback = filled.isEmpty
+            ? "Couldn't detect trial details — fill in below."
+            : "Filled: \(filled.joined(separator: ", "))."
+    }
+}
+
+// MARK: - Manual trial extractor
+
+/// Cheap clipboard parser for the paste-to-prefill flow. Deliberately no
+/// dependency on `TrialParser` — the manual-add form must work even when
+/// the parser's gates would reject the input.
+enum ManualTrialExtractor {
+    struct Result {
+        let serviceName: String?
+        let trialEndDate: Date?
+        let chargeAmount: String?
+    }
+
+    static func extract(from text: String) -> Result {
+        Result(
+            serviceName: extractServiceName(from: text),
+            trialEndDate: extractDate(from: text),
+            chargeAmount: extractAmount(from: text)
+        )
+    }
+
+    private static func extractServiceName(from text: String) -> String? {
+        // Look for a From: header first — "From: The Cursor Team <team@cursor.com>"
+        let lines = text.components(separatedBy: .newlines)
+        for line in lines {
+            let lower = line.lowercased()
+            guard lower.hasPrefix("from:") || lower.hasPrefix("from ") else { continue }
+            let rest = String(line.dropFirst(5))
+            if let lt = rest.firstIndex(of: "<") {
+                let display = rest[..<lt].trimmingCharacters(in: .whitespacesAndNewlines)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                if !display.isEmpty { return display }
+            }
+            if let at = rest.lastIndex(of: "@") {
+                let domain = rest[rest.index(after: at)...]
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "> \t\n\r"))
+                let parts = domain.split(separator: ".")
+                if parts.count >= 2 {
+                    return String(parts[parts.count - 2]).capitalized
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func extractDate(from text: String) -> Date? {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) else {
+            return nil
+        }
+        let range = NSRange(text.startIndex..., in: text)
+        let future = Date().addingTimeInterval(60 * 60 * 6) // today or later
+        for match in detector.matches(in: text, options: [], range: range) {
+            if let d = match.date, d >= future { return d }
+        }
+        return nil
+    }
+
+    private static func extractAmount(from text: String) -> String? {
+        let pattern = #"\$\s?(\d{1,4}(?:\.\d{2})?)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(text.startIndex..., in: text)
+        guard let match = regex.matches(in: text, options: [], range: range).first,
+              match.numberOfRanges >= 2,
+              let r = Range(match.range(at: 1), in: text)
+        else { return nil }
+        return String(text[r])
     }
 }
