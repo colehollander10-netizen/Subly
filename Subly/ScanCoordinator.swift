@@ -75,17 +75,19 @@ public actor ScanCoordinator {
                             accountID: account.id,
                             id: ref.id
                         )
-                        guard let detected = TrialParser.detect(full) else {
+                        if let detected = TrialParser.detect(full) {
+                            scanLog.info("    ✓ detected \(detected.serviceName, privacy: .public) — ends \(detected.trialEndDate, privacy: .public)")
+                            let result = upsert(detected, accountID: account.id)
+                            switch result {
+                            case .inserted: trialsAdded += 1
+                            case .updated: trialsUpdated += 1
+                            case .skipped: break
+                            }
+                        } else if let lead = TrialParser.detectLead(full) {
+                            scanLog.info("    ~ lead \(lead.serviceName, privacy: .public) (no amount)")
+                            upsertLead(lead, accountID: account.id)
+                        } else {
                             scanLog.debug("    parser rejected \(ref.id, privacy: .public)")
-                            continue
-                        }
-                        scanLog.info("    ✓ detected \(detected.serviceName, privacy: .public) — ends \(detected.trialEndDate, privacy: .public)")
-
-                        let result = upsert(detected, accountID: account.id)
-                        switch result {
-                        case .inserted: trialsAdded += 1
-                        case .updated: trialsUpdated += 1
-                        case .skipped: break
                         }
                     }
 
@@ -159,6 +161,31 @@ public actor ScanCoordinator {
         )
         descriptor.fetchLimit = 1
         return ((try? modelContext.fetch(descriptor))?.first) != nil
+    }
+
+    /// Persist a welcome-email lead. Never overwrites a confirmed trial for
+    /// the same domain — if the user has already confirmed it, skip.
+    private func upsertLead(_ lead: DetectedLead, accountID: String) {
+        let domain = lead.senderDomain
+        var descriptor = FetchDescriptor<Trial>(
+            predicate: #Predicate {
+                $0.accountID == accountID && $0.senderDomain == domain
+            }
+        )
+        descriptor.fetchLimit = 1
+        if (try? modelContext.fetch(descriptor))?.first != nil { return }
+
+        let trial = Trial(
+            accountID: accountID,
+            serviceName: lead.serviceName,
+            senderDomain: lead.senderDomain,
+            trialEndDate: Calendar.current.date(byAdding: .day, value: 14, to: lead.detectedAt) ?? lead.detectedAt,
+            chargeAmount: nil,
+            detectedAt: lead.detectedAt,
+            sourceEmailID: lead.sourceMessageID,
+            isLead: true
+        )
+        modelContext.insert(trial)
     }
 
     /// Upsert by `(accountID, senderDomain)`. A later email from the same

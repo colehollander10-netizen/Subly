@@ -7,22 +7,32 @@ import UIKit
 struct TrialsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed },
+        filter: #Predicate<Trial> { !$0.userDismissed && !$0.isLead },
         sort: \Trial.trialEndDate,
         order: .forward
     ) private var trials: [Trial]
 
+    @Query(
+        filter: #Predicate<Trial> { !$0.userDismissed && $0.isLead },
+        sort: \Trial.detectedAt,
+        order: .reverse
+    ) private var leads: [Trial]
+
     @State private var showingAddSheet = false
+    @State private var confirmingLead: Trial?
 
     var body: some View {
         ZStack {
             LiquidGlassBackground()
 
-            if trials.isEmpty {
+            if trials.isEmpty && leads.isEmpty {
                 emptyState
             } else {
                 ScrollView {
                     VStack(spacing: 14) {
+                        if !leads.isEmpty {
+                            leadsSection
+                        }
                         ForEach(trials) { trial in
                             TrialCard(trial: trial, onDismiss: { dismiss(trial) })
                         }
@@ -46,9 +56,26 @@ struct TrialsView: View {
         .sheet(isPresented: $showingAddSheet) {
             AddTrialSheet()
         }
+        .sheet(item: $confirmingLead) { lead in
+            ConfirmLeadSheet(lead: lead, onConfirm: { confirmLead(lead) }, onDismiss: { dismiss(lead) })
+        }
     }
 
     // MARK: - Subviews
+
+    @ViewBuilder
+    private var leadsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Did you start these trials?")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.6))
+                .padding(.leading, 4)
+
+            ForEach(leads) { lead in
+                LeadCard(lead: lead, onConfirm: { confirmingLead = lead }, onDismiss: { dismiss(lead) })
+            }
+        }
+    }
 
     @ViewBuilder
     private var emptyState: some View {
@@ -111,6 +138,11 @@ struct TrialsView: View {
         trial.userDismissed = true
         try? modelContext.save()
     }
+
+    private func confirmLead(_ lead: Trial) {
+        lead.isLead = false
+        try? modelContext.save()
+    }
 }
 
 // MARK: - Trial card
@@ -170,6 +202,99 @@ private struct TrialCard: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Capsule().fill(color.opacity(0.85)))
+    }
+}
+
+// MARK: - Lead card
+
+private struct LeadCard: View {
+    let lead: Trial
+    let onConfirm: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        GlassCard(padding: 16) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(lead.serviceName)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("Detected \(lead.detectedAt.formatted(.dateTime.month().day()))")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                Spacer()
+                HStack(spacing: 8) {
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(.white.opacity(0.1)))
+                    }
+                    Button(action: onConfirm) {
+                        Text("Yes")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(.blue.opacity(0.7)))
+                    }
+                }
+            }
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.white.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Confirm lead sheet
+
+private struct ConfirmLeadSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let lead: Trial
+    let onConfirm: () -> Void
+    let onDismiss: () -> Void
+
+    @State private var trialEndDate = Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
+    @State private var chargeAmountText = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Service") {
+                    Text(lead.serviceName)
+                        .foregroundStyle(.secondary)
+                }
+                Section("Trial ends") {
+                    DatePicker("", selection: $trialEndDate, displayedComponents: .date)
+                        .labelsHidden()
+                }
+                Section("Charge amount") {
+                    TextField("20.00", text: $chargeAmountText)
+                        .keyboardType(.decimalPad)
+                }
+            }
+            .navigationTitle("Confirm trial")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Not mine") {
+                        onDismiss()
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        lead.trialEndDate = trialEndDate
+                        lead.chargeAmount = Decimal(string: chargeAmountText)
+                        onConfirm()
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -44,6 +44,9 @@ public final class Trial {
     public var userDismissed: Bool
     /// True when the user entered the trial manually (vs. parsed from email).
     public var isManual: Bool
+    /// True when detected from a welcome-email with no charge amount — needs
+    /// user confirmation before becoming a full trial.
+    public var isLead: Bool
 
     public init(
         id: UUID = UUID(),
@@ -55,7 +58,8 @@ public final class Trial {
         detectedAt: Date = Date(),
         sourceEmailID: String?,
         userDismissed: Bool = false,
-        isManual: Bool = false
+        isManual: Bool = false,
+        isLead: Bool = false
     ) {
         self.id = id
         self.accountID = accountID
@@ -67,5 +71,6 @@ public final class Trial {
         self.sourceEmailID = sourceEmailID
         self.userDismissed = userDismissed
         self.isManual = isManual
+        self.isLead = isLead
     }
 }

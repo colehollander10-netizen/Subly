@@ -39,6 +39,30 @@ public struct DetectedTrial: Sendable, Equatable {
     }
 }
 
+// MARK: - Low-confidence lead (welcome email, no charge amount)
+
+/// A trial *lead*: we detected a welcome / trial-started email but couldn't
+/// extract a charge amount. The user needs to confirm details before it
+/// becomes a full tracked trial.
+public struct DetectedLead: Sendable, Equatable {
+    public let serviceName: String
+    public let senderDomain: String
+    public let sourceMessageID: String
+    public let detectedAt: Date
+
+    public init(
+        serviceName: String,
+        senderDomain: String,
+        sourceMessageID: String,
+        detectedAt: Date
+    ) {
+        self.serviceName = serviceName
+        self.senderDomain = senderDomain
+        self.sourceMessageID = sourceMessageID
+        self.detectedAt = detectedAt
+    }
+}
+
 // MARK: - Parser
 
 public enum TrialParser {
@@ -53,8 +77,44 @@ public enum TrialParser {
         if domain.isEmpty { return false }
         if isNoiseDomain(domain) { return false }
 
-        let hasTrialMention = subject.contains("trial") || subject.contains("free")
-        return hasTrialMention
+        // Also pass through purchase/subscription confirmations that never use
+        // the word "trial" (e.g. MS 365: "Your purchase of … has been processed").
+        let purchaseKeywords = [
+            "trial", "free",
+            "purchase", "subscription", "receipt",
+            "order confirmation", "has been processed",
+        ]
+        return purchaseKeywords.contains { subject.contains($0) }
+    }
+
+    /// Try to produce a low-confidence `DetectedLead` from a welcome/trial-
+    /// started email that passed Gate 0/0.5 but has no charge amount (Gate 5
+    /// would reject it as a full trial). Returns nil if the email doesn't look
+    /// like a trial welcome at all.
+    public static func detectLead(_ message: GmailMessage, now: Date = Date()) -> DetectedLead? {
+        let headers = message.payload?.headers ?? []
+        let from = header(headers, "From") ?? ""
+        let subject = (header(headers, "Subject") ?? "")
+        let domain = senderDomain(from: from)
+        guard !domain.isEmpty, !isNoiseDomain(domain) else { return nil }
+        guard !isMarketingSubject(subject) else { return nil }
+        guard let bodyRaw = decodedBody(message.payload) else { return nil }
+        let body = bodyRaw.lowercased()
+        let subjectLower = subject.lowercased()
+
+        guard isWelcomeOrTrialStarted(subject: subjectLower, body: body) else { return nil }
+        // Must still have some billing context — we don't want pure marketing.
+        guard hasCardOnFile(body: body) || hasAutoChargeLanguage(body: body) else { return nil }
+
+        let service = serviceName(fromDomain: domain, from: from)
+        let sentDate = message.sentDate ?? now
+        parserLog.info("lead[\(message.id, privacy: .public)] service=\(service, privacy: .public) domain=\(domain, privacy: .public) subject=\(subject, privacy: .public)")
+        return DetectedLead(
+            serviceName: service,
+            senderDomain: domain,
+            sourceMessageID: message.id,
+            detectedAt: sentDate
+        )
     }
 
     /// Parse a full Gmail message into a `DetectedTrial` or reject it.
@@ -208,6 +268,37 @@ private func isMarketingSubject(_ subject: String) -> Bool {
     if lower.contains("months of") && lower.contains("free trial") { return true }
 
     return false
+}
+
+private func isWelcomeOrTrialStarted(subject: String, body: String) -> Bool {
+    let welcomeSubjectPhrases = [
+        "welcome to",
+        "you're in",
+        "youre in",
+        "you've started",
+        "youve started",
+        "your trial has started",
+        "your subscription has started",
+        "get started with",
+        "your free trial",
+        "trial activated",
+        "trial confirmed",
+    ]
+    if welcomeSubjectPhrases.contains(where: { subject.contains($0) }) { return true }
+
+    let welcomeBodyPhrases = [
+        "welcome to",
+        "your trial has started",
+        "your trial is now active",
+        "your subscription has started",
+        "you're now subscribed",
+        "youre now subscribed",
+        "thanks for subscribing",
+        "thank you for subscribing",
+        "trial period begins",
+        "trial begins today",
+    ]
+    return welcomeBodyPhrases.contains { body.contains($0) }
 }
 
 private func mentionsTrial(subject: String, body: String) -> Bool {
@@ -414,15 +505,80 @@ private func parseDisplayName(_ from: String) -> String? {
 
 private func decodedBody(_ payload: MessagePayload?) -> String? {
     guard let payload else { return nil }
+    // Prefer text/plain — no stripping needed, phrases match cleanly.
+    if let plain = extractPart(payload, mimeType: "text/plain") { return plain }
+    // Fall back to text/html with tags stripped so phrase matchers work on
+    // HTML-only emails (e.g. Microsoft 365 billing receipts).
+    if let html = extractPart(payload, mimeType: "text/html") { return stripHTML(html) }
+    // Legacy: single-part body with no MIME type declared.
     if let encoded = payload.body?.data, let decoded = base64URLDecode(encoded) {
         return decoded
     }
-    // Walk parts depth-first, concatenating everything we can decode.
-    var pieces: [String] = []
-    for part in payload.parts ?? [] {
-        if let sub = decodedBody(part) { pieces.append(sub) }
+    return nil
+}
+
+/// Walk the MIME tree depth-first and return the first decoded part matching
+/// the given MIME type. Handles nested multipart/* containers.
+private func extractPart(_ payload: MessagePayload, mimeType: String) -> String? {
+    // Direct body on this node (leaf part).
+    if let encoded = payload.body?.data,
+       payload.parts == nil || payload.parts!.isEmpty,
+       let decoded = base64URLDecode(encoded) {
+        // If a mimeType was declared on this node via a Content-Type header,
+        // check it; otherwise accept it only for text/plain (safe default).
+        let ct = (payload.headers?.first { $0.name.lowercased() == "content-type" }?.value ?? "").lowercased()
+        if ct.hasPrefix(mimeType) || (ct.isEmpty && mimeType == "text/plain") {
+            return decoded
+        }
     }
-    return pieces.isEmpty ? nil : pieces.joined(separator: "\n")
+    // Recurse into sub-parts.
+    for part in payload.parts ?? [] {
+        if let found = extractPart(part, mimeType: mimeType) { return found }
+    }
+    return nil
+}
+
+/// Collapse HTML to plain text: replace block-level tags with newlines, strip
+/// all remaining tags, decode common entities. Good enough for phrase matching.
+private func stripHTML(_ html: String) -> String {
+    // Block tags → newline so sentences don't run together.
+    let blockPattern = #"</(p|div|td|th|br|li|tr|h[1-6])[^>]*>"#
+    var text = html
+    if let re = try? NSRegularExpression(pattern: blockPattern, options: .caseInsensitive) {
+        text = re.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: "\n"
+        )
+    }
+    // Strip all remaining tags.
+    if let re = try? NSRegularExpression(pattern: #"<[^>]+>"#) {
+        text = re.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: ""
+        )
+    }
+    // Decode common HTML entities.
+    text = text
+        .replacingOccurrences(of: "&amp;",  with: "&")
+        .replacingOccurrences(of: "&lt;",   with: "<")
+        .replacingOccurrences(of: "&gt;",   with: ">")
+        .replacingOccurrences(of: "&nbsp;", with: " ")
+        .replacingOccurrences(of: "&#39;",  with: "'")
+        .replacingOccurrences(of: "&quot;", with: "\"")
+    // Collapse runs of whitespace/newlines left by tag removal.
+    if let re = try? NSRegularExpression(pattern: #"\n{3,}"#) {
+        text = re.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: "\n\n"
+        )
+    }
+    return text.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
 private func base64URLDecode(_ input: String) -> String? {
