@@ -510,9 +510,10 @@ private func decodedBody(_ payload: MessagePayload?) -> String? {
     // Fall back to text/html with tags stripped so phrase matchers work on
     // HTML-only emails (e.g. Microsoft 365 billing receipts).
     if let html = extractPart(payload, mimeType: "text/html") { return stripHTML(html) }
-    // Legacy: single-part body with no MIME type declared.
+    // Legacy: single-part body with no MIME type declared. Strip HTML if needed.
     if let encoded = payload.body?.data, let decoded = base64URLDecode(encoded) {
-        return decoded
+        let looksLikeHTML = decoded.hasPrefix("<") || decoded.contains("<html") || decoded.contains("<td")
+        return looksLikeHTML ? stripHTML(decoded) : decoded
     }
     return nil
 }
@@ -527,7 +528,8 @@ private func extractPart(_ payload: MessagePayload, mimeType: String) -> String?
         // If a mimeType was declared on this node via a Content-Type header,
         // check it; otherwise accept it only for text/plain (safe default).
         let ct = (payload.headers?.first { $0.name.lowercased() == "content-type" }?.value ?? "").lowercased()
-        if ct.hasPrefix(mimeType) || (ct.isEmpty && mimeType == "text/plain") {
+        // Accept if Content-Type matches, or if no type declared (let caller decide).
+        if ct.hasPrefix(mimeType) || ct.isEmpty {
             return decoded
         }
     }
