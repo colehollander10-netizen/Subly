@@ -363,11 +363,17 @@ public enum GmailQuery {
             "your subscription has started",
             "your subscription starts",
             "subscription renews",
+            // Purchase-confirmation phrasing (MS 365 uses this exact line).
+            "your purchase of",
+            "has been processed",
+            "order confirmation",
+            "receipt for your",
         ]
         let quoted = terms.map { "\"\($0)\"" }
-        // Search anywhere in the email (not just subject). Widen window to
-        // 120 days so signups a few months back still surface.
-        return "(\(quoted.joined(separator: " OR "))) newer_than:120d"
+        // Search anywhere in the email (not just subject). Annual free trials
+        // (MS 365, JetBrains, Adobe, etc.) can be up to a year old before the
+        // renewal hits, so we cast the net at 364 days.
+        return "(\(quoted.joined(separator: " OR "))) newer_than:364d"
     }()
 }
 

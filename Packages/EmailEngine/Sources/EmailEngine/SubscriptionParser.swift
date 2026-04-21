@@ -162,15 +162,16 @@ private func isMarketingSubject(_ subject: String) -> Bool {
     let lower = subject.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
     if lower.isEmpty { return false }
 
-    // Leading imperative verbs that signal an offer, not a confirmation.
+    // Leading imperative verbs / promo openers that signal an offer, not a
+    // confirmation.
     let promoVerbs = [
         "claim",
         "unlock",
         "score",
         "grab",
-        "get ",        // "get 2 months free" — trailing space avoids "getting started"
+        "get ",              // "get 2 months free" — trailing space avoids "getting started"
         "try ",
-        "start your",  // "Start your free trial today" = promo CTA
+        "start your",        // "Start your free trial today" = promo CTA
         "don't miss",
         "dont miss",
         "last chance",
@@ -178,6 +179,11 @@ private func isMarketingSubject(_ subject: String) -> Bool {
         "save ",
         "introducing",
         "meet ",
+        "just for you",      // "Just for you: 2 months of Uber One free trial"
+        "you're invited",
+        "youre invited",
+        "we'd love to",
+        "wed love to",
     ]
     if promoVerbs.contains(where: { lower.hasPrefix($0) }) { return true }
 
@@ -187,15 +193,26 @@ private func isMarketingSubject(_ subject: String) -> Bool {
         "for a limited",
         "offer ends",
         "% off",
-        "months free",       // "5 months free" / "2 months free" = promo
+        "months free",           // "5 months free" / "2 months free" = promo
         "free months",
         "exclusive offer",
+        "free trial 🥰",         // emoji-tagged marketing subject
+        "of free trial",         // "2 months of free trial" — offer phrasing
+        "of uber one free",      // very Uber-specific promo template
     ]
-    return promoMarkers.contains { lower.contains($0) }
+    if promoMarkers.contains(where: { lower.contains($0) }) { return true }
+
+    // Compound pattern: "N months of ... free trial" is almost always a promo.
+    // Catches "Just for you: 2 months of Uber One free trial" even without
+    // the specific markers above.
+    if lower.contains("months of") && lower.contains("free trial") { return true }
+
+    return false
 }
 
 private func mentionsTrial(subject: String, body: String) -> Bool {
-    let phrases = [
+    // Explicit trial phrasing.
+    let trialPhrases = [
         "free trial",
         "your trial",
         "trial ends",
@@ -206,7 +223,32 @@ private func mentionsTrial(subject: String, body: String) -> Bool {
         "day free trial",
         "days free",
     ]
-    return phrases.contains { subject.contains($0) || body.contains($0) }
+    if trialPhrases.contains(where: { subject.contains($0) || body.contains($0) }) {
+        return true
+    }
+    // Some services (MS 365, others) run free trials without ever using the
+    // word "trial". We infer trial-equivalence from a $0 charge NOW + a future
+    // charge with a real amount. That's the user-visible contract of a free
+    // trial: "you pay nothing today, but we'll charge you on date X."
+    let zeroChargeMarkers = [
+        "charged usd 0.00",
+        "charged $0.00",
+        "total: $0.00",
+        "total: usd 0.00",
+        "amount: $0.00",
+        "amount: usd 0.00",
+        "free for",                 // "free for the first month"
+    ]
+    let futureChargeMarkers = [
+        "will be charged",
+        "starting ",                // "Starting Monday, October 19, 2026"
+        "your payment of",
+        "renewal date",
+        "auto-renew",
+    ]
+    let hasZero = zeroChargeMarkers.contains { body.contains($0) }
+    let hasFuture = futureChargeMarkers.contains { body.contains($0) }
+    return hasZero && hasFuture
 }
 
 private func hasCardOnFile(body: String) -> Bool {
@@ -267,10 +309,11 @@ private func extractExplicitDate(body: String) -> Date? {
     guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) else {
         return nil
     }
-    // Narrow the search to sentences that mention "trial" — avoids grabbing
-    // unrelated dates (shipping estimates, event dates, etc.).
+    // Narrow the search to sentences that mention a date-relevant keyword —
+    // avoids grabbing unrelated dates (shipping estimates, event dates, etc.).
+    let dateKeywords = ["trial", "ends", "charge", "renew", "billing", "next payment", "starting"]
     let lines = body.components(separatedBy: .newlines)
-    for line in lines where line.lowercased().contains("trial") || line.lowercased().contains("ends") || line.lowercased().contains("charge") {
+    for line in lines where dateKeywords.contains(where: { line.lowercased().contains($0) }) {
         let range = NSRange(line.startIndex..., in: line)
         if let match = detector.matches(in: line, options: [], range: range).first,
            let date = match.date {
@@ -301,16 +344,31 @@ private func extractRelativeDuration(body: String, base: Date) -> Date? {
 // MARK: - Amount extraction
 
 private func extractAmount(body: String) -> Decimal? {
-    let pattern = #"\$\s?(\d{1,4}(?:\.\d{2})?)"#
-    guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
-        return nil
+    // Match either "$12.99" or "USD 12.99" / "USD 12" styles. Return the
+    // largest extracted amount — trial emails frequently list a $0.00 charge
+    // before the real future amount ("We've charged USD 0.00… your payment of
+    // USD 4.99 will be charged every month"). Picking the max avoids showing
+    // a misleading $0.00 alert.
+    let patterns = [
+        #"\$\s?(\d{1,4}(?:\.\d{2})?)"#,
+        #"USD\s?(\d{1,4}(?:\.\d{2})?)"#,
+    ]
+    var amounts: [Decimal] = []
+    for pattern in patterns {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
+            continue
+        }
+        let range = NSRange(body.startIndex..., in: body)
+        for match in regex.matches(in: body, options: [], range: range) {
+            if match.numberOfRanges >= 2,
+               let r = Range(match.range(at: 1), in: body),
+               let value = Decimal(string: String(body[r])),
+               value > 0 {
+                amounts.append(value)
+            }
+        }
     }
-    let range = NSRange(body.startIndex..., in: body)
-    guard let match = regex.matches(in: body, options: [], range: range).first,
-          match.numberOfRanges >= 2,
-          let r = Range(match.range(at: 1), in: body)
-    else { return nil }
-    return Decimal(string: String(body[r]))
+    return amounts.max()
 }
 
 // MARK: - Sender helpers
