@@ -354,6 +354,15 @@ public enum GmailQuery {
             "will be charged",
             "will automatically charge",
             "you'll be charged",
+            // MS 365 / Microsoft billing copy — no "trial" verbatim in subject.
+            "your payment of",
+            "we've charged",
+            "thank you for your order",
+            "subscription confirmation",
+            "your microsoft",
+            "your subscription has started",
+            "your subscription starts",
+            "subscription renews",
         ]
         let quoted = terms.map { "\"\($0)\"" }
         // Search anywhere in the email (not just subject). Widen window to

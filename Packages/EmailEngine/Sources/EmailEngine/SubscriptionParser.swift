@@ -126,6 +126,17 @@ public enum TrialParser {
         }
 
         let chargeAmount = extractAmount(body: bodyRaw)
+
+        // Gate 5: we need an actual charge amount to warn about. Trials without
+        // an extractable price (e.g., Granola's "free for a year") can't answer
+        // the only question the user cares about — "how much am I about to be
+        // charged?" — so they're not useful alerts.
+        guard chargeAmount != nil else {
+            let preview = String(bodyRaw.prefix(500))
+            parserLog.info("reject[\(msgID, privacy: .public)] gate5=no-amount domain=\(domain, privacy: .public) subject=\(subject, privacy: .public) preview=\(preview, privacy: .public)")
+            return nil
+        }
+
         let service = serviceName(fromDomain: domain, from: from)
         let acceptPreview = String(bodyRaw.prefix(3000))
         parserLog.info("accept[\(msgID, privacy: .public)] service=\(service, privacy: .public) domain=\(domain, privacy: .public) subject=\(subject, privacy: .public) endDate=\(trialEndDate, privacy: .public) bodyLen=\(bodyLen, privacy: .public) preview=\(acceptPreview, privacy: .public)")
