@@ -7,6 +7,7 @@ import UIKit
 import UserNotifications
 
 struct SettingsView: View {
+    @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
@@ -67,6 +68,22 @@ struct SettingsView: View {
                             }
                             .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
                             .disabled(isUpdatingNotifications)
+                        }
+
+                        TerminalSectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")
+                        HairlineDivider()
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Show branded sample trials when your inbox is empty. Turn this off any time if you want a strictly real-data experience.")
+                                .font(.system(size: 15))
+                                .foregroundStyle(SublyTheme.secondaryText)
+
+                            Toggle(isOn: $showDemoData) {
+                                Text("Show demo data when empty")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(SublyTheme.primaryText)
+                            }
+                            .tint(SublyTheme.accent)
                         }
 
                         TerminalSectionLabel(title: "About")

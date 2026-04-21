@@ -3,6 +3,7 @@ import SwiftData
 import SwiftUI
 
 struct TrialsView: View {
+    @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.modelContext) private var modelContext
 
     @Query(
@@ -22,15 +23,21 @@ struct TrialsView: View {
     @State private var selectedLead: Trial?
 
     private var displayedTrials: [Trial] {
-        trials.isEmpty ? DemoContent.activeTrials() : trials
+        if !trials.isEmpty {
+            return trials
+        }
+        return showDemoData ? DemoContent.activeTrials() : []
     }
 
     private var displayedLeads: [Trial] {
-        leads.isEmpty && trials.isEmpty ? DemoContent.leads() : leads
+        if !leads.isEmpty {
+            return leads
+        }
+        return trials.isEmpty && showDemoData ? DemoContent.leads() : []
     }
 
     private var isShowingDemoData: Bool {
-        trials.isEmpty && leads.isEmpty
+        trials.isEmpty && leads.isEmpty && showDemoData
     }
 
     private var endingSoon: [Trial] { displayedTrials.filter { daysUntil($0.trialEndDate) <= 7 } }
@@ -68,18 +75,29 @@ struct TrialsView: View {
     }
 
     private var demoBanner: some View {
-        HStack(spacing: 10) {
-            Text("DEMO")
-                .font(.system(size: 10, weight: .bold))
-                .tracking(1.0)
-                .foregroundStyle(SublyTheme.highlight)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(SublyTheme.highlight.opacity(0.12)))
+        HStack(alignment: .center, spacing: 10) {
+            HStack(spacing: 10) {
+                Text("DEMO")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.0)
+                    .foregroundStyle(SublyTheme.highlight)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(SublyTheme.highlight.opacity(0.12)))
 
-            Text("These sample trials are here so we can tune the layout, logos, and spacing before your real scan fills in.")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(SublyTheme.secondaryText)
+                Text("These sample trials are here so we can tune the layout, logos, and spacing before your real scan fills in.")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(SublyTheme.secondaryText)
+            }
+
+            Spacer()
+
+            Button("Hide") {
+                showDemoData = false
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(SublyTheme.primaryText)
         }
     }
 

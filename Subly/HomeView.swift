@@ -11,6 +11,7 @@ struct HomeView: View {
     let notificationEngine: NotificationEngine
     let onSeeAllTrials: () -> Void
 
+    @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.modelContext) private var modelContext
     @Query(
         filter: #Predicate<Trial> { !$0.userDismissed && !$0.isLead },
@@ -28,11 +29,14 @@ struct HomeView: View {
     @State private var horizontalDrag: CGFloat = 0
 
     private var displayedActiveTrials: [Trial] {
-        activeTrials.isEmpty ? DemoContent.activeTrials() : activeTrials
+        if !activeTrials.isEmpty {
+            return activeTrials
+        }
+        return showDemoData ? DemoContent.activeTrials() : []
     }
 
     private var isShowingDemoTrials: Bool {
-        activeTrials.isEmpty
+        activeTrials.isEmpty && showDemoData
     }
 
     private var nextTrial: Trial? { displayedActiveTrials.first }
@@ -119,14 +123,25 @@ struct HomeView: View {
     }
 
     private var demoBanner: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(SublyTheme.highlight.opacity(0.85))
-                .frame(width: 7, height: 7)
+        HStack(alignment: .center, spacing: 10) {
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(SublyTheme.highlight.opacity(0.85))
+                    .frame(width: 7, height: 7)
 
-            Text("Preview data is showing until your first real trial is found.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(SublyTheme.tertiaryText)
+                Text("Preview data is showing until your first real trial is found.")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+            }
+
+            Spacer()
+
+            Button("Hide") {
+                showDemoData = false
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(SublyTheme.primaryText)
         }
     }
 

@@ -5,6 +5,10 @@ import SwiftData
 import SwiftUI
 import UIKit
 
+enum AppPreferences {
+    static let showDemoData = "showDemoData"
+}
+
 @MainActor
 @Observable
 final class AppRouter {
