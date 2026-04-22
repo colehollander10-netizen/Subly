@@ -18,7 +18,6 @@ struct TrialsView: View {
         order: .reverse
     ) private var leads: [Trial]
 
-    @State private var showingAddSheet = false
     @State private var selectedTrial: Trial?
     @State private var selectedLead: Trial?
 
@@ -60,9 +59,6 @@ struct TrialsView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 32)
             }
-        }
-        .sheet(isPresented: $showingAddSheet) {
-            TrialDetailSheet(onCreateNew: { _ in })
         }
         .sheet(item: $selectedTrial) { trial in
             TrialDetailSheet(trial: trial, onSaveExisting: { _ in })
@@ -112,24 +108,6 @@ struct TrialsView: View {
                     .foregroundStyle(SublyTheme.secondaryText)
             }
             Spacer()
-            Button {
-                showingAddSheet = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(SublyTheme.surface)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(SublyTheme.divider, lineWidth: 1)
-                    )
-                    .shadow(color: Color.black.opacity(0.03), radius: 10, y: 4)
-            }
-            .buttonStyle(.plain)
         }
     }
 
@@ -246,8 +224,12 @@ private struct SuggestedLeadRow: View {
             Spacer()
             Button("Dismiss", action: onDismiss)
                 .buttonStyle(SecondaryTerminalButtonStyle())
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
             Button("Confirm", action: onConfirm)
                 .buttonStyle(TerminalButtonStyle(background: SublyTheme.highlight, foreground: .white))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
