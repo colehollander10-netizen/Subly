@@ -290,6 +290,7 @@ struct HomeView: View {
             let kindLabel: String = {
                 switch planned.kind {
                 case .threeDaysBefore: return "3-day heads up"
+                case .dayBefore: return "1-day heads up"
                 case .dayOf: return "day-of"
                 }
             }()
