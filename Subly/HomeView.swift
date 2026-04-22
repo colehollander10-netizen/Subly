@@ -40,7 +40,6 @@ struct HomeView: View {
     }
 
     private var nextTrial: Trial? { displayedActiveTrials.first }
-    private var upcomingTrials: [Trial] { Array(displayedActiveTrials.dropFirst().prefix(3)) }
 
     var body: some View {
         ScreenFrame {
@@ -51,10 +50,8 @@ struct HomeView: View {
                         demoBanner
                     }
                     heroSection
-                    fallbackSection
-                    nextThreeSection
-                    scanSection
-                    scanMetaSection
+                    actionRow
+                    statusLine
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -91,7 +88,7 @@ struct HomeView: View {
                 Text(Date.now.formatted(.dateTime.month(.wide).day()))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(SublyTheme.tertiaryText)
-                Text("subly")
+                Text("Subly")
                     .font(.system(size: 34, weight: .black))
                     .foregroundStyle(SublyTheme.primaryText)
                 Text("Know before your trials charge you.")
@@ -233,114 +230,41 @@ struct HomeView: View {
         }
     }
 
-    private var fallbackSection: some View {
-        SurfaceCard {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .center, spacing: 14) {
-                    ServiceIcon(name: "Apple", domain: "apple.com", size: 48)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        TerminalSectionLabel(title: "Manual entry")
-                        Text("Not in Gmail?")
-                            .font(.system(size: 21, weight: .bold))
-                            .foregroundStyle(SublyTheme.primaryText)
-                        Text("Some trials never hit your inbox cleanly. Add them yourself and keep the same calm reminder flow.")
-                            .font(.system(size: 14))
-                            .foregroundStyle(SublyTheme.secondaryText)
-                    }
-                }
-
-                HStack(spacing: 10) {
-                    Button("Add manually") {
-                        showingManualAdd = true
-                    }
-                    .buttonStyle(TerminalButtonStyle(background: SublyTheme.ink, foreground: .white))
-
-                    Button("See all trials") {
-                        onSeeAllTrials()
-                    }
-                    .buttonStyle(SecondaryTerminalButtonStyle())
-                }
+    private var actionRow: some View {
+        HStack(spacing: 12) {
+            Button(isScanning ? "Scanning…" : "Scan now") {
+                Task { await runScan() }
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(isScanning)
+
+            Button {
+                showingManualAdd = true
+            } label: {
+                Label("Add manually", systemImage: "plus")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
-    }
-
-    private var nextThreeSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                TerminalSectionLabel(title: "Queue", trailing: "\(displayedActiveTrials.count) total")
-                Spacer()
-                QuietActionLink(title: "See all", systemImage: "arrow.right", action: onSeeAllTrials)
-            }
-
-            if upcomingTrials.isEmpty {
-                Text("No other trials behind the current one.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(SublyTheme.secondaryText)
-            } else {
-                VStack(spacing: 10) {
-                    ForEach(upcomingTrials) { trial in
-                        SurfaceCard(padding: 14) {
-                            TrialQueueRow(trial: trial)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var scanSection: some View {
-        SurfaceCard {
-            VStack(alignment: .leading, spacing: 14) {
-                TerminalSectionLabel(title: "Privacy")
-                Text("Private by design. Subly reads trial confirmations from Gmail without linking your bank account or building a server-side subscription graph.")
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(SublyTheme.primaryText)
-
-                HStack(spacing: 10) {
-                    Button(isScanning ? "Scanning..." : "Scan now") {
-                        Task { await runScan() }
-                    }
-                    .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
-                    .disabled(isScanning)
-
-                    if !accounts.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(accounts.count == 1 ? "1 inbox connected" : "\(accounts.count) inboxes connected")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(SublyTheme.secondaryText)
-                            Text("Read-only Gmail access")
-                                .font(.system(size: 12))
-                                .foregroundStyle(SublyTheme.tertiaryText)
-                        }
-                    }
-                }
-            }
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
-    private var scanMetaSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if isShowingDemoTrials {
-                Text("Demo mode uses branded sample trials so we can tune the layout before your first scan.")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.tertiaryText)
-            } else if let lastSummary {
-                Text("\(lastSummary.accountsScanned == 1 ? "1 inbox" : "\(lastSummary.accountsScanned) inboxes") · \(lastSummary.messagesInspected) messages checked · \(lastSummary.trialsAdded) new")
-                    .font(.system(size: 12))
-                    .monospacedDigit()
-                    .foregroundStyle(SublyTheme.secondaryText)
-            } else {
-                Text("\(accounts.count == 1 ? "1 inbox connected" : "\(accounts.count) inboxes connected")")
-                    .font(.system(size: 12))
-                    .foregroundStyle(SublyTheme.secondaryText)
+    private var statusLine: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let lastSummary {
+                Text("\(lastSummary.accountsScanned) inbox(es) · \(lastSummary.messagesInspected) checked · \(lastSummary.trialsAdded) new")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else if !accounts.isEmpty {
+                Text(accounts.count == 1 ? "1 inbox connected" : "\(accounts.count) inboxes connected")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             if let errorMessage {
-                Text(errorMessage)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.critical)
+                Text(errorMessage).font(.footnote).foregroundStyle(.red)
             }
         }
     }
@@ -410,38 +334,5 @@ struct HomeView: View {
             notificationEngine: notificationEngine
         )
         await alertCoordinator.replanAll()
-    }
-}
-
-private struct TrialQueueRow: View {
-    let trial: Trial
-
-    var body: some View {
-        let days = daysUntil(trial.trialEndDate)
-        HStack(spacing: 14) {
-            ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 34)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(trial.serviceName)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                Text(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))
-                    .font(.system(size: 13))
-                    .foregroundStyle(SublyTheme.secondaryText)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(trial.chargeAmount.map(formatUSD) ?? "TBD")
-                    .font(.system(size: 16, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(SublyTheme.primaryText)
-                Text(days <= 0 ? "today" : "\(days)d")
-                    .font(.system(size: 12, weight: .medium))
-                    .monospacedDigit()
-                    .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
-            }
-        }
     }
 }
