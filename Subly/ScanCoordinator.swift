@@ -7,9 +7,8 @@ import SwiftData
 private let scanLog = Logger(subsystem: "com.subly.Subly", category: "scan")
 
 /// Scans every connected Gmail account for free-trial emails and upserts
-/// `Trial` rows. Strict four-gate parser (TrialParser) means a row only
-/// lands in the store if: trial mention + end date + card on file + auto-
-/// charge language. Anything weaker is dropped on the floor.
+/// `Trial` rows. High-confidence parser matches become tracked trials, while
+/// medium-confidence welcome/trial-started emails become manual-review leads.
 @ModelActor
 public actor ScanCoordinator {
     public struct Summary: Sendable {
@@ -48,6 +47,7 @@ public actor ScanCoordinator {
                 scanLog.info("→ scanning account \(account.email, privacy: .public)")
                 var pageToken: String? = nil
                 var pagesThisAccount = 0
+                var candidateMessages: [GmailMessage] = []
                 repeat {
                     let page = try await EmailEngine.shared.fetchMessageList(
                         accountID: account.id,
@@ -75,25 +75,27 @@ public actor ScanCoordinator {
                             accountID: account.id,
                             id: ref.id
                         )
-                        if let detected = TrialParser.detect(full) {
-                            scanLog.info("    ✓ detected \(detected.serviceName, privacy: .public) — ends \(detected.trialEndDate, privacy: .public)")
-                            let result = upsert(detected, accountID: account.id)
-                            switch result {
-                            case .inserted: trialsAdded += 1
-                            case .updated: trialsUpdated += 1
-                            case .skipped: break
-                            }
-                        } else if let lead = TrialParser.detectLead(full) {
-                            scanLog.info("    ~ lead \(lead.serviceName, privacy: .public) (no amount)")
-                            upsertLead(lead, accountID: account.id)
-                        } else {
-                            scanLog.debug("    parser rejected \(ref.id, privacy: .public)")
-                        }
+                        candidateMessages.append(full)
                     }
 
                     pageToken = page.nextPageToken
                     try modelContext.save()
                 } while pageToken != nil && pagesThisAccount < maxPagesPerAccount
+
+                let analysis = TrialParser.analyze(candidateMessages)
+                for detected in analysis.detectedTrials {
+                    scanLog.info("    ✓ detected \(detected.serviceName, privacy: .public) — ends \(detected.trialEndDate, privacy: .public)")
+                    let result = upsert(detected, accountID: account.id)
+                    switch result {
+                    case .inserted: trialsAdded += 1
+                    case .updated: trialsUpdated += 1
+                    case .skipped: break
+                    }
+                }
+                for lead in analysis.detectedLeads {
+                    scanLog.info("    ~ lead \(lead.serviceName, privacy: .public) (needs review)")
+                    upsertLead(lead, accountID: account.id)
+                }
 
                 account.lastScannedAt = Date()
                 try modelContext.save()

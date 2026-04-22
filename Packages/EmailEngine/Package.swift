@@ -5,6 +5,7 @@ let package = Package(
     name: "EmailEngine",
     platforms: [
         .iOS(.v18),
+        .macOS(.v11),
     ],
     products: [
         .library(name: "EmailEngine", targets: ["EmailEngine"]),
@@ -16,11 +17,17 @@ let package = Package(
         ),
     ],
     targets: [
+        .target(name: "EmailParsingCore"),
         .target(
             name: "EmailEngine",
             dependencies: [
+                "EmailParsingCore",
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
             ]
+        ),
+        .testTarget(
+            name: "EmailEngineTests",
+            dependencies: ["EmailParsingCore"]
         ),
     ]
 )

@@ -1,4 +1,7 @@
 import Foundation
+
+#if canImport(UIKit)
+import EmailParsingCore
 import GoogleSignIn
 import Security
 import UIKit
@@ -335,90 +338,6 @@ private enum GmailScope {
     static let readonly = "https://www.googleapis.com/auth/gmail.readonly"
 }
 
-public enum GmailQuery {
-    /// Full-email trial net. Casts a wide enough mesh that most real trial
-    /// receipts show up; the four-gate `TrialParser` is the actual arbiter
-    /// for what gets persisted, so over-fetching here is safe.
-    public static let trialsRecent: String = {
-        let terms = [
-            "free trial",
-            "your trial",
-            "trial ends",
-            "trial will end",
-            "trial period",
-            "start your free",
-            "your free trial",
-            "free trial ends",
-            "free trial has started",
-            "subscription will begin",
-            "will be charged",
-            "will automatically charge",
-            "you'll be charged",
-            // MS 365 / Microsoft billing copy — no "trial" verbatim in subject.
-            "your payment of",
-            "we've charged",
-            "thank you for your order",
-            "subscription confirmation",
-            "your microsoft",
-            "your subscription has started",
-            "your subscription starts",
-            "subscription renews",
-            // Purchase-confirmation phrasing (MS 365 uses this exact line).
-            "your purchase of",
-            "has been processed",
-            "order confirmation",
-            "receipt for your",
-        ]
-        let quoted = terms.map { "\"\($0)\"" }
-        // Search anywhere in the email (not just subject). Annual free trials
-        // (MS 365, JetBrains, Adobe, etc.) can be up to a year old before the
-        // renewal hits, so we cast the net at 364 days.
-        return "(\(quoted.joined(separator: " OR "))) newer_than:364d"
-    }()
-}
-
-// MARK: - Response models
-
-public struct MessageListResponse: Decodable, Sendable {
-    public let messages: [MessageRef]?
-    public let nextPageToken: String?
-    public let resultSizeEstimate: Int?
-}
-
-public struct MessageRef: Decodable, Sendable {
-    public let id: String
-    public let threadId: String
-}
-
-public struct GmailMessage: Decodable, Sendable {
-    public let id: String
-    public let threadId: String
-    public let payload: MessagePayload?
-    public let snippet: String?
-    public let internalDate: String?
-
-    public var sentDate: Date? {
-        guard let internalDate, let ms = Double(internalDate) else { return nil }
-        return Date(timeIntervalSince1970: ms / 1000)
-    }
-}
-
-public struct MessagePayload: Decodable, Sendable {
-    public let headers: [MessageHeader]?
-    public let body: MessageBody?
-    public let parts: [MessagePayload]?
-}
-
-public struct MessageHeader: Decodable, Sendable {
-    public let name: String
-    public let value: String
-}
-
-public struct MessageBody: Decodable, Sendable {
-    public let data: String?
-    public let size: Int
-}
-
 // MARK: - Errors
 
 public enum EmailEngineError: Error, Sendable {
@@ -432,3 +351,5 @@ public enum EmailEngineError: Error, Sendable {
     case httpError(Int)
     case keychainError(OSStatus)
 }
+
+#endif
