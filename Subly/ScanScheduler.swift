@@ -8,7 +8,7 @@ import SwiftData
 /// the background. The task identifier must match the
 /// BGTaskSchedulerPermittedIdentifiers entry in Info.plist.
 public enum ScanScheduler {
-    public static let taskIdentifier = "com.subly.scan.refresh"
+    public static let taskIdentifier = "com.colehollander.subly.scan.refresh"
 
     public static func register(
         modelContainer: ModelContainer,
