@@ -1,3 +1,4 @@
+import NotificationEngine
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -234,6 +235,24 @@ struct TrialDetailSheet: View {
     let onSaveExisting: ((Trial) -> Void)?
     let onCreateNew: ((Trial) -> Void)?
 
+    private enum Preset: Int, CaseIterable, Identifiable {
+        case sevenDays = 7
+        case fourteenDays = 14
+        case thirtyDays = 30
+        case oneYear = 365
+        var id: Int { rawValue }
+        var label: String {
+            switch self {
+            case .sevenDays: return "7 days"
+            case .fourteenDays: return "14 days"
+            case .thirtyDays: return "30 days"
+            case .oneYear: return "1 year"
+            }
+        }
+    }
+
+    @State private var selectedPreset: Preset? = nil
+    @State private var applyingPreset: Bool = false
     @FocusState private var focused: Bool
     @State private var serviceName: String
     @State private var trialEndDate: Date
@@ -245,8 +264,16 @@ struct TrialDetailSheet: View {
         self.onSaveExisting = onSaveExisting
         self.onCreateNew = onCreateNew
         _serviceName = State(initialValue: trial?.serviceName ?? "")
-        _trialEndDate = State(initialValue: trial?.trialEndDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date())
+        let resolvedEndDate = trial?.trialEndDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
+        _trialEndDate = State(initialValue: resolvedEndDate)
         _chargeAmountText = State(initialValue: trial?.chargeAmount.map { NSDecimalNumber(decimal: $0).stringValue } ?? "")
+        if let trial {
+            let days = Calendar.current.dateComponents([.day], from: trial.detectedAt, to: trial.trialEndDate).day ?? 0
+            let match = Preset.allCases.first { abs($0.rawValue - days) <= 1 }
+            _selectedPreset = State(initialValue: match)
+        } else {
+            _selectedPreset = State(initialValue: nil)
+        }
     }
 
     var body: some View {
@@ -283,9 +310,16 @@ struct TrialDetailSheet: View {
                         }
 
                         field(title: "Trial ends") {
-                            DatePicker("", selection: $trialEndDate, displayedComponents: .date)
-                                .labelsHidden()
-                                .colorScheme(.dark)
+                            VStack(alignment: .leading, spacing: 10) {
+                                presetRow
+                                DatePicker("", selection: $trialEndDate, displayedComponents: .date)
+                                    .labelsHidden()
+                                    .colorScheme(.dark)
+                                    .onChange(of: trialEndDate) { _, _ in
+                                        if applyingPreset { return }
+                                        selectedPreset = nil
+                                    }
+                            }
                         }
 
                         field(title: "Charge amount") {
@@ -336,6 +370,55 @@ struct TrialDetailSheet: View {
     }
 
     @ViewBuilder
+    private var presetRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Preset.allCases) { preset in
+                    let isSelected = selectedPreset == preset
+                    Button {
+                        applyingPreset = true
+                        selectedPreset = preset
+                        trialEndDate = Calendar.current.date(byAdding: .day, value: preset.rawValue, to: Date()) ?? trialEndDate
+                        Haptics.play(.primaryTap)
+                        Task { @MainActor in applyingPreset = false }
+                    } label: {
+                        Text(preset.label)
+                            .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                            .foregroundStyle(isSelected ? SublyTheme.surface : SublyTheme.primaryText)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().fill(isSelected ? SublyTheme.primaryText : SublyTheme.surface)
+                            )
+                            .overlay(
+                                Capsule().strokeBorder(isSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                let customSelected = selectedPreset == nil
+                Button {
+                    selectedPreset = nil
+                    Haptics.play(.primaryTap)
+                } label: {
+                    Text("Custom")
+                        .font(.system(size: 13, weight: customSelected ? .semibold : .medium))
+                        .foregroundStyle(customSelected ? SublyTheme.surface : SublyTheme.primaryText)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule().fill(customSelected ? SublyTheme.primaryText : SublyTheme.surface)
+                        )
+                        .overlay(
+                            Capsule().strokeBorder(customSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    @ViewBuilder
     private func field<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
@@ -376,6 +459,17 @@ struct TrialDetailSheet: View {
             onCreateNew?(newTrial)
         }
         try? modelContext.save()
+        Haptics.play(.save)
+
+        let container = modelContext.container
+        Task {
+            let coordinator = TrialAlertCoordinator(
+                modelContainer: container,
+                notificationEngine: NotificationEngine()
+            )
+            await coordinator.replanAll()
+        }
+
         dismiss()
     }
 

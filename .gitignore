@@ -8,5 +8,9 @@ xcuserdata/
 .build/
 .swiftpm/
 
+# Local build + scratch
+build/
+tmp/
+
 # macOS
 .DS_Store

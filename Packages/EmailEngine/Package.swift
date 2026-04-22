@@ -27,7 +27,7 @@ let package = Package(
         ),
         .testTarget(
             name: "EmailEngineTests",
-            dependencies: ["EmailParsingCore"]
+            dependencies: ["EmailParsingCore", "EmailEngine"]
         ),
     ]
 )

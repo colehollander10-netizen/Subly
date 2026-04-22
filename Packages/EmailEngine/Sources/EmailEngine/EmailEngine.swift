@@ -21,6 +21,7 @@ public final class EmailEngine: @unchecked Sendable {
 
     private let keychain = KeychainAccountStore()
     private let tokenCache = AccessTokenCache()
+    private let refreshCoordinator = RefreshTokenCoordinator()
     private var clientID: String = ""
 
     private init() {}
@@ -150,48 +151,61 @@ public final class EmailEngine: @unchecked Sendable {
 private extension EmailEngine {
     /// Return a non-expired access token for `accountID`. Serves from cache
     /// when still valid; otherwise POSTs the stored refresh token to
-    /// `oauth2.googleapis.com/token`.
+    /// `oauth2.googleapis.com/token`. Concurrent callers for the same account
+    /// coalesce through `refreshCoordinator` so only one network refresh fires.
     func freshAccessToken(accountID: String) async throws -> String {
         if let cached = tokenCache.get(accountID: accountID) {
             return cached
         }
-        guard let account = keychain.find(userID: accountID) else {
-            throw EmailEngineError.notSignedIn
-        }
-        guard !clientID.isEmpty else {
-            throw EmailEngineError.notConfigured
-        }
 
-        var request = URLRequest(url: URL(string: "https://oauth2.googleapis.com/token")!)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let keychain = keychain
+        let tokenCache = tokenCache
+        let clientID = clientID
 
-        var form = URLComponents()
-        form.queryItems = [
-            URLQueryItem(name: "client_id", value: clientID),
-            URLQueryItem(name: "refresh_token", value: account.refreshToken),
-            URLQueryItem(name: "grant_type", value: "refresh_token"),
-        ]
-        request.httpBody = form.percentEncodedQuery?.data(using: .utf8)
+        return try await refreshCoordinator.freshToken(for: accountID) { accountID in
+            // Re-check the cache inside the coordinator: a concurrent refresh
+            // may have already populated it by the time we got the slot.
+            if let cached = tokenCache.get(accountID: accountID) {
+                return cached
+            }
+            guard let account = keychain.find(userID: accountID) else {
+                throw EmailEngineError.notSignedIn
+            }
+            guard !clientID.isEmpty else {
+                throw EmailEngineError.notConfigured
+            }
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw EmailEngineError.unauthorized
+            var request = URLRequest(url: URL(string: "https://oauth2.googleapis.com/token")!)
+            request.httpMethod = "POST"
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+            var form = URLComponents()
+            form.queryItems = [
+                URLQueryItem(name: "client_id", value: clientID),
+                URLQueryItem(name: "refresh_token", value: account.refreshToken),
+                URLQueryItem(name: "grant_type", value: "refresh_token"),
+            ]
+            request.httpBody = form.percentEncodedQuery?.data(using: .utf8)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else {
+                throw EmailEngineError.unauthorized
+            }
+            if http.statusCode == 400 || http.statusCode == 401 {
+                // Refresh token rejected. Don't delete the Keychain entry —
+                // the app layer decides what to show the user and can trigger
+                // a reconnect, which replaces the stored refresh token.
+                tokenCache.invalidate(accountID: accountID)
+                throw EmailEngineError.refreshTokenRevoked
+            }
+            if !(200..<300).contains(http.statusCode) {
+                throw EmailEngineError.httpError(http.statusCode)
+            }
+            let decoded = try JSONDecoder().decode(TokenResponse.self, from: data)
+            let ttl = TimeInterval(decoded.expires_in ?? 3600)
+            tokenCache.set(accountID: accountID, token: decoded.access_token, ttl: ttl)
+            return decoded.access_token
         }
-        if http.statusCode == 400 || http.statusCode == 401 {
-            // Refresh token was revoked or the Workspace policy changed.
-            // Drop it so Settings shows the account as needing reconnect.
-            keychain.remove(userID: accountID)
-            tokenCache.invalidate(accountID: accountID)
-            throw EmailEngineError.refreshTokenRevoked
-        }
-        if !(200..<300).contains(http.statusCode) {
-            throw EmailEngineError.httpError(http.statusCode)
-        }
-        let decoded = try JSONDecoder().decode(TokenResponse.self, from: data)
-        let ttl = TimeInterval(decoded.expires_in ?? 3600)
-        tokenCache.set(accountID: accountID, token: decoded.access_token, ttl: ttl)
-        return decoded.access_token
     }
 
     func validate(_ response: URLResponse) throws {
@@ -210,146 +224,10 @@ private struct TokenResponse: Decodable {
     let scope: String?
 }
 
-// MARK: - In-memory access token cache
-
-private final class AccessTokenCache: @unchecked Sendable {
-    private struct Entry {
-        let token: String
-        let expiresAt: Date
-    }
-    private var entries: [String: Entry] = [:]
-    private let lock = NSLock()
-
-    func get(accountID: String) -> String? {
-        lock.lock(); defer { lock.unlock() }
-        guard let entry = entries[accountID] else { return nil }
-        // Treat tokens within 60s of expiry as stale to avoid racing a 401.
-        if entry.expiresAt.timeIntervalSinceNow < 60 {
-            entries[accountID] = nil
-            return nil
-        }
-        return entry.token
-    }
-
-    func set(accountID: String, token: String, ttl: TimeInterval) {
-        lock.lock(); defer { lock.unlock() }
-        entries[accountID] = Entry(token: token, expiresAt: Date().addingTimeInterval(ttl))
-    }
-
-    func invalidate(accountID: String) {
-        lock.lock(); defer { lock.unlock() }
-        entries[accountID] = nil
-    }
-
-    func invalidateAll() {
-        lock.lock(); defer { lock.unlock() }
-        entries.removeAll()
-    }
-}
-
-// MARK: - Connected account
-
-public struct GoogleAccount: Sendable, Hashable, Codable {
-    public let userID: String
-    public let email: String
-    public let refreshToken: String
-
-    public init(userID: String, email: String, refreshToken: String) {
-        self.userID = userID
-        self.email = email
-        self.refreshToken = refreshToken
-    }
-}
-
-// MARK: - Keychain (multi-account)
-
-/// Stores connected accounts as a single Keychain-backed JSON blob keyed by
-/// `accountsList`. Simpler than one item per account and easier to keep in
-/// order for the UI.
-private final class KeychainAccountStore: @unchecked Sendable {
-    private let service = "com.subly.emailengine"
-    private let accountListKey = "connected_accounts_v2"
-
-    func listAll() -> [GoogleAccount] {
-        guard let data = read() else { return [] }
-        return (try? JSONDecoder().decode([GoogleAccount].self, from: data)) ?? []
-    }
-
-    func find(userID: String) -> GoogleAccount? {
-        listAll().first(where: { $0.userID == userID })
-    }
-
-    func upsert(_ account: GoogleAccount) throws {
-        var current = listAll()
-        current.removeAll { $0.userID == account.userID }
-        current.append(account)
-        try write(current)
-    }
-
-    func remove(userID: String) {
-        var current = listAll()
-        current.removeAll { $0.userID == userID }
-        try? write(current)
-    }
-
-    func removeAll() {
-        let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecAttrAccount: accountListKey,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-
-    private func read() -> Data? {
-        let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecAttrAccount: accountListKey,
-            kSecReturnData: true,
-            kSecMatchLimit: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess else { return nil }
-        return result as? Data
-    }
-
-    private func write(_ accounts: [GoogleAccount]) throws {
-        let data = try JSONEncoder().encode(accounts)
-        removeAll()
-        let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecAttrAccount: accountListKey,
-            kSecValueData: data,
-            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
-        ]
-        let status = SecItemAdd(query as CFDictionary, nil)
-        if status != errSecSuccess {
-            throw EmailEngineError.keychainError(status)
-        }
-    }
-}
-
 // MARK: - Constants
 
 private enum GmailScope {
     static let readonly = "https://www.googleapis.com/auth/gmail.readonly"
-}
-
-// MARK: - Errors
-
-public enum EmailEngineError: Error, Sendable {
-    case notSignedIn
-    case notConfigured
-    case accountNotActive
-    case tokenMissing
-    case refreshTokenUnavailable
-    case refreshTokenRevoked
-    case unauthorized
-    case httpError(Int)
-    case keychainError(OSStatus)
 }
 
 #endif

@@ -31,10 +31,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>BRANDFETCH_CLIENT_ID</key>
-	<string>1idFPMFGzAzhQpYlRT6</string>
-	<key>LOGO_DEV_PUBLIC_TOKEN</key>
-	<string></string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

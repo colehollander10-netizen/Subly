@@ -667,14 +667,17 @@ struct OnboardingView: View {
         let coordinator = ScanCoordinator(modelContainer: modelContext.container)
         _ = await coordinator.runScan()
 
-        let findings = realFindings().isEmpty ? demoFindings : realFindings()
-        scanningMessage = "Finding what’s worth cancelling"
-
-        for item in findings.prefix(4) {
-            try? await Task.sleep(for: .milliseconds(reduceMotion ? 80 : 420))
-            withAnimation(stepAnimation) {
-                revealedFindings.append(item)
-                displayedSavings += item.amount
+        let findings = realFindings()
+        if findings.isEmpty {
+            scanningMessage = "No trial confirmations found yet"
+        } else {
+            scanningMessage = "Finding what’s worth cancelling"
+            for item in findings.prefix(4) {
+                try? await Task.sleep(for: .milliseconds(reduceMotion ? 80 : 420))
+                withAnimation(stepAnimation) {
+                    revealedFindings.append(item)
+                    displayedSavings += item.amount
+                }
             }
         }
 

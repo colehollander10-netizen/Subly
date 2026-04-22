@@ -3,13 +3,13 @@ import OSLog
 import SubscriptionStore
 import SwiftData
 import SwiftUI
+import TrialEngine
 
 private let scanLog = Logger(subsystem: "com.subly.Subly", category: "scan")
 
 struct HomeView: View {
     @Environment(AppRouter.self) private var appRouter
     let notificationEngine: NotificationEngine
-    let onSeeAllTrials: () -> Void
 
     @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.modelContext) private var modelContext
@@ -27,6 +27,7 @@ struct HomeView: View {
     @State private var selectedCancelTrial: Trial?
     @State private var showingManualAdd = false
     @State private var horizontalDrag: CGFloat = 0
+    @State private var dragCrossedThreshold = false
 
     private var displayedActiveTrials: [Trial] {
         if !activeTrials.isEmpty {
@@ -44,18 +45,29 @@ struct HomeView: View {
     var body: some View {
         ScreenFrame {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 20) {
                     header
                     if isShowingDemoTrials {
                         demoBanner
                     }
                     heroSection
-                    actionRow
+                    comingUpSection
                     statusLine
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
-                .padding(.bottom, 32)
+                .padding(.bottom, 120)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                PrimaryAddButton(
+                    icon: "plus",
+                    accessibilityLabel: "Add a trial",
+                    accessibilityHint: "Enter trial details manually.",
+                    onTap: { showingManualAdd = true },
+                    diameter: 62
+                )
+                .padding(.trailing, 20)
+                .padding(.bottom, 24)
             }
         }
         .sheet(isPresented: $showingSettings) {
@@ -98,24 +110,21 @@ struct HomeView: View {
 
             Spacer()
 
-            Button {
-                showingSettings = true
-            } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                    .padding(11)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(SublyTheme.surface)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(SublyTheme.divider, lineWidth: 1)
-                    )
-                    .shadow(color: Color.black.opacity(0.03), radius: 10, y: 4)
+            HStack(spacing: 8) {
+                HeaderIconButton(
+                    systemImage: isScanning ? "ellipsis" : "arrow.triangle.2.circlepath",
+                    accessibilityLabel: "Scan inbox",
+                    isBusy: isScanning,
+                    action: { Task { await runScan() } }
+                )
+                .disabled(isScanning)
+
+                HeaderIconButton(
+                    systemImage: "gearshape",
+                    accessibilityLabel: "Settings",
+                    action: { showingSettings = true }
+                )
             }
-            .buttonStyle(.plain)
         }
     }
 
@@ -149,7 +158,7 @@ struct HomeView: View {
 
             if let nextTrial {
                 let days = daysUntil(nextTrial.trialEndDate)
-                SurfaceCard {
+                FlagshipCard(urgency: urgencyLevel(days: days)) {
                     VStack(alignment: .leading, spacing: 18) {
                         HStack(alignment: .center, spacing: 14) {
                             ServiceIcon(name: nextTrial.serviceName, domain: nextTrial.senderDomain, size: 64)
@@ -158,9 +167,19 @@ struct HomeView: View {
                                 Text(nextTrial.serviceName)
                                     .font(.system(size: 28, weight: .bold))
                                     .foregroundStyle(SublyTheme.primaryText)
-                                Text("Renews \(nextTrial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(SublyTheme.secondaryText)
+                                HStack(spacing: 6) {
+                                    Text("Renews \(nextTrial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(SublyTheme.secondaryText)
+                                    if let lengthLabel = trialLengthDescription(for: nextTrial) {
+                                        Text("·")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(SublyTheme.tertiaryText)
+                                        Text(lengthLabel)
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundStyle(SublyTheme.tertiaryText)
+                                    }
+                                }
                             }
 
                             Spacer()
@@ -169,6 +188,7 @@ struct HomeView: View {
                                 text: days <= 0 ? "TODAY" : "\(max(days, 0))D LEFT",
                                 color: SublyTheme.urgencyColor(daysLeft: days)
                             )
+                            .breathing(days <= 3)
                         }
 
                         HairlineDivider()
@@ -187,20 +207,26 @@ struct HomeView: View {
 
                         HStack(alignment: .center) {
                             VStack(alignment: .leading, spacing: 3) {
-                                Text("Cancellation path ready")
+                                Text(isShowingDemoTrials ? "Preview trial" : "Cancellation path ready")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundStyle(SublyTheme.primaryText)
-                                Text("Swipe left to open the real cancel steps for this service.")
+                                Text(isShowingDemoTrials
+                                     ? "Connect Gmail or add a real trial to enable swipe-to-cancel."
+                                     : "Swipe left to open the real cancel steps for this service.")
                                     .font(.system(size: 13))
                                     .foregroundStyle(SublyTheme.secondaryText)
                             }
 
                             Spacer()
 
-                            Image(systemName: "arrow.left")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(SublyTheme.tertiaryText)
+                            if !isShowingDemoTrials {
+                                Image(systemName: "arrow.left")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(SublyTheme.tertiaryText)
+                            }
                         }
+
+                        nextAlertRow
                     }
                 }
                 .contentShape(Rectangle())
@@ -208,15 +234,23 @@ struct HomeView: View {
                 .gesture(
                     DragGesture(minimumDistance: 18)
                         .onChanged { value in
+                            guard !isShowingDemoTrials else { return }
                             horizontalDrag = min(0, value.translation.width)
+                            let crossed = value.translation.width < -60
+                            if crossed != dragCrossedThreshold {
+                                dragCrossedThreshold = crossed
+                                if crossed { Haptics.play(.swipeThresholdCrossed) }
+                            }
                         }
                         .onEnded { value in
+                            guard !isShowingDemoTrials else { return }
                             if value.translation.width < -90 {
                                 selectedCancelTrial = nextTrial
                             }
                             withAnimation(.spring(response: 0.22, dampingFraction: 0.9)) {
                                 horizontalDrag = 0
                             }
+                            dragCrossedThreshold = false
                         }
                 )
             } else {
@@ -230,43 +264,93 @@ struct HomeView: View {
         }
     }
 
-    private var actionRow: some View {
-        HStack(spacing: 12) {
-            Button(isScanning ? "Scanning…" : "Scan now") {
-                Task { await runScan() }
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isScanning)
+    private var upcomingAfterHero: [Trial] {
+        Array(displayedActiveTrials.dropFirst().prefix(3))
+    }
 
-            Button {
-                showingManualAdd = true
-            } label: {
-                Label("Add manually", systemImage: "plus")
+    @ViewBuilder
+    private var comingUpSection: some View {
+        if !upcomingAfterHero.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                TerminalSectionLabel(title: "Coming up", trailing: "\(upcomingAfterHero.count)")
+                VStack(spacing: 8) {
+                    ForEach(upcomingAfterHero) { trial in
+                        CompactTrialRow(trial: trial)
+                    }
+                }
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var nextAlertRow: some View {
+        if !isShowingDemoTrials,
+           let nextTrial,
+           let planned = nextPlannedAlert(for: nextTrial) {
+            let kindLabel: String = {
+                switch planned.kind {
+                case .threeDaysBefore: return "3-day heads up"
+                case .dayOf: return "day-of"
+                }
+            }()
+            HStack(spacing: 10) {
+                Image(systemName: "bell.badge")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(SublyTheme.accent)
+                Text("Alert · \(planned.triggerDate.formatted(.relative(presentation: .named))) (\(kindLabel))")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.secondaryText)
+            }
+        }
+    }
+
+    private func nextPlannedAlert(for trial: Trial) -> PlannedTrialAlert? {
+        let planned = TrialEngine.plan(trialID: trial.id, trialEndDate: trial.trialEndDate)
+        return planned.min(by: { $0.triggerDate < $1.triggerDate })
     }
 
     @ViewBuilder
     private var statusLine: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if let lastSummary {
-                Text("\(lastSummary.accountsScanned) inbox(es) · \(lastSummary.messagesInspected) checked · \(lastSummary.trialsAdded) new")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+        HStack(spacing: 10) {
+            if isScanning {
+                ProgressView()
+                    .controlSize(.mini)
+                    .tint(SublyTheme.secondaryText)
+                Text("Scanning your inbox…")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.secondaryText)
+            } else if let lastSummary {
+                Circle()
+                    .fill(SublyTheme.accent)
+                    .frame(width: 5, height: 5)
+                Text("\(lastSummary.accountsScanned) inbox · \(lastSummary.messagesInspected) checked · \(lastSummary.trialsAdded) new")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.tertiaryText)
             } else if !accounts.isEmpty {
-                Text(accounts.count == 1 ? "1 inbox connected" : "\(accounts.count) inboxes connected")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                Circle()
+                    .fill(SublyTheme.tertiaryText.opacity(0.4))
+                    .frame(width: 5, height: 5)
+                Text(accounts.count == 1 ? "1 inbox connected · tap refresh to scan" : "\(accounts.count) inboxes connected · tap refresh to scan")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.tertiaryText)
             }
 
+            Spacer()
+
             if let errorMessage {
-                Text(errorMessage).font(.footnote).foregroundStyle(.red)
+                Text(errorMessage)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.critical)
+                    .lineLimit(1)
             }
         }
+        .padding(.top, 4)
+    }
+
+    private func urgencyLevel(days: Int) -> UrgencyLevel {
+        if days <= 3 { return .critical }
+        if days <= 7 { return .warning }
+        return .calm
     }
 
     private func daysLabel(_ days: Int) -> String {
@@ -278,6 +362,7 @@ struct HomeView: View {
     private func markCancelled(_ trial: Trial) {
         trial.userDismissed = true
         try? modelContext.save()
+        Haptics.play(.markCanceled)
         Task {
             let coordinator = TrialAlertCoordinator(
                 modelContainer: modelContext.container,
@@ -298,6 +383,7 @@ struct HomeView: View {
 
         modelContext.insert(followUp)
         try? modelContext.save()
+        Haptics.play(.scheduleReminder)
 
         Task {
             let coordinator = TrialAlertCoordinator(
@@ -319,7 +405,10 @@ struct HomeView: View {
         scanLog.info("runScan START — accounts=\(accounts.count, privacy: .public)")
         errorMessage = nil
         isScanning = true
-        defer { isScanning = false }
+        defer {
+            isScanning = false
+            Haptics.play(.scanComplete)
+        }
 
         let coordinator = ScanCoordinator(modelContainer: modelContext.container)
         let summary = await coordinator.runScan()
@@ -334,5 +423,40 @@ struct HomeView: View {
             notificationEngine: notificationEngine
         )
         await alertCoordinator.replanAll()
+    }
+}
+
+private struct CompactTrialRow: View {
+    let trial: Trial
+
+    var body: some View {
+        let days = daysUntil(trial.trialEndDate)
+        HStack(spacing: 12) {
+            ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 32)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(trial.serviceName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(SublyTheme.primaryText)
+                Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                    .font(.system(size: 12))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+            }
+            Spacer()
+            Text(days <= 0 ? "TODAY" : "\(days)D")
+                .font(.system(size: 11, weight: .bold))
+                .monospacedDigit()
+                .tracking(0.6)
+                .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(SublyTheme.surface.opacity(0.7))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(SublyTheme.divider.opacity(0.7), lineWidth: 1)
+        )
     }
 }

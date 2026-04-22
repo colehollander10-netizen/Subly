@@ -20,15 +20,19 @@ enum SublyTheme {
     static let warningSoft = Color(red: 0.96, green: 0.92, blue: 0.84)
     static let critical = Color(red: 0.60, green: 0.29, blue: 0.24)
     static let criticalSoft = Color(red: 0.95, green: 0.89, blue: 0.86)
+    static let dayOf = Color(red: 0.48, green: 0.17, blue: 0.14)
+    static let dayOfSoft = Color(red: 0.94, green: 0.85, blue: 0.82)
     static let ink = Color(red: 0.12, green: 0.13, blue: 0.14)
 
     static func urgencyColor(daysLeft: Int) -> Color {
+        if daysLeft <= 0 { return dayOf }
         if daysLeft <= 3 { return critical }
         if daysLeft <= 7 { return warning }
         return accent
     }
 
     static func urgencySurface(daysLeft: Int) -> Color {
+        if daysLeft <= 0 { return dayOfSoft }
         if daysLeft <= 3 { return criticalSoft }
         if daysLeft <= 7 { return warningSoft }
         return accentSoft
@@ -180,6 +184,35 @@ struct SecondaryTerminalButtonStyle: ButtonStyle {
     }
 }
 
+struct HeaderIconButton: View {
+    let systemImage: String
+    let accessibilityLabel: String
+    var isBusy: Bool = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(SublyTheme.surface)
+                    .overlay(Circle().stroke(SublyTheme.divider, lineWidth: 1))
+                if isBusy {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(SublyTheme.primaryText)
+                } else {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(SublyTheme.primaryText)
+                }
+            }
+            .frame(width: 40, height: 40)
+        }
+        .buttonStyle(PressableRowStyle())
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
 struct AccentPill: View {
     let text: String
     let color: Color
@@ -200,11 +233,13 @@ struct AccentPill: View {
 struct SurfaceCard<Content: View>: View {
     let padding: CGFloat
     let tint: Color?
+    var emphasized: Bool = false
     let content: Content
 
-    init(padding: CGFloat = 18, tint: Color? = nil, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = 18, tint: Color? = nil, emphasized: Bool = false, @ViewBuilder content: () -> Content) {
         self.padding = padding
         self.tint = tint
+        self.emphasized = emphasized
         self.content = content()
     }
 
@@ -212,14 +247,112 @@ struct SurfaceCard<Content: View>: View {
         content
             .padding(padding)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(tint ?? SublyTheme.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(SublyTheme.divider.opacity(0.9), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(emphasized ? 0.9 : 0.7),
+                                SublyTheme.divider.opacity(emphasized ? 0.7 : 0.9),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
             )
-            .shadow(color: Color.black.opacity(0.028), radius: 16, y: 6)
+            .shadow(color: Color.black.opacity(emphasized ? 0.055 : 0.035), radius: emphasized ? 18 : 12, y: emphasized ? 8 : 5)
+            .shadow(color: Color.black.opacity(0.02), radius: 2, y: 1)
+    }
+}
+
+enum UrgencyLevel {
+    case calm, warning, critical
+}
+
+struct FlagshipCard<Content: View>: View {
+    let padding: CGFloat
+    let urgency: UrgencyLevel
+    let content: Content
+
+    init(padding: CGFloat = 22, urgency: UrgencyLevel = .calm, @ViewBuilder content: () -> Content) {
+        self.padding = padding
+        self.urgency = urgency
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .padding(padding)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(SublyTheme.elevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.95),
+                                SublyTheme.divider.opacity(0.6),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .overlay(alignment: .leading) {
+                if urgency == .critical {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [SublyTheme.critical.opacity(0.22), .clear],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: 170)
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                        .allowsHitTesting(false)
+                }
+            }
+            .shadow(color: Color.black.opacity(0.05), radius: 24, y: 10)
+            .shadow(color: Color.black.opacity(0.03), radius: 4, y: 1)
+    }
+}
+
+struct PressableRowStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
+            .opacity(configuration.isPressed ? 0.92 : 1.0)
+            .animation(.spring(response: 0.22, dampingFraction: 0.82), value: configuration.isPressed)
+    }
+}
+
+struct BreathingModifier: ViewModifier {
+    let active: Bool
+    @State private var phase: CGFloat = 1.0
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(phase)
+            .onAppear {
+                guard active else { return }
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    phase = 1.03
+                }
+            }
+    }
+}
+
+extension View {
+    func breathing(_ active: Bool) -> some View {
+        modifier(BreathingModifier(active: active))
     }
 }
 
@@ -391,10 +524,10 @@ enum BrandDirectory {
 enum DemoContent {
     static func activeTrials(referenceDate: Date = Date()) -> [Trial] {
         [
-            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, manual: false, from: referenceDate),
-            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, manual: false, from: referenceDate),
-            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, manual: true, from: referenceDate),
-            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, manual: false, from: referenceDate),
+            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, manual: false, length: 14, from: referenceDate),
+            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, manual: false, length: 30, from: referenceDate),
+            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, manual: true, length: 14, from: referenceDate),
+            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, manual: false, length: 30, from: referenceDate),
         ]
     }
 
@@ -411,6 +544,7 @@ enum DemoContent {
         daysOut: Int,
         amount: Decimal,
         manual: Bool,
+        length: Int? = nil,
         from referenceDate: Date
     ) -> Trial {
         Trial(
@@ -421,7 +555,8 @@ enum DemoContent {
             chargeAmount: amount,
             detectedAt: referenceDate,
             sourceEmailID: manual ? nil : "demo-\(serviceName)",
-            isManual: manual
+            isManual: manual,
+            trialLengthDays: length
         )
     }
 
@@ -469,22 +604,31 @@ struct EmptyStateBlock: View {
     let action: (() -> Void)?
 
     var body: some View {
-        SurfaceCard {
-            VStack(alignment: .leading, spacing: 14) {
-                TerminalSectionLabel(title: "Status")
-                HairlineDivider()
-                Text(title)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                Text(message)
-                    .font(.system(size: 15))
-                    .foregroundStyle(SublyTheme.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let actionTitle, let action {
-                    Button(actionTitle, action: action)
-                        .buttonStyle(SecondaryTerminalButtonStyle())
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(SublyTheme.accentSoft)
+                    .frame(width: 56, height: 56)
+                Image(systemName: "sparkle")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(SublyTheme.accent)
+            }
+            Text(title)
+                .font(.system(size: 26, weight: .bold))
+                .foregroundStyle(SublyTheme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(message)
+                .font(.system(size: 15))
+                .foregroundStyle(SublyTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(SecondaryTerminalButtonStyle())
+                    .padding(.top, 4)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 12)
     }
 }

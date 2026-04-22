@@ -104,6 +104,8 @@ public actor ScanCoordinator {
                 scanLog.error("account \(account.email, privacy: .public) failed: \(String(describing: err), privacy: .public)")
                 switch err {
                 case .refreshTokenRevoked, .refreshTokenUnavailable, .notSignedIn:
+                    account.needsReconnect = true
+                    try? modelContext.save()
                     lastError = "Reconnect \(account.email) in Settings."
                 default:
                     lastError = err.localizedDescription
@@ -208,6 +210,9 @@ public actor ScanCoordinator {
             existing.chargeAmount = detected.chargeAmount
             existing.detectedAt = detected.detectedAt
             existing.sourceEmailID = detected.sourceMessageID
+            if let length = detected.trialLengthDays {
+                existing.trialLengthDays = length
+            }
             return .updated
         }
 
@@ -218,7 +223,8 @@ public actor ScanCoordinator {
             trialEndDate: detected.trialEndDate,
             chargeAmount: detected.chargeAmount,
             detectedAt: detected.detectedAt,
-            sourceEmailID: detected.sourceMessageID
+            sourceEmailID: detected.sourceMessageID,
+            trialLengthDays: detected.trialLengthDays
         )
         modelContext.insert(trial)
         return .inserted

@@ -15,6 +15,7 @@ public struct DetectedTrial: Sendable, Equatable {
     public let chargeAmount: Decimal?
     public let sourceMessageID: String
     public let detectedAt: Date
+    public let trialLengthDays: Int?
 
     public init(
         serviceName: String,
@@ -22,7 +23,8 @@ public struct DetectedTrial: Sendable, Equatable {
         trialEndDate: Date,
         chargeAmount: Decimal?,
         sourceMessageID: String,
-        detectedAt: Date
+        detectedAt: Date,
+        trialLengthDays: Int? = nil
     ) {
         self.serviceName = serviceName
         self.senderDomain = senderDomain
@@ -30,6 +32,7 @@ public struct DetectedTrial: Sendable, Equatable {
         self.chargeAmount = chargeAmount
         self.sourceMessageID = sourceMessageID
         self.detectedAt = detectedAt
+        self.trialLengthDays = trialLengthDays
     }
 }
 
@@ -113,6 +116,7 @@ public struct TrialMessageClassification: Sendable, Equatable {
     public let detectedAt: Date
     public let trialEndDate: Date?
     public let chargeAmount: Decimal?
+    public let trialLengthDays: Int?
     public let confidence: TrialConfidenceTier
     public let event: TrialMessageEvent
     public let willAutoCharge: Bool
@@ -175,6 +179,7 @@ public enum TrialParser {
                 detectedAt: sentDate,
                 trialEndDate: nil,
                 chargeAmount: nil,
+                trialLengthDays: nil,
                 confidence: .low,
                 event: .unknown,
                 willAutoCharge: false,
@@ -201,6 +206,7 @@ public enum TrialParser {
                 detectedAt: sentDate,
                 trialEndDate: nil,
                 chargeAmount: nil,
+                trialLengthDays: nil,
                 confidence: .low,
                 event: .unknown,
                 willAutoCharge: false,
@@ -227,6 +233,7 @@ public enum TrialParser {
                 detectedAt: sentDate,
                 trialEndDate: nil,
                 chargeAmount: nil,
+                trialLengthDays: nil,
                 confidence: .low,
                 event: .unknown,
                 willAutoCharge: false,
@@ -255,6 +262,12 @@ public enum TrialParser {
         let cardLanguage = hasCardOnFile(body: body)
         let autoChargeLanguage = hasAutoChargeLanguage(body: body)
         let chargeAmount = extractAmount(body: bodyRaw)
+        let explicitLength = extractTrialLengthDays(body: body, subject: subjectLower)
+        let inferredLength: Int? = trialEndDate.flatMap { end in
+            let days = Calendar.current.dateComponents([.day], from: sentDate, to: end).day
+            return days.flatMap { closestCanonicalTrialLength($0) }
+        }
+        let trialLengthDays = explicitLength ?? inferredLength
         let receiptMarker = hasReceiptMarker(subject: subjectLower, body: body)
         let promoMarketing = isMarketingSubject(subject) || hasMarketingLanguage(subject: subjectLower, body: body)
         let senderCategory = categorizeSender(domain)
@@ -339,6 +352,7 @@ public enum TrialParser {
             detectedAt: sentDate,
             trialEndDate: trialEndDate,
             chargeAmount: chargeAmount,
+            trialLengthDays: trialLengthDays,
             confidence: confidence,
             event: event,
             willAutoCharge: willAutoCharge,
@@ -381,7 +395,8 @@ private extension TrialMessageClassification {
             trialEndDate: trialEndDate,
             chargeAmount: chargeAmount,
             sourceMessageID: sourceMessageID,
-            detectedAt: detectedAt
+            detectedAt: detectedAt,
+            trialLengthDays: trialLengthDays
         )
     }
 
@@ -821,6 +836,53 @@ private func extractAmount(body: String) -> Decimal? {
         }
     }
     return amounts.max()
+}
+
+// MARK: - Trial length
+
+private let canonicalTrialLengths: [Int] = [3, 5, 7, 14, 21, 30, 60, 90, 180, 365]
+
+private func closestCanonicalTrialLength(_ days: Int) -> Int? {
+    guard days > 0, days <= 400 else { return nil }
+    return canonicalTrialLengths.min(by: { abs($0 - days) < abs($1 - days) })
+}
+
+private func extractTrialLengthDays(body: String, subject: String) -> Int? {
+    let haystack = subject + " " + body
+    let patterns: [(String, (Double) -> Double)] = [
+        (#"(\d{1,3})[\s-]*day(?:s)?\s+(?:free\s+)?trial"#, { $0 }),
+        (#"(\d{1,2})[\s-]*week(?:s)?\s+(?:free\s+)?trial"#, { $0 * 7 }),
+        (#"(\d{1,2})[\s-]*month(?:s)?\s+(?:free\s+)?trial"#, { $0 * 30 }),
+        (#"(\d{1,2})[\s-]*year(?:s)?\s+(?:free\s+)?trial"#, { $0 * 365 }),
+        (#"(?:free\s+)?trial\s+(?:of\s+|for\s+)?(\d{1,3})[\s-]*day"#, { $0 }),
+        (#"free\s+for\s+(\d{1,3})[\s-]*day"#, { $0 }),
+        (#"free\s+for\s+(\d{1,2})[\s-]*week"#, { $0 * 7 }),
+        (#"free\s+for\s+(\d{1,2})[\s-]*month"#, { $0 * 30 }),
+        (#"free\s+for\s+(?:a|one)\s+month"#, { _ in 30 }),
+        (#"free\s+for\s+(?:a|one)\s+year"#, { _ in 365 }),
+        (#"(?:a|one)\s+month\s+free"#, { _ in 30 }),
+        (#"(?:a|one)\s+year\s+free"#, { _ in 365 }),
+    ]
+    for (pattern, transform) in patterns {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
+            continue
+        }
+        let range = NSRange(haystack.startIndex..., in: haystack)
+        guard let match = regex.matches(in: haystack, options: [], range: range).first else {
+            continue
+        }
+        let raw: Double
+        if match.numberOfRanges >= 2, let r = Range(match.range(at: 1), in: haystack) {
+            raw = Double(haystack[r]) ?? 0
+        } else {
+            raw = 0
+        }
+        let days = Int(transform(raw).rounded())
+        if let canonical = closestCanonicalTrialLength(days) {
+            return canonical
+        }
+    }
+    return nil
 }
 
 // MARK: - Sender helpers

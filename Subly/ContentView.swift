@@ -66,27 +66,33 @@ private struct RootTabView: View {
     init(notificationEngine: NotificationEngine) {
         self.notificationEngine = notificationEngine
         let appearance = UITabBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = UIColor(SublyTheme.background).withAlphaComponent(0.92)
-        appearance.shadowColor = UIColor.white.withAlphaComponent(0.08)
+        appearance.configureWithDefaultBackground()
+        appearance.backgroundColor = UIColor(SublyTheme.surface)
+        appearance.shadowColor = UIColor(SublyTheme.divider).withAlphaComponent(0.6)
+
+        let inactive = UIColor(SublyTheme.tertiaryText)
+        appearance.stackedLayoutAppearance.normal.iconColor = inactive
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: inactive]
+
+        let active = UIColor(SublyTheme.ink)
+        appearance.stackedLayoutAppearance.selected.iconColor = active
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: active]
+
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
     var body: some View {
         TabView(selection: $selection) {
-            HomeView(
-                notificationEngine: notificationEngine,
-                onSeeAllTrials: { selection = .trials }
-            )
-            .tabItem { Label("Home", systemImage: "house.fill") }
-            .tag(Tab.home)
+            HomeView(notificationEngine: notificationEngine)
+                .tabItem { Label("Home", systemImage: "house") }
+                .tag(Tab.home)
 
             TrialsView()
-                .tabItem { Label("Trials", systemImage: "timer") }
+                .tabItem { Label("Trials", systemImage: "bell.badge") }
                 .tag(Tab.trials)
         }
-        .tint(SublyTheme.primaryText)
+        .tint(SublyTheme.ink)
         .onChange(of: appRouter.pendingCancelTrialID) { _, newValue in
             if newValue != nil {
                 selection = .home
@@ -109,6 +115,15 @@ func formatUSD(_ value: Decimal) -> String {
     formatter.numberStyle = .currency
     formatter.currencyCode = "USD"
     return formatter.string(from: value as NSDecimalNumber) ?? "$\(value)"
+}
+
+func trialLengthDescription(for trial: Trial) -> String? {
+    guard let days = trial.trialLengthDays else { return nil }
+    if days >= 350 { return "1-year trial" }
+    if days >= 80 && days <= 100 { return "3-month trial" }
+    if days >= 55 && days <= 65 { return "2-month trial" }
+    if days >= 28 && days <= 32 { return "1-month trial" }
+    return "\(days)-day trial"
 }
 
 func daysUntil(_ date: Date, from now: Date = Date()) -> Int {

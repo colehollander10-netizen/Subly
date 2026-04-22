@@ -118,15 +118,28 @@ struct SettingsView: View {
                 Text(account.email)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(SublyTheme.primaryText)
-                Text(account.lastScannedAt.map { "Scanned \($0.formatted(.relative(presentation: .named)))" } ?? "Not scanned yet")
-                    .font(.system(size: 12))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                if account.needsReconnect {
+                    Text("Reconnect required — Google revoked access")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(SublyTheme.critical)
+                } else {
+                    Text(account.lastScannedAt.map { "Scanned \($0.formatted(.relative(presentation: .named)))" } ?? "Not scanned yet")
+                        .font(.system(size: 12))
+                        .foregroundStyle(SublyTheme.secondaryText)
+                }
             }
             Spacer()
-            Button("Disconnect") {
-                disconnect(account)
+            if account.needsReconnect {
+                Button("Reconnect") {
+                    Task { await reconnect(account) }
+                }
+                .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+            } else {
+                Button("Disconnect") {
+                    disconnect(account)
+                }
+                .buttonStyle(SecondaryTerminalButtonStyle())
             }
-            .buttonStyle(SecondaryTerminalButtonStyle())
         }
     }
 
@@ -150,6 +163,29 @@ struct SettingsView: View {
         EmailEngine.shared.disconnect(accountID: account.id)
         modelContext.delete(account)
         try? modelContext.save()
+    }
+
+    @MainActor
+    private func reconnect(_ account: ConnectedAccount) async {
+        errorMessage = nil
+        guard let presenter = PresentingHost.rootViewController() else {
+            errorMessage = "Could not present sign-in."
+            return
+        }
+        do {
+            // Re-run the sign-in flow. EmailEngine upserts the new refresh
+            // token into Keychain under the same userID, replacing the
+            // revoked one.
+            let refreshed = try await EmailEngine.shared.signInAndAdd(presenting: presenter)
+            if refreshed.userID == account.id {
+                account.needsReconnect = false
+                try? modelContext.save()
+            } else {
+                errorMessage = "Please sign in with \(account.email) to reconnect."
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private var notificationStatusLabel: String {

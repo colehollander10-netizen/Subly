@@ -10,17 +10,23 @@ public final class ConnectedAccount {
     public var email: String
     public var addedAt: Date
     public var lastScannedAt: Date?
+    /// True when Google rejected our refresh token (revoked, Workspace policy
+    /// change, etc.). The account stays in the UI but scans will no-op until
+    /// the user reconnects it in Settings.
+    public var needsReconnect: Bool = false
 
     public init(
         id: String,
         email: String,
         addedAt: Date = Date(),
-        lastScannedAt: Date? = nil
+        lastScannedAt: Date? = nil,
+        needsReconnect: Bool = false
     ) {
         self.id = id
         self.email = email
         self.addedAt = addedAt
         self.lastScannedAt = lastScannedAt
+        self.needsReconnect = needsReconnect
     }
 }
 
@@ -47,6 +53,9 @@ public final class Trial {
     /// True when detected from a welcome-email with no charge amount — needs
     /// user confirmation before becoming a full trial.
     public var isLead: Bool
+    /// Length of the trial in whole days, when known. Nil means we couldn't
+    /// extract or infer it. 7, 14, 30, 90, 365 are the common values.
+    public var trialLengthDays: Int? = nil
 
     public init(
         id: UUID = UUID(),
@@ -59,7 +68,8 @@ public final class Trial {
         sourceEmailID: String?,
         userDismissed: Bool = false,
         isManual: Bool = false,
-        isLead: Bool = false
+        isLead: Bool = false,
+        trialLengthDays: Int? = nil
     ) {
         self.id = id
         self.accountID = accountID
@@ -72,5 +82,6 @@ public final class Trial {
         self.userDismissed = userDismissed
         self.isManual = isManual
         self.isLead = isLead
+        self.trialLengthDays = trialLengthDays
     }
 }
