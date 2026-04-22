@@ -370,31 +370,6 @@ public enum TrialParser {
         )
     }
 
-    /// Try to produce a low-confidence `DetectedLead` from a single message.
-    public static func detectLead(_ message: GmailMessage, now: Date = Date()) -> DetectedLead? {
-        let classification = classifyWithDiagnostics(message, now: now)
-        if let lead = classification.asDetectedLead {
-            parserLog.info("lead[\(message.id, privacy: .public)] service=\(lead.serviceName, privacy: .public) domain=\(lead.senderDomain, privacy: .public) confidence=\(classification.confidence.rawValue, privacy: .public)")
-            return lead
-        }
-        if let reason = classification.rejectionReason {
-            parserLog.debug("lead-reject[\(message.id, privacy: .public)] domain=\(classification.senderDomain, privacy: .public) reason=\(reason.rawValue, privacy: .public)")
-        }
-        return nil
-    }
-
-    /// Parse a full Gmail message into a `DetectedTrial` or reject it.
-    public static func detect(_ message: GmailMessage, now: Date = Date()) -> DetectedTrial? {
-        let classification = classifyWithDiagnostics(message, now: now)
-        if let detected = classification.asDetectedTrial {
-            parserLog.info("accept[\(message.id, privacy: .public)] service=\(detected.serviceName, privacy: .public) domain=\(detected.senderDomain, privacy: .public) confidence=\(classification.confidence.rawValue, privacy: .public)")
-            return detected
-        }
-        if let reason = classification.rejectionReason {
-            parserLog.debug("reject[\(message.id, privacy: .public)] domain=\(classification.senderDomain, privacy: .public) confidence=\(classification.confidence.rawValue, privacy: .public) reason=\(reason.rawValue, privacy: .public)")
-        }
-        return nil
-    }
 }
 
 private extension TrialMessageClassification {
