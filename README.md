@@ -66,6 +66,21 @@ not yet on the App Store. follow along or star to stay updated.
 
 ---
 
+## development environment
+
+### linux cloud agents (Cursor)
+
+- install Swift 6.0 via `swiftly` plus runtime deps (`libncurses6`, `libncursesw6`) to work on Swift package code
+- validate setup with `swift --version` after environment bootstrap
+- iOS app build/run is **not supported** on Linux cloud agents because `xcodebuild`, `xcrun`, Simulator, and Apple iOS SDKs are macOS-only
+
+### macOS local development
+
+- required for full app build/run and simulator testing
+- use Xcode (with iOS SDK + Simulator) to build and launch `Subly`
+
+---
+
 ## license
 
 MIT
