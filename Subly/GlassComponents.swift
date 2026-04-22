@@ -17,11 +17,8 @@ enum SublyTheme {
     static let highlight = Color(red: 0.63, green: 0.51, blue: 0.26)
     static let highlightSoft = Color(red: 0.95, green: 0.92, blue: 0.85)
     static let warning = Color(red: 0.72, green: 0.49, blue: 0.14)
-    static let warningSoft = Color(red: 0.96, green: 0.92, blue: 0.84)
     static let critical = Color(red: 0.60, green: 0.29, blue: 0.24)
-    static let criticalSoft = Color(red: 0.95, green: 0.89, blue: 0.86)
     static let dayOf = Color(red: 0.48, green: 0.17, blue: 0.14)
-    static let dayOfSoft = Color(red: 0.94, green: 0.85, blue: 0.82)
     static let ink = Color(red: 0.12, green: 0.13, blue: 0.14)
 
     static func urgencyColor(daysLeft: Int) -> Color {
@@ -29,13 +26,6 @@ enum SublyTheme {
         if daysLeft <= 3 { return critical }
         if daysLeft <= 7 { return warning }
         return accent
-    }
-
-    static func urgencySurface(daysLeft: Int) -> Color {
-        if daysLeft <= 0 { return dayOfSoft }
-        if daysLeft <= 3 { return criticalSoft }
-        if daysLeft <= 7 { return warningSoft }
-        return accentSoft
     }
 }
 
@@ -117,28 +107,6 @@ struct HairlineDivider: View {
         Rectangle()
             .fill(SublyTheme.divider)
             .frame(height: 1)
-    }
-}
-
-struct QuietActionLink: View {
-    let title: String
-    var systemImage: String?
-    var accent: Color = SublyTheme.primaryText
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                if let systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 12, weight: .semibold))
-                }
-            }
-            .foregroundStyle(accent)
-        }
-        .buttonStyle(.plain)
     }
 }
 
