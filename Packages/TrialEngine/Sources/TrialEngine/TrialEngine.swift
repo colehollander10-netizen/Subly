@@ -6,6 +6,7 @@ import Foundation
 public struct PlannedTrialAlert: Sendable, Equatable {
     public enum Kind: String, Sendable {
         case threeDaysBefore
+        case dayBefore
         case dayOf
     }
 
@@ -21,9 +22,10 @@ public struct PlannedTrialAlert: Sendable, Equatable {
 }
 
 public enum TrialEngine {
-    /// Plans the 3-day and day-of alerts for a given trial end date.
+    /// Plans the 3-day, 1-day, and day-of alerts for a given trial end date.
     ///
     /// - 3-day alert fires at 9:00 local time, 3 days before `trialEndDate`.
+    /// - 1-day alert fires at 9:00 local time, 1 day before `trialEndDate`.
     /// - Day-of alert fires at 9:00 local time on the day the trial ends.
     ///
     /// Alerts whose `triggerDate` is not in the future relative to `now` are
@@ -35,12 +37,14 @@ public enum TrialEngine {
         calendar: Calendar = .current
     ) -> [PlannedTrialAlert] {
         let morningOfEnd = alertTime(on: trialEndDate, calendar: calendar)
-        guard let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: morningOfEnd) else {
+        guard let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: morningOfEnd),
+              let dayBefore = calendar.date(byAdding: .day, value: -1, to: morningOfEnd) else {
             return []
         }
 
         let candidates: [PlannedTrialAlert] = [
             .init(trialID: trialID, kind: .threeDaysBefore, triggerDate: threeDaysBefore),
+            .init(trialID: trialID, kind: .dayBefore, triggerDate: dayBefore),
             .init(trialID: trialID, kind: .dayOf, triggerDate: morningOfEnd),
         ]
 

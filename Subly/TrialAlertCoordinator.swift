@@ -153,6 +153,7 @@ actor TrialAlertCoordinator {
     private func alertType(for kind: PlannedTrialAlert.Kind) -> AlertType {
         switch kind {
         case .threeDaysBefore: return .threeDaysBefore
+        case .dayBefore:       return .dayBefore
         case .dayOf:           return .dayOf
         }
     }
