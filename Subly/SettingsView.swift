@@ -1,4 +1,5 @@
 import NotificationEngine
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -97,9 +98,9 @@ struct SettingsView: View {
                                                 .font(.system(size: 15, weight: .medium))
                                                 .foregroundStyle(SublyTheme.primaryText)
                                             Spacer()
-                                            Image(systemName: "arrow.up.right")
-                                                .font(.system(size: 12, weight: .semibold))
-                                                .foregroundStyle(SublyTheme.tertiaryText)
+                                            Ph.arrowUpRight.bold
+                                                .color(SublyTheme.tertiaryText)
+                                                .frame(width: 14, height: 14)
                                         }
                                         .contentShape(Rectangle())
                                     }
