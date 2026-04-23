@@ -467,7 +467,7 @@ enum DemoContent {
         Trial(
             serviceName: serviceName,
             senderDomain: domain,
-            trialEndDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
+            chargeDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
             chargeAmount: amount,
             detectedAt: referenceDate,
             trialLengthDays: length

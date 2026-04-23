@@ -178,7 +178,7 @@ struct SettingsView: View {
         let header = "Service,End Date,Charge Amount\n"
         let rows = allTrials.map { trial -> String in
             let service = trial.serviceName.replacingOccurrences(of: ",", with: " ")
-            let date = ISO8601DateFormatter().string(from: trial.trialEndDate)
+            let date = ISO8601DateFormatter().string(from: trial.chargeDate)
             let amount = trial.chargeAmount.map { "\($0)" } ?? ""
             return "\(service),\(date),\(amount)"
         }.joined(separator: "\n")
