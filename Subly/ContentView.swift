@@ -55,6 +55,7 @@ private struct RootTabView: View {
     enum Tab {
         case home
         case trials
+        case settings
     }
 
     @Environment(AppRouter.self) private var appRouter
@@ -64,15 +65,16 @@ private struct RootTabView: View {
     init(notificationEngine: NotificationEngine) {
         self.notificationEngine = notificationEngine
         let appearance = UITabBarAppearance()
-        appearance.configureWithDefaultBackground()
-        appearance.backgroundColor = UIColor(SublyTheme.backgroundElevated)
-        appearance.shadowColor = UIColor(SublyTheme.divider).withAlphaComponent(0.6)
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = UIColor(SublyTheme.background).withAlphaComponent(0.72)
+        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        appearance.shadowColor = UIColor(SublyTheme.divider).withAlphaComponent(0.8)
 
         let inactive = UIColor(SublyTheme.tertiaryText)
         appearance.stackedLayoutAppearance.normal.iconColor = inactive
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: inactive]
 
-        let active = UIColor(SublyTheme.primaryText)
+        let active = UIColor(SublyTheme.accent)
         appearance.stackedLayoutAppearance.selected.iconColor = active
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: active]
 
@@ -83,14 +85,18 @@ private struct RootTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             HomeView(notificationEngine: notificationEngine)
-                .tabItem { Label("Home", systemImage: "house") }
+                .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
 
             TrialsView()
-                .tabItem { Label("Trials", systemImage: "bell.badge") }
+                .tabItem { Label("Trials", systemImage: "list.bullet.rectangle.fill") }
                 .tag(Tab.trials)
+
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(Tab.settings)
         }
-        .tint(SublyTheme.primaryText)
+        .tint(SublyTheme.accent)
         .onChange(of: selection) { _, _ in
             Haptics.play(.tabSwitch)
         }
