@@ -324,8 +324,8 @@ struct ServiceIcon: View {
                         image
                             .resizable()
                             .scaledToFit()
-                            .padding(size * 0.16)
-                            .background(SublyTheme.backgroundElevated)
+                            .frame(width: size, height: size)
+                            .clipShape(RoundedRectangle(cornerRadius: size * 0.26, style: .continuous))
                     default:
                         fallback
                     }
@@ -335,25 +335,17 @@ struct ServiceIcon: View {
             }
         }
         .frame(width: size, height: size)
-        .background(
-            RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                .fill(SublyTheme.backgroundElevated)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.26, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                .stroke(SublyTheme.divider, lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.04), radius: size * 0.12, y: size * 0.06)
     }
 
     private var fallback: some View {
         ZStack {
-            fallbackColor
+            RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+                .fill(fallbackColor)
             Text(String(name.prefix(1)).uppercased())
-                .font(.system(size: size * 0.44, weight: .bold))
+                .font(.system(size: size * 0.44, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
+        .frame(width: size, height: size)
     }
 }
 
