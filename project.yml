@@ -24,6 +24,9 @@ packages:
     path: Packages/NotificationEngine
   LogoService:
     path: Packages/LogoService
+  PhosphorSwift:
+    url: https://github.com/phosphor-icons/swift
+    branch: main
 schemes:
   Subly:
     build:
@@ -53,5 +56,6 @@ targets:
       - package: TrialEngine
       - package: NotificationEngine
       - package: LogoService
+      - package: PhosphorSwift
     info:
       path: Subly/Info.plist

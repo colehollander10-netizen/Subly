@@ -1,4 +1,5 @@
 import NotificationEngine
+import PhosphorSwift
 import SwiftUI
 import UIKit
 import UserNotifications
@@ -36,9 +37,9 @@ struct OnboardingView: View {
     private var screen1: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "moon.stars.fill")
-                .font(.system(size: 100, weight: .light))
-                .foregroundStyle(SublyTheme.accent.opacity(0.6))
+            Ph.moonStars.duotone
+                .color(SublyTheme.accent.opacity(0.6))
+                .frame(width: 100, height: 100)
                 .accessibilityHidden(true)
             VStack(spacing: 12) {
                 Text("Subly")
@@ -82,9 +83,9 @@ struct OnboardingView: View {
             .padding(.horizontal, 24)
 
             VStack(spacing: 10) {
-                differentiatorRow(icon: "building.columns", text: "Never connects to your bank.")
-                differentiatorRow(icon: "envelope.badge", text: "Never reads your email.")
-                differentiatorRow(icon: "person.crop.circle.badge.xmark", text: "No sign-up, no cloud, no server.")
+                differentiatorRow(icon: Ph.bank.fill, text: "Never connects to your bank.")
+                differentiatorRow(icon: Ph.envelope.fill, text: "Never reads your email.")
+                differentiatorRow(icon: Ph.userCircleMinus.fill, text: "No sign-up, no cloud, no server.")
             }
             .padding(.horizontal, 20)
 
@@ -106,13 +107,13 @@ struct OnboardingView: View {
     }
 
     @ViewBuilder
-    private func differentiatorRow(icon: String, text: String) -> some View {
+    private func differentiatorRow(icon: Image, text: String) -> some View {
         SurfaceCard(padding: 16) {
             HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(SublyTheme.accent)
-                    .frame(width: 32)
+                icon
+                    .color(SublyTheme.accent)
+                    .frame(width: 24, height: 24)
+                    .frame(width: 32, alignment: .leading)
                 Text(text)
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(SublyTheme.primaryText)
@@ -135,8 +136,8 @@ struct OnboardingView: View {
                 .padding(.horizontal, 24)
 
             VStack(spacing: 10) {
-                differentiatorRow(icon: "pencil", text: "Tap + and type it in.")
-                differentiatorRow(icon: "doc.on.clipboard", text: "Paste a receipt and Subly fills it in.")
+                differentiatorRow(icon: Ph.pencilSimple.bold, text: "Tap + and type it in.")
+                differentiatorRow(icon: Ph.clipboardText.fill, text: "Paste a receipt and Subly fills it in.")
             }
             .padding(.horizontal, 20)
 
@@ -163,9 +164,9 @@ struct OnboardingView: View {
     private var screen4: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image(systemName: "bell.badge.fill")
-                .font(.system(size: 72, weight: .light))
-                .foregroundStyle(SublyTheme.accent.opacity(0.6))
+            Ph.bellRinging.duotone
+                .color(SublyTheme.accent.opacity(0.6))
+                .frame(width: 72, height: 72)
                 .accessibilityHidden(true)
 
             VStack(spacing: 12) {

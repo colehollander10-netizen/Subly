@@ -1,4 +1,5 @@
 import NotificationEngine
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -200,9 +201,8 @@ struct HomeView: View {
     private var emptyState: some View {
         VStack(spacing: 20) {
             Spacer(minLength: 60)
-            Image(systemName: "moon.stars.fill")
-                .font(.system(size: 64, weight: .light))
-                .foregroundStyle(SublyTheme.accent.opacity(0.4))
+            Ph.moonStars.duotone
+                .color(SublyTheme.accent.opacity(0.4))
                 .frame(width: 120, height: 120)
                 .accessibilityHidden(true)
             VStack(spacing: 8) {
@@ -233,9 +233,9 @@ struct HomeView: View {
                 }
             }()
             HStack(spacing: 10) {
-                Image(systemName: "bell.badge")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(SublyTheme.accent)
+                Ph.bellSimple.fill
+                    .color(SublyTheme.accent)
+                    .frame(width: 14, height: 14)
                 Text("Alert · \(planned.triggerDate.formatted(.relative(presentation: .named))) (\(kindLabel))")
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()

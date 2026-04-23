@@ -1,3 +1,4 @@
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -124,9 +125,8 @@ struct TrialsView: View {
     private var emptyState: some View {
         VStack(spacing: 20) {
             Spacer(minLength: 60)
-            Image(systemName: "moon.stars.fill")
-                .font(.system(size: 64, weight: .light))
-                .foregroundStyle(SublyTheme.accent.opacity(0.4))
+            Ph.moonStars.duotone
+                .color(SublyTheme.accent.opacity(0.4))
                 .frame(width: 120, height: 120)
                 .accessibilityHidden(true)
             VStack(spacing: 8) {
