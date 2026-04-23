@@ -175,6 +175,45 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 - Press: `scaleEffect(0.975)` + `opacity(0.92)`, spring `response: 0.22, dampingFraction: 0.82`.
 - Breathing (urgent): 2s ease-in-out, scale 1.0 ↔ 1.03, repeat forever.
 - No decorative motion. Everything animates in response to user intent.
+- Respect `@Environment(\.accessibilityReduceMotion)` — if true, replace spring transitions with instant state changes and disable parallax/stagger.
+
+---
+
+## Motion Choreography
+
+Intentional motion is a signature of apps people open every day. The rule: **break complex animations into small, sequenced sub-animations**, each 100–200ms. Never animate a whole screen's worth of change as one large transition — it reads cheap. Stage it. Each sub-animation must serve user comprehension (what changed? where did it go?).
+
+### Principles
+
+1. **Stage, don't dump.** When a hero card first appears, it is NOT one fade-in. It is: card slide+fade (200ms) → divider draws left-to-right (150ms) → number scales from 0.9 → 1.0 (150ms, delayed 100ms after card) → pill fades in (100ms, delayed 200ms). Total time budget ≤ 500ms.
+2. **Sub-animations are reliably implementable.** Break transitions into named `withAnimation` blocks chained via `.delay()` or separate `@State` triggers with staggered `onAppear`. Avoid one giant custom `AnimatablePair`.
+3. **Numbers count, don't swap.** Any hero numeric value uses `.contentTransition(.numericText())` — the digits flip in place when the amount updates.
+4. **Navigation is directional.** Tab switch = crossfade + 4pt subtle scale from 0.98 → 1.0 (feels like "settling in"). Sheet present = spring from bottom with 0.02 overshoot. Sheet dismiss = straight linear dismiss, no overshoot (feels slower if overshoot dismissal).
+5. **Response to user intent, never decoration.** No looping animations except `Breathing` on urgent items. No confetti. No fake progress.
+6. **Async state changes animate too.** When a trial's urgency tier crosses a threshold (e.g., 4 days → 3 days, so color flips warning → critical), animate the color over 400ms `.easeInOut`. Don't just hard-switch.
+
+### Transition recipes (canonical)
+
+| Event | Recipe |
+|-------|--------|
+| Screen first appears | Container slides up 24pt + fades in, 350ms spring. Child sections stagger in at +80ms each. |
+| Hero card content update | `.contentTransition(.numericText())` for amount. Pill fades 200ms. Card itself does not reflow. |
+| Sheet present | Spring `response: 0.36, dampingFraction: 0.84`, slight overshoot. Content fades in on beat 2 (delay 80ms). |
+| Sheet dismiss | Linear 250ms, no bounce. |
+| Tab switch | 160ms crossfade + scale 0.98 → 1.0 on the incoming tab. |
+| Row tap → detail sheet | Row lifts (shadow opacity 0 → 0.15) 60ms BEFORE the sheet begins presenting. |
+| Urgency color shift | `.easeInOut(duration: 0.4)` on the foreground/background color transition. |
+| Onboarding page transition | Horizontal slide with parallax: foreground moves at `translationX`, background at `translationX * 0.6`. |
+| Add-trial save success | Form collapses (200ms), card rises from form's position into the list (400ms spring), list items re-order (300ms). Three sub-animations, sequenced. |
+
+### Reduced motion
+
+When `accessibilityReduceMotion` is true:
+- All springs → `.none` (instant)
+- Parallax → disabled (foreground and background move together)
+- Stagger delays → 0 (everything appears simultaneously)
+- `.contentTransition(.numericText())` stays (it's an identity transition when motion is reduced)
+- Press feedback (`scaleEffect(0.975)`) stays — it's a tap confirmation, not decoration
 
 ---
 
