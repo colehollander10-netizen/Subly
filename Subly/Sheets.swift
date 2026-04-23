@@ -337,9 +337,14 @@ struct TrialDetailSheet: View {
                         }
 
                         field(title: "Charge amount") {
-                            TextField("20.00", text: $chargeAmountText)
-                                .keyboardType(.decimalPad)
-                                .monospacedDigit()
+                            HStack(spacing: 4) {
+                                Text("$")
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(SublyTheme.tertiaryText)
+                                TextField("20.00", text: $chargeAmountText)
+                                    .keyboardType(.decimalPad)
+                                    .monospacedDigit()
+                            }
                         }
 
                         VStack(spacing: 10) {
