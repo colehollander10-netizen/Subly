@@ -133,12 +133,12 @@ struct CancelFlowSheet: View {
                                 .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .foregroundStyle(SublyTheme.primaryText)
                             if let amount = trial.chargeAmount {
-                                Text("At risk: \(formatUSD(amount)) on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
+                                Text("At risk: \(formatUSD(amount)) on \(trial.chargeDate.formatted(.dateTime.month(.abbreviated).day()))")
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .monospacedDigit()
                                     .foregroundStyle(SublyTheme.urgencyWarning)
                             } else {
-                                Text("Renews on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
+                                Text("Renews on \(trial.chargeDate.formatted(.dateTime.month(.abbreviated).day()))")
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .monospacedDigit()
                                     .foregroundStyle(SublyTheme.secondaryText)
@@ -278,11 +278,11 @@ struct TrialDetailSheet: View {
         self.onCreateNew = onCreateNew
         self.onMarkCancelled = onMarkCancelled
         _serviceName = State(initialValue: trial?.serviceName ?? "")
-        let resolvedEndDate = trial?.trialEndDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
+        let resolvedEndDate = trial?.chargeDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
         _trialEndDate = State(initialValue: resolvedEndDate)
         _chargeAmountText = State(initialValue: trial?.chargeAmount.map { NSDecimalNumber(decimal: $0).stringValue } ?? "")
         if let trial {
-            let days = Calendar.current.dateComponents([.day], from: trial.detectedAt, to: trial.trialEndDate).day ?? 0
+            let days = Calendar.current.dateComponents([.day], from: trial.detectedAt, to: trial.chargeDate).day ?? 0
             let match = Preset.allCases.first { abs($0.rawValue - days) <= 1 }
             _selectedPreset = State(initialValue: match)
         } else {
@@ -471,14 +471,14 @@ struct TrialDetailSheet: View {
             if (trial.senderDomain).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 trial.senderDomain = inferredDomain ?? ""
             }
-            trial.trialEndDate = trialEndDate
+            trial.chargeDate = trialEndDate
             trial.chargeAmount = amount
             onSaveExisting?(trial)
         } else {
             let newTrial = Trial(
                 serviceName: trimmedName,
                 senderDomain: inferredDomain ?? "",
-                trialEndDate: trialEndDate,
+                chargeDate: trialEndDate,
                 chargeAmount: amount
             )
             modelContext.insert(newTrial)

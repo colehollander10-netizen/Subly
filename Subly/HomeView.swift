@@ -12,7 +12,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(
         filter: #Predicate<Trial> { !$0.userDismissed },
-        sort: \Trial.trialEndDate,
+        sort: \Trial.chargeDate,
         order: .forward
     ) private var activeTrials: [Trial]
 
@@ -20,7 +20,7 @@ struct HomeView: View {
     @State private var showingManualAdd = false
 
     private var upcomingSoon: [Trial] {
-        activeTrials.filter { daysUntil($0.trialEndDate) <= 7 }
+        activeTrials.filter { daysUntil($0.chargeDate) <= 7 }
     }
 
     private var nextTrial: Trial? { upcomingSoon.first }
@@ -105,7 +105,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func heroSection(for trial: Trial) -> some View {
-        let days = daysUntil(trial.trialEndDate)
+        let days = daysUntil(trial.chargeDate)
         VStack(alignment: .leading, spacing: 14) {
             SectionLabel(title: "Next ending trial", trailing: "\(days)D")
 
@@ -123,7 +123,7 @@ struct HomeView: View {
                                     .font(.system(size: 22, weight: .semibold, design: .rounded))
                                     .foregroundStyle(SublyTheme.primaryText)
                                 HStack(spacing: 6) {
-                                    Text("Renews \(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
+                                    Text("Renews \(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
                                         .font(.system(size: 12, weight: .medium, design: .default))
                                         .monospacedDigit()
                                         .foregroundStyle(SublyTheme.secondaryText)
@@ -168,7 +168,7 @@ struct HomeView: View {
             }
             .buttonStyle(PressableRowStyle())
             .accessibilityLabel(
-                "\(trial.serviceName), charges \(trial.trialEndDate.formatted(.dateTime.month().day())), \(trial.chargeAmount.map(formatUSD) ?? "amount unknown")"
+                "\(trial.serviceName), charges \(trial.chargeDate.formatted(.dateTime.month().day())), \(trial.chargeAmount.map(formatUSD) ?? "amount unknown")"
             )
         }
     }
@@ -245,7 +245,7 @@ struct HomeView: View {
     }
 
     private func nextPlannedAlert(for trial: Trial) -> PlannedTrialAlert? {
-        let planned = TrialEngine.plan(trialID: trial.id, trialEndDate: trial.trialEndDate)
+        let planned = TrialEngine.plan(trialID: trial.id, trialEndDate: trial.chargeDate)
         return planned.min(by: { $0.triggerDate < $1.triggerDate })
     }
 
@@ -285,14 +285,14 @@ private struct CompactTrialRow: View {
     let trial: Trial
 
     var body: some View {
-        let days = daysUntil(trial.trialEndDate)
+        let days = daysUntil(trial.chargeDate)
         HStack(spacing: 12) {
             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(trial.serviceName)
                     .font(.system(size: 16, weight: .semibold, design: .default))
                     .foregroundStyle(SublyTheme.primaryText)
-                Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                Text(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
                     .foregroundStyle(SublyTheme.tertiaryText)

@@ -8,15 +8,15 @@ struct TrialsView: View {
 
     @Query(
         filter: #Predicate<Trial> { !$0.userDismissed },
-        sort: \Trial.trialEndDate,
+        sort: \Trial.chargeDate,
         order: .forward
     ) private var trials: [Trial]
 
     @State private var selectedTrial: Trial?
     @State private var showingManualAdd = false
 
-    private var endingSoon: [Trial] { trials.filter { daysUntil($0.trialEndDate) <= 7 } }
-    private var later: [Trial] { trials.filter { daysUntil($0.trialEndDate) > 7 } }
+    private var endingSoon: [Trial] { trials.filter { daysUntil($0.chargeDate) <= 7 } }
+    private var later: [Trial] { trials.filter { daysUntil($0.chargeDate) > 7 } }
 
     var body: some View {
         ScreenFrame {
@@ -157,7 +157,7 @@ private struct TrialListRow: View {
     let trial: Trial
 
     var body: some View {
-        let days = daysUntil(trial.trialEndDate)
+        let days = daysUntil(trial.chargeDate)
         HStack(spacing: 14) {
             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 42)
             VStack(alignment: .leading, spacing: 4) {
@@ -165,7 +165,7 @@ private struct TrialListRow: View {
                     .font(.system(size: 16, weight: .semibold, design: .default))
                     .foregroundStyle(SublyTheme.primaryText)
                 HStack(spacing: 6) {
-                    Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+                    Text(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                         .font(.system(size: 12, weight: .medium, design: .default))
                         .monospacedDigit()
                         .foregroundStyle(SublyTheme.secondaryText)
