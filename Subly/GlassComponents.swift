@@ -50,7 +50,7 @@ struct ScreenFrame<Content: View>: View {
     }
 }
 
-struct TerminalSectionLabel: View {
+struct SectionLabel: View {
     let title: String
     var trailing: String?
 
@@ -79,45 +79,38 @@ struct HairlineDivider: View {
     }
 }
 
-struct TerminalButtonStyle: ButtonStyle {
-    let background: Color
-    let foreground: Color
-
-    init(background: Color = SublyTheme.accent, foreground: Color = .white) {
-        self.background = background
-        self.foreground = foreground
-    }
-
+struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(foreground)
+            .foregroundStyle(SublyTheme.background)
+            .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(background.opacity(configuration.isPressed ? 0.82 : 1))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(SublyTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
             )
-            .shadow(color: background.opacity(0.14), radius: 10, y: 5)
     }
 }
 
-struct SecondaryTerminalButtonStyle: ButtonStyle {
+struct GhostButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(SublyTheme.primaryText)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 13)
+            .foregroundStyle(SublyTheme.accent)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(SublyTheme.backgroundElevated.opacity(configuration.isPressed ? 0.82 : 1))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.clear)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(SublyTheme.divider, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(SublyTheme.accent, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.02), radius: 4, y: 2)
+            .opacity(configuration.isPressed ? 0.82 : 1)
     }
 }
 
@@ -131,8 +124,9 @@ struct HeaderIconButton: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(SublyTheme.glassFill)
-                    .overlay(Circle().stroke(SublyTheme.divider, lineWidth: 1))
+                    .fill(.ultraThinMaterial)
+                    .overlay(Circle().fill(SublyTheme.glassFill))
+                    .overlay(Circle().stroke(SublyTheme.glassBorder, lineWidth: 1))
                 if isBusy {
                     ProgressView()
                         .controlSize(.small)
@@ -144,6 +138,8 @@ struct HeaderIconButton: View {
                 }
             }
             .frame(width: 40, height: 40)
+            .padding(2)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PressableRowStyle())
         .accessibilityLabel(accessibilityLabel)
@@ -531,7 +527,7 @@ struct EmptyStateBlock: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(SecondaryTerminalButtonStyle())
+                    .buttonStyle(GhostButton())
                     .padding(.top, 4)
             }
         }

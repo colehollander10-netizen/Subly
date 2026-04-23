@@ -138,7 +138,7 @@ struct HomeView: View {
     @ViewBuilder
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            TerminalSectionLabel(title: "Next ending trial", trailing: nextTrial.map { "\(daysUntil($0.trialEndDate))D" } ?? nil)
+            SectionLabel(title: "Next ending trial", trailing: nextTrial.map { "\(daysUntil($0.trialEndDate))D" } ?? nil)
 
             if let nextTrial {
                 let days = daysUntil(nextTrial.trialEndDate)
@@ -258,7 +258,7 @@ struct HomeView: View {
     private var comingUpSection: some View {
         if !upcomingAfterHero.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                TerminalSectionLabel(title: "Coming up", trailing: "\(upcomingAfterHero.count)")
+                SectionLabel(title: "Coming up", trailing: "\(upcomingAfterHero.count)")
                 VStack(spacing: 8) {
                     ForEach(upcomingAfterHero) { trial in
                         CompactTrialRow(trial: trial)

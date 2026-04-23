@@ -127,9 +127,10 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 - `CompactTrialRow` — row inside a `SurfaceCard` (logo, name, date, urgency value). Rows are divided by `HairlineDivider`, not their own cards.
 
 ### Buttons
-- `PrimaryButton` — lavender fill, white text, 16pt radius. Main CTA.
-- `GhostButton` — transparent fill, 1pt lavender border, lavender text.
-- `HeaderIconButton` — 40pt glass circle, icon inside.
+- `PrimaryButton` — lavender fill, **dark text** (`SublyTheme.background`), 16pt radius. Main CTA. Label uses the dark charcoal token, NOT near-white — lavender-on-white fails WCAG AA (2.05:1); lavender-on-dark-charcoal passes at ~10.7:1.
+- `GhostButton` — transparent fill, 1pt lavender border, lavender text. Lavender-on-charcoal ~7.9:1 passes AA for 14pt.
+- All buttons: `.frame(minHeight: 44)` to satisfy the 44pt touch-target minimum.
+- `HeaderIconButton` — 40pt glass circle, icon inside. (40pt < 44pt is acceptable per HIG when icon button is paired with a larger tap area via `.contentShape(Rectangle())` or enlarged via padding; verify in ticket 4.)
 - `PrimaryAddButton` — FAB, bottom-right, 62pt diameter, glass surface with lavender icon tint.
 
 ### Typography helpers

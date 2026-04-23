@@ -18,7 +18,7 @@ struct SettingsView: View {
             ScreenFrame {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        TerminalSectionLabel(title: "Notifications", trailing: notificationStatusLabel)
+                        SectionLabel(title: "Notifications", trailing: notificationStatusLabel)
                             .padding(.top, 12)
                         HairlineDivider()
 
@@ -33,13 +33,13 @@ struct SettingsView: View {
                                 HStack {
                                     if isUpdatingNotifications {
                                         ProgressView()
-                                            .tint(.white)
+                                            .tint(SublyTheme.background)
                                     }
                                     Text(notificationActionTitle)
                                         .frame(maxWidth: .infinity)
                                 }
                             }
-                            .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+                            .buttonStyle(PrimaryButton())
                             .disabled(isUpdatingNotifications)
                         }
 
@@ -49,7 +49,7 @@ struct SettingsView: View {
                                 .foregroundStyle(SublyTheme.urgencyCritical)
                         }
 
-                        TerminalSectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")
+                        SectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")
                         HairlineDivider()
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -65,7 +65,7 @@ struct SettingsView: View {
                             .tint(SublyTheme.accent)
                         }
 
-                        TerminalSectionLabel(title: "About")
+                        SectionLabel(title: "About")
                         HairlineDivider()
 
                         Text("Subly tracks the free trials you share with it — no email connection, no backend. Everything stays on your device.")

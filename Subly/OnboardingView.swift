@@ -257,7 +257,7 @@ struct OnboardingView: View {
             .padding(.top, 6)
 
             VStack(alignment: .leading, spacing: 14) {
-                TerminalSectionLabel(title: "Before it charges")
+                SectionLabel(title: "Before it charges")
                 Text("A calmer way to stay ahead of free trials.")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(SublyTheme.primaryText)
@@ -272,7 +272,7 @@ struct OnboardingView: View {
 
     private var privacyStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            TerminalSectionLabel(title: "Privacy moat")
+            SectionLabel(title: "Privacy moat")
 
             Text("Nothing leaves your phone. Ever.")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -289,7 +289,7 @@ struct OnboardingView: View {
                         StatOrb(icon: "iphone", tint: portalAccent)
 
                         VStack(alignment: .leading, spacing: 10) {
-                            TerminalSectionLabel(title: "What we use")
+                            SectionLabel(title: "What we use")
                             FeatureLine(icon: "checkmark.circle.fill", text: "Whatever you choose to share with the app")
                             FeatureLine(icon: "checkmark.circle.fill", text: "On-device parsing — no network round-trip")
                             FeatureLine(icon: "checkmark.circle.fill", text: "Local reminders tied to trial end dates")
@@ -302,7 +302,7 @@ struct OnboardingView: View {
                         StatOrb(icon: "shield.slash", tint: SublyTheme.urgencyCritical)
 
                         VStack(alignment: .leading, spacing: 10) {
-                            TerminalSectionLabel(title: "What we never use")
+                            SectionLabel(title: "What we never use")
                             FeatureLine(icon: "xmark.circle.fill", text: "Email accounts or OAuth")
                             FeatureLine(icon: "xmark.circle.fill", text: "Bank accounts or card numbers")
                             FeatureLine(icon: "xmark.circle.fill", text: "Any backend server")
@@ -330,7 +330,7 @@ struct OnboardingView: View {
 
     private var proofStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            TerminalSectionLabel(title: "What it feels like")
+            SectionLabel(title: "What it feels like")
 
             Text("A shortlist with taste, not another cluttered money app.")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -381,7 +381,7 @@ struct OnboardingView: View {
 
     private var notificationsStep: some View {
         VStack(alignment: .leading, spacing: 18) {
-            TerminalSectionLabel(title: "Finish setup")
+            SectionLabel(title: "Finish setup")
 
             Text("Turn on notifications so Subly can do the one thing that matters.")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -422,13 +422,13 @@ struct OnboardingView: View {
                 Button("Continue") {
                     advance()
                 }
-                .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+                .buttonStyle(PrimaryButton())
 
                 if step == .portal, let onPreviewDemo {
                     Button("Preview app first") {
                         onPreviewDemo()
                     }
-                    .buttonStyle(SecondaryTerminalButtonStyle())
+                    .buttonStyle(GhostButton())
                 }
             }
 
@@ -443,12 +443,12 @@ struct OnboardingView: View {
                         Image(systemName: "bell")
                     }
                 }
-                .buttonStyle(TerminalButtonStyle(background: portalAccent, foreground: .white))
+                .buttonStyle(PrimaryButton())
 
                 Button("Not now") {
                     onFinish()
                 }
-                .buttonStyle(SecondaryTerminalButtonStyle())
+                .buttonStyle(GhostButton())
             }
         }
     }
