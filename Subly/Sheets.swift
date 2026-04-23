@@ -241,6 +241,7 @@ struct TrialDetailSheet: View {
     let trial: Trial?
     let onSaveExisting: ((Trial) -> Void)?
     let onCreateNew: ((Trial) -> Void)?
+    let onMarkCancelled: ((Trial) -> Void)?
 
     private enum Preset: Int, CaseIterable, Identifiable {
         case sevenDays = 7
@@ -266,10 +267,16 @@ struct TrialDetailSheet: View {
     @State private var chargeAmountText: String
     @State private var pasteFeedback: String?
 
-    init(trial: Trial? = nil, onSaveExisting: ((Trial) -> Void)? = nil, onCreateNew: ((Trial) -> Void)? = nil) {
+    init(
+        trial: Trial? = nil,
+        onSaveExisting: ((Trial) -> Void)? = nil,
+        onCreateNew: ((Trial) -> Void)? = nil,
+        onMarkCancelled: ((Trial) -> Void)? = nil
+    ) {
         self.trial = trial
         self.onSaveExisting = onSaveExisting
         self.onCreateNew = onCreateNew
+        self.onMarkCancelled = onMarkCancelled
         _serviceName = State(initialValue: trial?.serviceName ?? "")
         let resolvedEndDate = trial?.trialEndDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
         _trialEndDate = State(initialValue: resolvedEndDate)
@@ -346,6 +353,16 @@ struct TrialDetailSheet: View {
                             .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         }
                         .padding(.top, 8)
+
+                        if let trial {
+                            Button("Mark cancelled") {
+                                Haptics.play(.markCanceled)
+                                onMarkCancelled?(trial)
+                                dismiss()
+                            }
+                            .buttonStyle(GhostButton())
+                            .padding(.top, 24)
+                        }
                     }
                     .padding(.horizontal, 20)
                 }
