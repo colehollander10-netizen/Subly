@@ -5,9 +5,9 @@
 
 # Subly
 
-**know before your trial charges you.**
+**know before your trial charges you — without linking your bank or your inbox.**
 
-iOS app that scans your Gmail for free trials and warns you before they auto-charge. no bank link. no card link. just your inbox.
+iOS app that tracks paid free trials and warns you before they auto-charge. no bank link, no inbox access, no account.
 
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-black?style=flat&logo=apple&logoColor=white)
 ![Swift](https://img.shields.io/badge/Swift-5.9-F05138?style=flat&logo=swift&logoColor=white)
@@ -22,20 +22,21 @@ iOS app that scans your Gmail for free trials and warns you before they auto-cha
 
 ## why
 
-every competitor (Rocket Money, Truebill, Copilot) makes you link your bank account. Subly reads your inbox instead. local-first, privacy-first, no Plaid required.
+every competitor makes you link something. Rocket Money and Truebill want your bank. Subby and Bobby want your inbox. Subly wants neither.
 
-free trials are designed to be forgotten. Subly makes sure you don't.
+you capture trials yourself and everything lives on-device. no account, no cloud, no server. free trials are designed to be forgotten; Subly makes sure you don't.
 
 ---
 
 ## features
 
-- scans Gmail for free trials automatically, no manual entry required
-- warns you 3 days, 1 day, and the day a trial ends
-- supports multiple Gmail accounts simultaneously
-- detects charge amount, end date, and service name from email
-- manual add for trials the parser misses (Apple, in-store signups, etc.)
-- no bank login, no card link, no third-party data sharing
+- add a trial with a manual form — merchant name, end date, charge amount
+- paste email or receipt text from the clipboard and it regex-extracts service, date, and amount to prefill the form
+- stored on-device with SwiftData
+- local notifications 3 days before and the day a trial ends
+- no bank login, no inbox access, no account, no server backend
+
+roadmap: more capture methods (share sheet, screenshot ocr) and on-device parsing are on the way for v1.
 
 ---
 
@@ -45,15 +46,14 @@ free trials are designed to be forgotten. Subly makes sure you don't.
 |---|---|
 | UI | SwiftUI (iOS 18, `@Observable`) |
 | storage | SwiftData (local-first) |
-| email | Gmail REST API |
-| auth | GoogleSignIn + Keychain |
-| background | BGAppRefreshTask |
+| capture | manual form, paste-to-prefill |
+| notifications | UserNotifications (local only) |
 
 ---
 
 ## status
 
-actively building toward App Store v1. core Gmail scanning, multi-account support, and notifications are working. parser accuracy and onboarding are the current focus.
+actively building toward App Store v1. manual entry, on-device storage, and local notifications are working. additional capture methods (share sheet, paste, screenshot ocr) and on-device parsing are next.
 
 not yet on the App Store. follow along or star to stay updated.
 
@@ -62,7 +62,6 @@ not yet on the App Store. follow along or star to stay updated.
 ## requirements
 
 - iOS 18+
-- a Gmail account (Google sign-in required)
 
 ---
 

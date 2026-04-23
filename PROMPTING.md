@@ -37,9 +37,9 @@ A prompt that hits all five boxes cuts my over-engineering reflex hard.
 ## 3. Subly defaults — paste at the top of bigger sessions
 
 ```
-Stack: iOS 18 only, SwiftUI only (UIKit allowed only inside EmailEngine for the GIDSignIn bridge), SwiftData @Model, Observation framework (@Observable, @Environment — never ObservableObject / @StateObject / @EnvironmentObject), Swift strict concurrency, StoreKit 2.
-Modules: Subly (app), EmailEngine, LogoService, NotificationEngine, SubscriptionStore, TrialEngine.
-Don't: add files I didn't ask for, add emojis, leave narrative comments, write defensive code around impossible states, upgrade dependencies, log tokens or PII.
+Stack: iOS 18 only, SwiftUI only, SwiftData @Model, Observation framework (@Observable, @Environment — never ObservableObject / @StateObject / @EnvironmentObject), Swift strict concurrency, StoreKit 2.
+Modules: Subly (app), TrialParsingCore, SubscriptionStore, TrialEngine, NotificationEngine, LogoService.
+Don't: add files I didn't ask for, add emojis, leave narrative comments, write defensive code around impossible states, upgrade dependencies, log PII.
 ```
 
 Drop that as the first message. It eliminates 90% of the "why did it reach for ObservableObject" moments.
@@ -115,10 +115,6 @@ Default to Plan for anything that touches more than one SPM module.
 **New view:**
 
 > Build `<ViewName>` in `Subly/Views/`. Purpose: `<purpose>`. Owns no state (pure). Bound to: `<@Observable class>`. States: loading / empty / error / loaded. iOS 18 SwiftUI only. Put any preview fixtures in `MockupPreviews.swift`, not inline.
-
-**EmailEngine change:**
-
-> Edit `Packages/EmailEngine/Sources/EmailEngine/EmailEngine.swift`. `<goal>`. Do not log tokens. Do not expand OAuth scope beyond `GmailScope.readonly`. Do not add a dependency. Keep `EmailEngine` a `final class @unchecked Sendable` singleton.
 
 **SwiftData model change:**
 
