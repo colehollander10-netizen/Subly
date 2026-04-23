@@ -125,7 +125,7 @@ struct CancelFlowSheet: View {
             ScreenFrame {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        TerminalSectionLabel(title: "Cancel flow")
+                        SectionLabel(title: "Cancel flow")
                             .padding(.top, 12)
 
                         VStack(alignment: .leading, spacing: 10) {
@@ -170,7 +170,7 @@ struct CancelFlowSheet: View {
                                     Text("Open \(url.host() ?? guide.title)")
                                         .frame(maxWidth: .infinity)
                                 }
-                                .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+                                .buttonStyle(PrimaryButton())
                             }
 
                             Button {
@@ -182,7 +182,7 @@ struct CancelFlowSheet: View {
                                 Text("Search cancel instructions")
                                     .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(SecondaryTerminalButtonStyle())
+                            .buttonStyle(GhostButton())
                         }
 
                         HairlineDivider()
@@ -195,7 +195,7 @@ struct CancelFlowSheet: View {
                                 Text("I cancelled it")
                                     .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(TerminalButtonStyle(background: SublyTheme.primaryText, foreground: SublyTheme.background))
+                            .buttonStyle(PrimaryButton())
 
                             Button {
                                 onSnooze()
@@ -204,12 +204,12 @@ struct CancelFlowSheet: View {
                                 Text("Remind me in 1 hour")
                                     .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(SecondaryTerminalButtonStyle())
+                            .buttonStyle(GhostButton())
 
                             Button("I'll do it later") {
                                 dismiss()
                             }
-                            .buttonStyle(SecondaryTerminalButtonStyle())
+                            .buttonStyle(GhostButton())
                         }
                         .padding(.bottom, 24)
                     }
@@ -288,7 +288,7 @@ struct TrialDetailSheet: View {
             ScreenFrame {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
-                        TerminalSectionLabel(title: trial == nil ? "New trial" : "Edit trial")
+                        SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
                             .padding(.top, 12)
                         HairlineDivider()
 
@@ -301,7 +301,7 @@ struct TrialDetailSheet: View {
                                     Text("Paste email to prefill")
                                 }
                             }
-                            .buttonStyle(SecondaryTerminalButtonStyle())
+                            .buttonStyle(GhostButton())
 
                             if let pasteFeedback {
                                 Text(pasteFeedback)
@@ -342,7 +342,7 @@ struct TrialDetailSheet: View {
                                 Text("Save")
                                     .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
+                            .buttonStyle(PrimaryButton())
                             .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         }
                         .padding(.top, 8)
