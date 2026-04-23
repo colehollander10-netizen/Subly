@@ -138,7 +138,7 @@ struct HeaderIconButton: View {
                 }
             }
             .frame(width: 40, height: 40)
-            .frame(width: 44, height: 44)
+            .padding(2)
             .contentShape(Rectangle())
         }
         .buttonStyle(PressableRowStyle())
