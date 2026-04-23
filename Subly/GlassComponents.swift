@@ -57,13 +57,13 @@ struct TerminalSectionLabel: View {
     var body: some View {
         HStack(alignment: .center) {
             Text(title.uppercased())
-                .font(.system(size: 10, weight: .medium))
-                .tracking(2.2)
+                .font(.system(size: 10, weight: .semibold, design: .default))
+                .tracking(1.8)
                 .foregroundStyle(SublyTheme.tertiaryText)
             Spacer()
             if let trailing {
                 Text(trailing)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(SublyTheme.tertiaryText)
             }
@@ -156,7 +156,7 @@ struct AccentPill: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 10, weight: .bold))
+            .font(.system(size: 10, weight: .bold, design: .rounded))
             .monospacedDigit()
             .foregroundStyle(color)
             .tracking(0.8)
@@ -522,11 +522,11 @@ struct EmptyStateBlock: View {
                     .foregroundStyle(SublyTheme.accent)
             }
             Text(title)
-                .font(.system(size: 26, weight: .bold))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(SublyTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Text(message)
-                .font(.system(size: 15))
+                .font(.system(size: 15, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             if let actionTitle, let action {

@@ -91,13 +91,14 @@ struct HomeView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(Date.now.formatted(.dateTime.month(.wide).day()))
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .monospacedDigit()
                     .foregroundStyle(SublyTheme.tertiaryText)
                 Text("Subly")
-                    .font(.system(size: 34, weight: .black))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+                    .foregroundStyle(SublyTheme.accent)
                 Text("Know before your trials charge you.")
-                    .font(.system(size: 16, weight: .regular))
+                    .font(.system(size: 15, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
 
@@ -119,7 +120,7 @@ struct HomeView: View {
                     .frame(width: 7, height: 7)
 
                 Text("Preview data is showing until your first real trial is found.")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.tertiaryText)
             }
 
@@ -129,7 +130,7 @@ struct HomeView: View {
                 showDemoData = false
             }
             .buttonStyle(.plain)
-            .font(.system(size: 12, weight: .semibold))
+            .font(.system(size: 12, weight: .semibold, design: .default))
             .foregroundStyle(SublyTheme.primaryText)
         }
     }
@@ -148,18 +149,19 @@ struct HomeView: View {
 
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(nextTrial.serviceName)
-                                    .font(.system(size: 28, weight: .bold))
+                                    .font(.system(size: 22, weight: .semibold, design: .rounded))
                                     .foregroundStyle(SublyTheme.primaryText)
                                 HStack(spacing: 6) {
                                     Text("Renews \(nextTrial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
-                                        .font(.system(size: 14, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium, design: .default))
+                                        .monospacedDigit()
                                         .foregroundStyle(SublyTheme.secondaryText)
                                     if let lengthLabel = trialLengthDescription(for: nextTrial) {
                                         Text("·")
-                                            .font(.system(size: 14, weight: .medium))
+                                            .font(.system(size: 12, weight: .medium, design: .default))
                                             .foregroundStyle(SublyTheme.tertiaryText)
                                         Text(lengthLabel)
-                                            .font(.system(size: 13, weight: .semibold))
+                                            .font(.system(size: 12, weight: .medium, design: .default))
                                             .foregroundStyle(SublyTheme.tertiaryText)
                                     }
                                 }
@@ -178,25 +180,26 @@ struct HomeView: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             Text(nextTrial.chargeAmount.map(formatUSD) ?? "Amount unknown")
-                                .font(.system(size: 50, weight: .bold))
+                                .font(.system(size: 56, weight: .bold, design: .rounded))
                                 .monospacedDigit()
                                 .foregroundStyle(SublyTheme.primaryText)
                                 .minimumScaleFactor(0.72)
                                 .lineLimit(1)
                             Text(daysLabel(days))
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: 15, weight: .medium, design: .default))
+                                .monospacedDigit()
                                 .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
                         }
 
                         HStack(alignment: .center) {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(isShowingDemoTrials ? "Preview trial" : "Cancellation path ready")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.system(size: 12, weight: .medium, design: .default))
                                     .foregroundStyle(SublyTheme.primaryText)
                                 Text(isShowingDemoTrials
                                      ? "Add a real trial to enable swipe-to-cancel."
                                      : "Swipe left to open the real cancel steps for this service.")
-                                    .font(.system(size: 13))
+                                    .font(.system(size: 15, weight: .medium, design: .default))
                                     .foregroundStyle(SublyTheme.secondaryText)
                             }
 
@@ -282,7 +285,8 @@ struct HomeView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(SublyTheme.accent)
                 Text("Alert · \(planned.triggerDate.formatted(.relative(presentation: .named))) (\(kindLabel))")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .monospacedDigit()
                     .foregroundStyle(SublyTheme.secondaryText)
             }
         }
@@ -302,7 +306,8 @@ struct HomeView: View {
             Text(activeTrials.isEmpty
                  ? "Share a trial receipt with Subly to start tracking."
                  : "\(activeTrials.count) trial\(activeTrials.count == 1 ? "" : "s") tracked")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 12, weight: .medium, design: .default))
+                .monospacedDigit()
                 .foregroundStyle(SublyTheme.tertiaryText)
             Spacer()
         }
@@ -374,17 +379,18 @@ private struct CompactTrialRow: View {
             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(trial.serviceName)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold, design: .default))
                     .foregroundStyle(SublyTheme.primaryText)
                 Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .monospacedDigit()
                     .foregroundStyle(SublyTheme.tertiaryText)
             }
             Spacer()
             Text(days <= 0 ? "TODAY" : "\(days)D")
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 10, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .tracking(0.6)
+                .tracking(0.8)
                 .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
         }
         .padding(.horizontal, 14)
