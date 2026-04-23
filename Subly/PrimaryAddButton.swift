@@ -58,47 +58,31 @@ struct PrimaryAddButton: View {
                 )
         } else {
             ZStack {
-                Circle().fill(SublyTheme.backgroundElevated)
                 Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.22), .clear],
-                            startPoint: .top,
-                            endPoint: .center
-                        ),
-                        lineWidth: 1
+                    .fill(.ultraThinMaterial)
+                    .overlay(Circle().fill(SublyTheme.glassFill))
+                    .overlay(Circle().stroke(SublyTheme.glassBorder, lineWidth: 1))
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [SublyTheme.glassHighlight, .clear],
+                                    startPoint: .top,
+                                    endPoint: .center
+                                ),
+                                lineWidth: 1
+                            )
+                            .blendMode(.plusLighter)
                     )
-                Circle()
-                    .fill(Color.white.opacity(0.12))
-                    .mask(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .black, location: 0),
-                                .init(color: .black, location: 0.4),
-                                .init(color: .clear, location: 0.4)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .allowsHitTesting(false)
             }
         }
     }
 }
 
 private struct PrimaryAddButtonStyle: ButtonStyle {
-    // Dual shadows (tight + diffuse) stack so the button reads as a grounded bead and a lifted element against Subly's warm off-white.
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .shadow(color: Color.black.opacity(0.18), radius: 6, x: 0, y: 3)
-            .shadow(
-                color: Color.black.opacity(0.10),
-                radius: configuration.isPressed ? 10 : 18,
-                x: 0,
-                y: configuration.isPressed ? 4 : 10
-            )
             .animation(.spring(response: 0.22, dampingFraction: 0.78), value: configuration.isPressed)
     }
 }

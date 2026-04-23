@@ -6,7 +6,6 @@ import UIKit
 import UserNotifications
 
 struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     @Query private var allTrials: [Trial]
@@ -120,14 +119,9 @@ struct SettingsView: View {
                             .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundStyle(SublyTheme.primaryText)
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") { dismiss() }
-                            .foregroundStyle(SublyTheme.primaryText)
-                    }
                 }
             }
         }
-        .presentationDetents([.large])
         .confirmationDialog("Delete all trials?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
             Button("Delete all", role: .destructive) {
                 Haptics.play(.destructiveConfirm)
