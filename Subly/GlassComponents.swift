@@ -163,6 +163,87 @@ struct AccentPill: View {
     }
 }
 
+/// Compact live-updating preview row. ~72pt tall. Used in TrialDetailSheet
+/// to show the user what their trial entry will look like in Home/Trials.
+struct TrialPreviewRow: View {
+    let name: String
+    let domain: String?
+    let endDate: Date?
+    let amount: Decimal?
+
+    private var displayName: String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Your trial" : trimmed
+    }
+
+    private var daysUntilEnd: Int? {
+        guard let endDate else { return nil }
+        return Calendar.current.dateComponents([.day], from: Date(), to: endDate).day
+    }
+
+    private var urgencyColor: Color {
+        guard let days = daysUntilEnd else { return SublyTheme.tertiaryText }
+        return SublyTheme.urgencyColor(daysLeft: days)
+    }
+
+    private var daysLeftText: String {
+        guard let days = daysUntilEnd else { return "—" }
+        if days <= 0 { return "TODAY" }
+        return "\(days)D LEFT"
+    }
+
+    private var subtitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        switch (endDate, amount) {
+        case (nil, _):
+            return "Set an end date"
+        case (let date?, nil):
+            return "Ends \(formatter.string(from: date))"
+        case (let date?, let amount?):
+            return "Ends \(formatter.string(from: date)) · \(formatUSD(amount))"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ServiceIcon(name: displayName, domain: domain, size: 40)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(displayName)
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(SublyTheme.primaryText)
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium, design: .default))
+                    .monospacedDigit()
+                    .foregroundStyle(SublyTheme.secondaryText)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            if daysUntilEnd != nil {
+                AccentPill(text: daysLeftText, color: urgencyColor)
+                    .contentTransition(.numericText())
+                    .breathing((daysUntilEnd ?? 99) <= 3)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(SublyTheme.backgroundElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(SublyTheme.divider, lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct GlassCard<Content: View>: View {
     let cornerRadius: CGFloat
     let padding: CGFloat
