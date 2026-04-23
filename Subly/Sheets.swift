@@ -136,7 +136,7 @@ struct CancelFlowSheet: View {
                                 Text("At risk: \(formatUSD(amount)) on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
                                     .font(.system(size: 14, weight: .medium))
                                     .monospacedDigit()
-                                    .foregroundStyle(SublyTheme.warning)
+                                    .foregroundStyle(SublyTheme.urgencyWarning)
                             } else {
                                 Text("Renews on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
                                     .font(.system(size: 14, weight: .medium))
@@ -328,13 +328,6 @@ struct TrialDetailSheet: View {
                                 .monospacedDigit()
                         }
 
-                        if let trial {
-                            field(title: "Source") {
-                                Text(trial.sourceEmailID == nil ? "Manual entry" : "Detected from Gmail")
-                                    .foregroundStyle(SublyTheme.secondaryText)
-                            }
-                        }
-
                         VStack(spacing: 10) {
                             Button {
                                 save()
@@ -384,11 +377,11 @@ struct TrialDetailSheet: View {
                     } label: {
                         Text(preset.label)
                             .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                            .foregroundStyle(isSelected ? SublyTheme.surface : SublyTheme.primaryText)
+                            .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.primaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(
-                                Capsule().fill(isSelected ? SublyTheme.primaryText : SublyTheme.surface)
+                                Capsule().fill(isSelected ? SublyTheme.primaryText : SublyTheme.backgroundElevated)
                             )
                             .overlay(
                                 Capsule().strokeBorder(isSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
@@ -403,11 +396,11 @@ struct TrialDetailSheet: View {
                 } label: {
                     Text("Custom")
                         .font(.system(size: 13, weight: customSelected ? .semibold : .medium))
-                        .foregroundStyle(customSelected ? SublyTheme.surface : SublyTheme.primaryText)
+                        .foregroundStyle(customSelected ? SublyTheme.background : SublyTheme.primaryText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(
-                            Capsule().fill(customSelected ? SublyTheme.primaryText : SublyTheme.surface)
+                            Capsule().fill(customSelected ? SublyTheme.primaryText : SublyTheme.backgroundElevated)
                         )
                         .overlay(
                             Capsule().strokeBorder(customSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
@@ -447,13 +440,10 @@ struct TrialDetailSheet: View {
             onSaveExisting?(trial)
         } else {
             let newTrial = Trial(
-                accountID: "",
                 serviceName: trimmedName,
                 senderDomain: inferredDomain ?? "",
                 trialEndDate: trialEndDate,
-                chargeAmount: amount,
-                sourceEmailID: nil,
-                isManual: true
+                chargeAmount: amount
             )
             modelContext.insert(newTrial)
             onCreateNew?(newTrial)

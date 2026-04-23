@@ -9,35 +9,29 @@
 /* Begin PBXBuildFile section */
 		0E0DE27729B561D0AF7A63A3 /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */; };
 		29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */ = {isa = PBXBuildFile; productRef = DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */; };
-		2D7D87AD2653A856A3EE667D /* ScanScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCF45AE9D426C51826045A0 /* ScanScheduler.swift */; };
 		2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124542706504627C05A31D7 /* SublyApp.swift */; };
 		3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BFB77DC074BCDBE021E77E /* GlassComponents.swift */; };
 		3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */; };
 		43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014D90B895BE78821E85C8D0 /* Haptics.swift */; };
 		4847E56243A919BA33F95368 /* LogoService in Frameworks */ = {isa = PBXBuildFile; productRef = 4125BA4396A89B774859EEE5 /* LogoService */; };
 		4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */ = {isa = PBXBuildFile; productRef = F682B7F3898CBF29726418B8 /* NotificationEngine */; };
-		76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 3F563A9C8C22DF54EFDD273B /* EmailEngine */; };
+		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
 		80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F53E060DE358F2E3A716C1F /* SettingsView.swift */; };
 		8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */; };
-		97AD9AF714BC5ABA25A0E353 /* ScanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */; };
 		B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC817B909A0E79AA12666CC /* HomeView.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
-		D249D2083C380B7FD09971F5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */; };
 		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
 		E40C9EF102C9BE67ECE33D7F /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFEF70BAE12EE2AE4FF65A1 /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		014D90B895BE78821E85C8D0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
-		1CCF45AE9D426C51826045A0 /* ScanScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanScheduler.swift; sourceTree = "<group>"; };
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
-		2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCoordinator.swift; sourceTree = "<group>"; };
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4AC817B909A0E79AA12666CC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F53E060DE358F2E3A716C1F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		52660D70847350379CA95657 /* EmailEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EmailEngine; path = Packages/EmailEngine; sourceTree = SOURCE_ROOT; };
 		6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryAddButton.swift; sourceTree = "<group>"; };
 		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
@@ -47,8 +41,8 @@
 		9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialsView.swift; sourceTree = "<group>"; };
 		A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
 		ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
-		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialParsingCore; path = Packages/TrialParsingCore; sourceTree = SOURCE_ROOT; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		FA91B5213420B1387EF10798 /* NotificationEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NotificationEngine; path = Packages/NotificationEngine; sourceTree = SOURCE_ROOT; };
 		FFFEF70BAE12EE2AE4FF65A1 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -59,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				76A3E9669897B476B881DC53 /* EmailEngine in Frameworks */,
+				76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */,
 				29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */,
 				BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */,
 				4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */,
@@ -90,11 +84,11 @@
 		B5734A41E0D149EE60763C79 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				52660D70847350379CA95657 /* EmailEngine */,
 				845A1AFB35613B0BBCA5AA27 /* LogoService */,
 				FA91B5213420B1387EF10798 /* NotificationEngine */,
 				88724751DD683D8021D2B1A5 /* SubscriptionStore */,
 				F4190BCC05AEE42E895FA79F /* TrialEngine */,
+				D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -104,15 +98,12 @@
 			children = (
 				46C27551FBD7D8F0A3E32A75 /* ContentView.swift */,
 				90BFB77DC074BCDBE021E77E /* GlassComponents.swift */,
-				CA84E5CF99618AC78D2D49C5 /* GoogleService-Info.plist */,
 				014D90B895BE78821E85C8D0 /* Haptics.swift */,
 				4AC817B909A0E79AA12666CC /* HomeView.swift */,
 				7D86B6F6DE128CC1639F74AB /* Info.plist */,
 				A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */,
 				FFFEF70BAE12EE2AE4FF65A1 /* OnboardingView.swift */,
 				6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */,
-				2E2DFCDE67639814A080F8C1 /* ScanCoordinator.swift */,
-				1CCF45AE9D426C51826045A0 /* ScanScheduler.swift */,
 				4F53E060DE358F2E3A716C1F /* SettingsView.swift */,
 				99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */,
 				2124542706504627C05A31D7 /* SublyApp.swift */,
@@ -130,7 +121,6 @@
 			buildConfigurationList = 1F8EA3BDC37EBFD5B2C3D069 /* Build configuration list for PBXNativeTarget "Subly" */;
 			buildPhases = (
 				F9D69CFB32D5B0CC49553AC0 /* Sources */,
-				42167084FFF17860C12BF75D /* Resources */,
 				AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */,
 			);
 			buildRules = (
@@ -139,7 +129,7 @@
 			);
 			name = Subly;
 			packageProductDependencies = (
-				3F563A9C8C22DF54EFDD273B /* EmailEngine */,
+				329F2AA144A016AD33BEF1C2 /* TrialParsingCore */,
 				DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */,
 				8997EAEBC73EFB0F1D6454DC /* TrialEngine */,
 				F682B7F3898CBF29726418B8 /* NotificationEngine */,
@@ -156,7 +146,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 1D43EA570A8D48BC54C3FE63 /* Build configuration list for PBXProject "Subly" */;
 			developmentRegion = en;
@@ -168,11 +160,11 @@
 			mainGroup = 84129931BAAB99A2CC3285E8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				122CC77727332BA362CCB471 /* XCLocalSwiftPackageReference "Packages/EmailEngine" */,
 				39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */,
 				FF8D1D533A8BB1B52EAFD9A6 /* XCLocalSwiftPackageReference "Packages/NotificationEngine" */,
 				09CEC8CF485092179CE20A2D /* XCLocalSwiftPackageReference "Packages/SubscriptionStore" */,
 				EC891433965CDE866B412AB6 /* XCLocalSwiftPackageReference "Packages/TrialEngine" */,
+				CE34AD274B2B693A0C1D26EF /* XCLocalSwiftPackageReference "Packages/TrialParsingCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4C0B164B7A75DD4A9A40C1B6 /* Products */;
@@ -183,17 +175,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		42167084FFF17860C12BF75D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D249D2083C380B7FD09971F5 /* GoogleService-Info.plist in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F9D69CFB32D5B0CC49553AC0 /* Sources */ = {
@@ -207,8 +188,6 @@
 				0E0DE27729B561D0AF7A63A3 /* NotificationDelegate.swift in Sources */,
 				E40C9EF102C9BE67ECE33D7F /* OnboardingView.swift in Sources */,
 				BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */,
-				97AD9AF714BC5ABA25A0E353 /* ScanCoordinator.swift in Sources */,
-				2D7D87AD2653A856A3EE667D /* ScanScheduler.swift in Sources */,
 				80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */,
 				D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */,
 				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
@@ -224,7 +203,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -256,10 +234,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = Q89WTA6AYN;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -278,7 +254,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.colehollander.subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -306,7 +281,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -338,10 +312,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = Q89WTA6AYN;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -367,7 +339,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.colehollander.subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -419,13 +390,13 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/SubscriptionStore;
 		};
-		122CC77727332BA362CCB471 /* XCLocalSwiftPackageReference "Packages/EmailEngine" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/EmailEngine;
-		};
 		39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/LogoService;
+		};
+		CE34AD274B2B693A0C1D26EF /* XCLocalSwiftPackageReference "Packages/TrialParsingCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TrialParsingCore;
 		};
 		EC891433965CDE866B412AB6 /* XCLocalSwiftPackageReference "Packages/TrialEngine" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -438,9 +409,9 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3F563A9C8C22DF54EFDD273B /* EmailEngine */ = {
+		329F2AA144A016AD33BEF1C2 /* TrialParsingCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = EmailEngine;
+			productName = TrialParsingCore;
 		};
 		4125BA4396A89B774859EEE5 /* LogoService */ = {
 			isa = XCSwiftPackageProductDependency;

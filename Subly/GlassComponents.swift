@@ -4,65 +4,34 @@ import SubscriptionStore
 import SwiftUI
 
 enum SublyTheme {
-    static let background = Color(red: 0.94, green: 0.93, blue: 0.90)
-    static let backgroundTint = Color(red: 0.91, green: 0.93, blue: 0.89)
-    static let surface = Color(red: 0.99, green: 0.98, blue: 0.97)
-    static let elevated = Color.white
-    static let primaryText = Color(red: 0.10, green: 0.11, blue: 0.13)
-    static let secondaryText = Color(red: 0.35, green: 0.37, blue: 0.39)
-    static let tertiaryText = Color(red: 0.52, green: 0.54, blue: 0.57)
-    static let divider = Color(red: 0.83, green: 0.82, blue: 0.79)
-    static let accent = Color(red: 0.27, green: 0.47, blue: 0.37)
-    static let accentSoft = Color(red: 0.90, green: 0.94, blue: 0.91)
-    static let highlight = Color(red: 0.63, green: 0.51, blue: 0.26)
-    static let highlightSoft = Color(red: 0.95, green: 0.92, blue: 0.85)
-    static let warning = Color(red: 0.72, green: 0.49, blue: 0.14)
-    static let critical = Color(red: 0.60, green: 0.29, blue: 0.24)
-    static let dayOf = Color(red: 0.48, green: 0.17, blue: 0.14)
-    static let ink = Color(red: 0.12, green: 0.13, blue: 0.14)
+    static let background = Color(red: 14 / 255, green: 15 / 255, blue: 18 / 255)
+    static let backgroundElevated = Color(red: 20 / 255, green: 22 / 255, blue: 26 / 255)
+    static let glassFill = Color.white.opacity(0.04)
+    static let glassBorder = Color.white.opacity(0.12)
+    static let glassHighlight = Color.white.opacity(0.18)
+    static let primaryText = Color(red: 245 / 255, green: 245 / 255, blue: 247 / 255)
+    static let secondaryText = Color(red: 166 / 255, green: 168 / 255, blue: 181 / 255)
+    static let tertiaryText = Color(red: 110 / 255, green: 112 / 255, blue: 128 / 255)
+    static let divider = Color.white.opacity(0.08)
+    static let accent = Color(red: 184 / 255, green: 164 / 255, blue: 255 / 255)
+    static let accentSoft = Color(red: 184 / 255, green: 164 / 255, blue: 255 / 255).opacity(0.14)
+    static let urgencyCalm = Color(red: 143 / 255, green: 163 / 255, blue: 190 / 255)
+    static let urgencyWarning = Color(red: 245 / 255, green: 179 / 255, blue: 102 / 255)
+    static let urgencyCritical = Color(red: 255 / 255, green: 122 / 255, blue: 107 / 255)
+    static let urgencyDayOf = Color(red: 255 / 255, green: 90 / 255, blue: 74 / 255)
 
     static func urgencyColor(daysLeft: Int) -> Color {
-        if daysLeft <= 0 { return dayOf }
-        if daysLeft <= 3 { return critical }
-        if daysLeft <= 7 { return warning }
-        return accent
+        if daysLeft <= 0 { return urgencyDayOf }
+        if daysLeft <= 3 { return urgencyCritical }
+        if daysLeft <= 7 { return urgencyWarning }
+        return urgencyCalm
     }
 }
 
 struct AppBackground: View {
     var body: some View {
-        ZStack {
-            SublyTheme.background
-
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(0.75),
-                    SublyTheme.background,
-                    SublyTheme.backgroundTint.opacity(0.75),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            RoundedRectangle(cornerRadius: 120, style: .continuous)
-                .fill(SublyTheme.highlight.opacity(0.07))
-                .frame(width: 280, height: 280)
-                .blur(radius: 60)
-                .offset(x: 140, y: -210)
-
-            RoundedRectangle(cornerRadius: 140, style: .continuous)
-                .fill(SublyTheme.accent.opacity(0.08))
-                .frame(width: 320, height: 320)
-                .blur(radius: 70)
-                .offset(x: -170, y: 420)
-
-            RoundedRectangle(cornerRadius: 150, style: .continuous)
-                .fill(Color.white.opacity(0.45))
-                .frame(width: 260, height: 260)
-                .blur(radius: 70)
-                .offset(x: -140, y: -160)
-        }
-        .ignoresSafeArea()
+        SublyTheme.background
+            .ignoresSafeArea()
     }
 }
 
@@ -114,7 +83,7 @@ struct TerminalButtonStyle: ButtonStyle {
     let background: Color
     let foreground: Color
 
-    init(background: Color = SublyTheme.primaryText, foreground: Color = .white) {
+    init(background: Color = SublyTheme.accent, foreground: Color = .white) {
         self.background = background
         self.foreground = foreground
     }
@@ -142,7 +111,7 @@ struct SecondaryTerminalButtonStyle: ButtonStyle {
             .padding(.vertical, 13)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(SublyTheme.elevated.opacity(configuration.isPressed ? 0.82 : 1))
+                    .fill(SublyTheme.backgroundElevated.opacity(configuration.isPressed ? 0.82 : 1))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -162,7 +131,7 @@ struct HeaderIconButton: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(SublyTheme.surface)
+                    .fill(SublyTheme.glassFill)
                     .overlay(Circle().stroke(SublyTheme.divider, lineWidth: 1))
                 if isBusy {
                     ProgressView()
@@ -216,7 +185,7 @@ struct SurfaceCard<Content: View>: View {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(tint ?? SublyTheme.surface)
+                    .fill(tint ?? SublyTheme.glassFill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -257,7 +226,7 @@ struct FlagshipCard<Content: View>: View {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(SublyTheme.elevated)
+                    .fill(SublyTheme.backgroundElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -278,7 +247,7 @@ struct FlagshipCard<Content: View>: View {
                     Rectangle()
                         .fill(
                             LinearGradient(
-                                colors: [SublyTheme.critical.opacity(0.22), .clear],
+                                colors: [SublyTheme.urgencyCritical.opacity(0.22), .clear],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -360,7 +329,7 @@ struct ServiceIcon: View {
                             .resizable()
                             .scaledToFit()
                             .padding(size * 0.16)
-                            .background(SublyTheme.elevated)
+                            .background(SublyTheme.backgroundElevated)
                     default:
                         fallback
                     }
@@ -372,7 +341,7 @@ struct ServiceIcon: View {
         .frame(width: size, height: size)
         .background(
             RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                .fill(SublyTheme.elevated)
+                .fill(SublyTheme.backgroundElevated)
         )
         .clipShape(RoundedRectangle(cornerRadius: size * 0.26, style: .continuous))
         .overlay(
@@ -492,17 +461,10 @@ enum BrandDirectory {
 enum DemoContent {
     static func activeTrials(referenceDate: Date = Date()) -> [Trial] {
         [
-            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, manual: false, length: 14, from: referenceDate),
-            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, manual: false, length: 30, from: referenceDate),
-            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, manual: true, length: 14, from: referenceDate),
-            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, manual: false, length: 30, from: referenceDate),
-        ]
-    }
-
-    static func leads(referenceDate: Date = Date()) -> [Trial] {
-        [
-            demoLead("Perplexity Pro", domain: "perplexity.ai", daysOut: 7, from: referenceDate),
-            demoLead("Headspace", domain: "headspace.com", daysOut: 11, from: referenceDate),
+            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, length: 14, from: referenceDate),
+            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, length: 30, from: referenceDate),
+            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, length: 14, from: referenceDate),
+            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, length: 30, from: referenceDate),
         ]
     }
 
@@ -511,38 +473,16 @@ enum DemoContent {
         domain: String,
         daysOut: Int,
         amount: Decimal,
-        manual: Bool,
         length: Int? = nil,
         from referenceDate: Date
     ) -> Trial {
         Trial(
-            accountID: "demo",
             serviceName: serviceName,
             senderDomain: domain,
             trialEndDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
             chargeAmount: amount,
             detectedAt: referenceDate,
-            sourceEmailID: manual ? nil : "demo-\(serviceName)",
-            isManual: manual,
             trialLengthDays: length
-        )
-    }
-
-    private static func demoLead(
-        _ serviceName: String,
-        domain: String,
-        daysOut: Int,
-        from referenceDate: Date
-    ) -> Trial {
-        Trial(
-            accountID: "demo",
-            serviceName: serviceName,
-            senderDomain: domain,
-            trialEndDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
-            chargeAmount: nil,
-            detectedAt: referenceDate,
-            sourceEmailID: "demo-lead-\(serviceName)",
-            isLead: true
         )
     }
 }

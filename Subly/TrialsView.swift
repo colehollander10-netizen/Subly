@@ -7,19 +7,12 @@ struct TrialsView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed && !$0.isLead },
+        filter: #Predicate<Trial> { !$0.userDismissed },
         sort: \Trial.trialEndDate,
         order: .forward
     ) private var trials: [Trial]
 
-    @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed && $0.isLead },
-        sort: \Trial.detectedAt,
-        order: .reverse
-    ) private var leads: [Trial]
-
     @State private var selectedTrial: Trial?
-    @State private var selectedLead: Trial?
     @State private var showingManualAdd = false
 
     private var displayedTrials: [Trial] {
@@ -29,15 +22,8 @@ struct TrialsView: View {
         return showDemoData ? DemoContent.activeTrials() : []
     }
 
-    private var displayedLeads: [Trial] {
-        if !leads.isEmpty {
-            return leads
-        }
-        return trials.isEmpty && showDemoData ? DemoContent.leads() : []
-    }
-
     private var isShowingDemoData: Bool {
-        trials.isEmpty && leads.isEmpty && showDemoData
+        trials.isEmpty && showDemoData
     }
 
     private var endingSoon: [Trial] { displayedTrials.filter { daysUntil($0.trialEndDate) <= 7 } }
@@ -52,17 +38,16 @@ struct TrialsView: View {
                         demoBanner
                     }
 
-                    if displayedTrials.isEmpty && displayedLeads.isEmpty {
+                    if displayedTrials.isEmpty {
                         EmptyStateBlock(
                             title: "Nothing to watch yet",
-                            message: "When a free trial confirmation lands in your inbox, it shows up here. Add one manually if you already know about it.",
+                            message: "Share a trial receipt with Subly, or tap the + to add one manually.",
                             actionTitle: "Add a trial",
                             action: { showingManualAdd = true }
                         )
                     } else {
                         section(title: "Ending soon", items: endingSoon, isUrgent: endingSoonIsUrgent)
                         section(title: "Later", items: later, isUrgent: false)
-                        suggestedSection
                     }
                 }
                 .padding(.horizontal, 20)
@@ -84,11 +69,6 @@ struct TrialsView: View {
         .sheet(item: $selectedTrial) { trial in
             TrialDetailSheet(trial: trial, onSaveExisting: { _ in })
         }
-        .sheet(item: $selectedLead) { lead in
-            TrialDetailSheet(trial: lead, onSaveExisting: { trial in
-                trial.isLead = false
-            })
-        }
         .sheet(isPresented: $showingManualAdd) {
             TrialDetailSheet(onCreateNew: { _ in })
         }
@@ -104,12 +84,12 @@ struct TrialsView: View {
                 Text("DEMO")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1.0)
-                    .foregroundStyle(SublyTheme.highlight)
+                    .foregroundStyle(SublyTheme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
-                    .background(Capsule().fill(SublyTheme.highlight.opacity(0.12)))
+                    .background(Capsule().fill(SublyTheme.accent.opacity(0.12)))
 
-                Text("These sample trials are here so we can tune the layout, logos, and spacing before your real scan fills in.")
+                Text("These sample trials are here so we can tune the layout, logos, and spacing before your real trials fill in.")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
@@ -131,7 +111,7 @@ struct TrialsView: View {
                 Text("Trials")
                     .font(.system(size: 32, weight: .black))
                     .foregroundStyle(SublyTheme.primaryText)
-                Text("Your alerts, your later queue, and anything the parser wants you to verify.")
+                Text("Your alerts and the trials waiting later in the month.")
                     .font(.system(size: 14))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
@@ -146,7 +126,7 @@ struct TrialsView: View {
                 Text(title.uppercased())
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(2.2)
-                    .foregroundStyle(isUrgent ? SublyTheme.critical : SublyTheme.tertiaryText)
+                    .foregroundStyle(isUrgent ? SublyTheme.urgencyCritical : SublyTheme.tertiaryText)
                 Spacer()
                 if !items.isEmpty {
                     Text("\(items.count)")
@@ -183,54 +163,6 @@ struct TrialsView: View {
         }
     }
 
-    @ViewBuilder
-    private var suggestedSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            TerminalSectionLabel(title: "Suggested", trailing: displayedLeads.isEmpty ? nil : "\(displayedLeads.count)")
-            if displayedLeads.isEmpty {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(SublyTheme.accentSoft)
-                            .frame(width: 32, height: 32)
-                        Image(systemName: "sparkle.magnifyingglass")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(SublyTheme.accent)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("No leads to review")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(SublyTheme.primaryText)
-                        Text("When the parser finds a maybe, it shows up here.")
-                            .font(.system(size: 12))
-                            .foregroundStyle(SublyTheme.tertiaryText)
-                    }
-                    Spacer()
-                }
-                .padding(.vertical, 4)
-            } else {
-                VStack(spacing: 10) {
-                    ForEach(displayedLeads) { lead in
-                        SurfaceCard(padding: 14, tint: SublyTheme.highlightSoft) {
-                            SuggestedLeadRow(
-                                lead: lead,
-                                isDemo: isShowingDemoData,
-                                onConfirm: {
-                                    Haptics.play(.primaryTap)
-                                    selectedLead = lead
-                                },
-                                onDismiss: {
-                                    Haptics.play(.primaryTap)
-                                    dismiss(lead)
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private func dismiss(_ trial: Trial) {
         trial.userDismissed = true
         try? modelContext.save()
@@ -245,17 +177,9 @@ private struct TrialListRow: View {
         HStack(spacing: 14) {
             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 42)
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(trial.serviceName)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(SublyTheme.primaryText)
-                    if trial.isManual {
-                        Text("MANUAL")
-                            .font(.system(size: 10, weight: .bold))
-                            .tracking(0.8)
-                            .foregroundStyle(SublyTheme.tertiaryText)
-                    }
-                }
+                Text(trial.serviceName)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(SublyTheme.primaryText)
                 HStack(spacing: 6) {
                     Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                         .font(.system(size: 13))
@@ -286,35 +210,3 @@ private struct TrialListRow: View {
     }
 }
 
-private struct SuggestedLeadRow: View {
-    let lead: Trial
-    let isDemo: Bool
-    let onConfirm: () -> Void
-    let onDismiss: () -> Void
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ServiceIcon(name: lead.serviceName, domain: lead.senderDomain, size: 26)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(lead.serviceName)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                Text("Detected \(lead.detectedAt.formatted(.dateTime.month(.abbreviated).day()))")
-                    .font(.system(size: 12))
-                    .foregroundStyle(SublyTheme.secondaryText)
-            }
-            Spacer()
-            Button("Dismiss", action: onDismiss)
-                .buttonStyle(SecondaryTerminalButtonStyle())
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .disabled(isDemo)
-            Button("Confirm", action: onConfirm)
-                .buttonStyle(TerminalButtonStyle(background: SublyTheme.highlight, foreground: .white))
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .disabled(isDemo)
-        }
-        .opacity(isDemo ? 0.6 : 1.0)
-    }
-}

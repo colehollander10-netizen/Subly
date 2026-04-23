@@ -1,6 +1,4 @@
-import EmailEngine
 import NotificationEngine
-import SubscriptionStore
 import SwiftData
 import SwiftUI
 import UIKit
@@ -10,7 +8,6 @@ struct SettingsView: View {
     @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
 
     @State private var errorMessage: String?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
@@ -21,32 +18,8 @@ struct SettingsView: View {
             ScreenFrame {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        TerminalSectionLabel(title: "Connected emails", trailing: "\(accounts.count)")
-                            .padding(.top, 12)
-                        HairlineDivider()
-
-                        ForEach(accounts) { account in
-                            accountRow(account)
-                            if account.id != accounts.last?.id {
-                                HairlineDivider()
-                            }
-                        }
-
-                        Button {
-                            Task { await connectAdditional() }
-                        } label: {
-                            Text("Add another email")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
-
-                        if let errorMessage {
-                            Text(errorMessage)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(SublyTheme.critical)
-                        }
-
                         TerminalSectionLabel(title: "Notifications", trailing: notificationStatusLabel)
+                            .padding(.top, 12)
                         HairlineDivider()
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -70,11 +43,17 @@ struct SettingsView: View {
                             .disabled(isUpdatingNotifications)
                         }
 
+                        if let errorMessage {
+                            Text(errorMessage)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(SublyTheme.urgencyCritical)
+                        }
+
                         TerminalSectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")
                         HairlineDivider()
 
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Show branded sample trials when your inbox is empty. Turn this off any time if you want a strictly real-data experience.")
+                            Text("Show branded sample trials when your list is empty. Turn this off any time if you want a strictly real-data experience.")
                                 .font(.system(size: 15))
                                 .foregroundStyle(SublyTheme.secondaryText)
 
@@ -89,7 +68,7 @@ struct SettingsView: View {
                         TerminalSectionLabel(title: "About")
                         HairlineDivider()
 
-                        Text("Subly tracks paid free trials from Gmail, keeps the scan local to your device, and warns you before you get charged.")
+                        Text("Subly tracks the free trials you share with it — no email connection, no backend. Everything stays on your device.")
                             .font(.system(size: 15))
                             .foregroundStyle(SublyTheme.secondaryText)
                     }
@@ -108,83 +87,6 @@ struct SettingsView: View {
         .presentationDetents([.large])
         .task {
             await refreshNotificationStatus()
-        }
-    }
-
-    @ViewBuilder
-    private func accountRow(_ account: ConnectedAccount) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(account.email)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
-                if account.needsReconnect {
-                    Text("Reconnect required — Google revoked access")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(SublyTheme.critical)
-                } else {
-                    Text(account.lastScannedAt.map { "Scanned \($0.formatted(.relative(presentation: .named)))" } ?? "Not scanned yet")
-                        .font(.system(size: 12))
-                        .foregroundStyle(SublyTheme.secondaryText)
-                }
-            }
-            Spacer()
-            if account.needsReconnect {
-                Button("Reconnect") {
-                    Task { await reconnect(account) }
-                }
-                .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
-            } else {
-                Button("Disconnect") {
-                    disconnect(account)
-                }
-                .buttonStyle(SecondaryTerminalButtonStyle())
-            }
-        }
-    }
-
-    private func connectAdditional() async {
-        errorMessage = nil
-        guard let presenter = PresentingHost.rootViewController() else {
-            errorMessage = "Could not present sign-in."
-            return
-        }
-        do {
-            let account = try await EmailEngine.shared.signInAndAdd(presenting: presenter)
-            let record = ConnectedAccount(id: account.userID, email: account.email)
-            modelContext.insert(record)
-            try? modelContext.save()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func disconnect(_ account: ConnectedAccount) {
-        EmailEngine.shared.disconnect(accountID: account.id)
-        modelContext.delete(account)
-        try? modelContext.save()
-    }
-
-    @MainActor
-    private func reconnect(_ account: ConnectedAccount) async {
-        errorMessage = nil
-        guard let presenter = PresentingHost.rootViewController() else {
-            errorMessage = "Could not present sign-in."
-            return
-        }
-        do {
-            // Re-run the sign-in flow. EmailEngine upserts the new refresh
-            // token into Keychain under the same userID, replacing the
-            // revoked one.
-            let refreshed = try await EmailEngine.shared.signInAndAdd(presenting: presenter)
-            if refreshed.userID == account.id {
-                account.needsReconnect = false
-                try? modelContext.save()
-            } else {
-                errorMessage = "Please sign in with \(account.email) to reconnect."
-            }
-        } catch {
-            errorMessage = error.localizedDescription
         }
     }
 
