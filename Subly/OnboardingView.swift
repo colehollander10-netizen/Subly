@@ -115,10 +115,10 @@ struct OnboardingView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("subly")
-                    .font(.system(size: 30, weight: .black))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+                    .foregroundStyle(SublyTheme.accent)
                 Text("Free-trial clarity, before the charge.")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
 
@@ -152,12 +152,13 @@ struct OnboardingView: View {
 
             HStack {
                 Text("STEP \(step.rawValue + 1) OF \(Step.allCases.count)")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .tracking(1.8)
+                    .monospacedDigit()
                     .foregroundStyle(SublyTheme.tertiaryText)
                 Spacer()
                 Text(step.title.uppercased())
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold, design: .default))
                     .tracking(1.8)
                     .foregroundStyle(SublyTheme.tertiaryText)
             }
@@ -220,12 +221,12 @@ struct OnboardingView: View {
 
                         VStack(spacing: 6) {
                             Text("PORTAL")
-                                .font(.system(size: 10, weight: .bold))
-                                .tracking(2.4)
+                                .font(.system(size: 10, weight: .semibold, design: .default))
+                                .tracking(1.8)
                                 .foregroundStyle(SublyTheme.secondaryText)
                             Text("subly")
-                                .font(.system(size: 23, weight: .bold))
-                                .foregroundStyle(SublyTheme.primaryText)
+                                .font(.system(size: 30, weight: .heavy, design: .rounded))
+                                .foregroundStyle(SublyTheme.accent)
                         }
 
                         ServiceIcon(name: "Figma", domain: "figma.com", size: 44)
@@ -258,11 +259,11 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 14) {
                 TerminalSectionLabel(title: "Before it charges")
                 Text("A calmer way to stay ahead of free trials.")
-                    .font(.system(size: 40, weight: .bold))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(SublyTheme.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("Subly turns the trials you share into a clean signal. The next renewal appears first. The savings feel real. The noise falls away.")
-                    .font(.system(size: 17, weight: .regular))
+                    .font(.system(size: 15, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -274,12 +275,12 @@ struct OnboardingView: View {
             TerminalSectionLabel(title: "Privacy moat")
 
             Text("Nothing leaves your phone. Ever.")
-                .font(.system(size: 34, weight: .bold))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(SublyTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("Subly never reads your inbox and never talks to a backend. You share a trial receipt — by screenshot or paste — and the parser runs entirely on this device.")
-                .font(.system(size: 16))
+                .font(.system(size: 15, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.secondaryText)
 
             VStack(spacing: 14) {
@@ -332,12 +333,12 @@ struct OnboardingView: View {
             TerminalSectionLabel(title: "What it feels like")
 
             Text("A shortlist with taste, not another cluttered money app.")
-                .font(.system(size: 34, weight: .bold))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(SublyTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("The next renewal gets the spotlight. Everything else stays visible, but quiet.")
-                .font(.system(size: 16))
+                .font(.system(size: 15, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.secondaryText)
 
             PremiumGlassPanel(tint: portalAccent.opacity(0.10), padding: 16) {
@@ -348,17 +349,17 @@ struct OnboardingView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.serviceName)
-                                    .font(.system(size: index == 0 ? 18 : 16, weight: .semibold))
+                                    .font(.system(size: 16, weight: .semibold, design: .default))
                                     .foregroundStyle(SublyTheme.primaryText)
                                 Text(index == 0 ? "Next renewal" : "Quietly waiting in queue")
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium, design: .default))
                                     .foregroundStyle(SublyTheme.secondaryText)
                             }
 
                             Spacer()
 
                             Text(formatUSD(item.amount))
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
                                 .monospacedDigit()
                                 .foregroundStyle(SublyTheme.primaryText)
                         }
@@ -383,12 +384,12 @@ struct OnboardingView: View {
             TerminalSectionLabel(title: "Finish setup")
 
             Text("Turn on notifications so Subly can do the one thing that matters.")
-                .font(.system(size: 34, weight: .bold))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(SublyTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("Without notifications, Subly can still find your trials. It just can’t reliably stop you from forgetting them. The alert is the product.")
-                .font(.system(size: 16))
+                .font(.system(size: 15, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.secondaryText)
 
             PremiumGlassPanel(tint: portalAccent.opacity(0.12), padding: 20) {
@@ -397,10 +398,10 @@ struct OnboardingView: View {
                         StatOrb(icon: "bell.badge.fill", tint: portalAccent)
                         VStack(alignment: .leading, spacing: 4) {
                             Text("What you’ll get")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold, design: .default))
                                 .foregroundStyle(SublyTheme.primaryText)
                             Text("Enough warning to act before the charge actually lands.")
-                                .font(.system(size: 14))
+                                .font(.system(size: 12, weight: .medium, design: .default))
                                 .foregroundStyle(SublyTheme.secondaryText)
                         }
                     }
@@ -558,7 +559,9 @@ private struct FloatingPill: View {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
             Text(text)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .tracking(0.8)
         }
         .foregroundStyle(SublyTheme.primaryText)
         .padding(.horizontal, 12)
@@ -602,7 +605,7 @@ private struct FeatureLine: View {
                 .foregroundStyle(SublyTheme.primaryText)
                 .frame(width: 18)
             Text(text)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 15, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }

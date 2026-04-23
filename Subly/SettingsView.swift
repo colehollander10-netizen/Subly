@@ -24,7 +24,7 @@ struct SettingsView: View {
 
                         VStack(alignment: .leading, spacing: 12) {
                             Text(notificationSummary)
-                                .font(.system(size: 15))
+                                .font(.system(size: 15, weight: .medium, design: .default))
                                 .foregroundStyle(SublyTheme.secondaryText)
 
                             Button {
@@ -45,7 +45,7 @@ struct SettingsView: View {
 
                         if let errorMessage {
                             Text(errorMessage)
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 12, weight: .medium, design: .default))
                                 .foregroundStyle(SublyTheme.urgencyCritical)
                         }
 
@@ -54,12 +54,12 @@ struct SettingsView: View {
 
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Show branded sample trials when your list is empty. Turn this off any time if you want a strictly real-data experience.")
-                                .font(.system(size: 15))
+                                .font(.system(size: 15, weight: .medium, design: .default))
                                 .foregroundStyle(SublyTheme.secondaryText)
 
                             Toggle(isOn: $showDemoData) {
                                 Text("Show demo data when empty")
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(.system(size: 15, weight: .medium, design: .default))
                                     .foregroundStyle(SublyTheme.primaryText)
                             }
                             .tint(SublyTheme.accent)
@@ -69,14 +69,19 @@ struct SettingsView: View {
                         HairlineDivider()
 
                         Text("Subly tracks the free trials you share with it — no email connection, no backend. Everything stays on your device.")
-                            .font(.system(size: 15))
+                            .font(.system(size: 15, weight: .medium, design: .default))
                             .foregroundStyle(SublyTheme.secondaryText)
                     }
                     .padding(.horizontal, 20)
                 }
-                .navigationTitle("Settings")
+                .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Settings")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(SublyTheme.primaryText)
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Done") { dismiss() }
                             .foregroundStyle(SublyTheme.primaryText)

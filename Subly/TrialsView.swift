@@ -82,15 +82,15 @@ struct TrialsView: View {
         HStack(alignment: .center, spacing: 10) {
             HStack(spacing: 10) {
                 Text("DEMO")
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(1.0)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .tracking(0.8)
                     .foregroundStyle(SublyTheme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
                     .background(Capsule().fill(SublyTheme.accent.opacity(0.12)))
 
                 Text("These sample trials are here so we can tune the layout, logos, and spacing before your real trials fill in.")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 15, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
 
@@ -100,7 +100,7 @@ struct TrialsView: View {
                 showDemoData = false
             }
             .buttonStyle(.plain)
-            .font(.system(size: 12, weight: .semibold))
+            .font(.system(size: 12, weight: .semibold, design: .default))
             .foregroundStyle(SublyTheme.primaryText)
         }
     }
@@ -109,10 +109,10 @@ struct TrialsView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Trials")
-                    .font(.system(size: 32, weight: .black))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(SublyTheme.primaryText)
                 Text("Your alerts and the trials waiting later in the month.")
-                    .font(.system(size: 14))
+                    .font(.system(size: 15, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.secondaryText)
             }
             Spacer()
@@ -124,20 +124,20 @@ struct TrialsView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
                 Text(title.uppercased())
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(2.2)
+                    .font(.system(size: 10, weight: .semibold, design: .default))
+                    .tracking(1.8)
                     .foregroundStyle(isUrgent ? SublyTheme.urgencyCritical : SublyTheme.tertiaryText)
                 Spacer()
                 if !items.isEmpty {
                     Text("\(items.count)")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(SublyTheme.tertiaryText)
                 }
             }
             if items.isEmpty {
                 Text("Nothing here yet.")
-                    .font(.system(size: 14))
+                    .font(.system(size: 15, weight: .medium, design: .default))
                     .foregroundStyle(SublyTheme.tertiaryText)
                     .padding(.leading, 2)
             } else {
@@ -178,18 +178,19 @@ private struct TrialListRow: View {
             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 42)
             VStack(alignment: .leading, spacing: 4) {
                 Text(trial.serviceName)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold, design: .default))
                     .foregroundStyle(SublyTheme.primaryText)
                 HStack(spacing: 6) {
                     Text(trial.trialEndDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                        .font(.system(size: 13))
+                        .font(.system(size: 12, weight: .medium, design: .default))
+                        .monospacedDigit()
                         .foregroundStyle(SublyTheme.secondaryText)
                     if let lengthLabel = trialLengthDescription(for: trial) {
                         Text("·")
-                            .font(.system(size: 13))
+                            .font(.system(size: 12, weight: .medium, design: .default))
                             .foregroundStyle(SublyTheme.tertiaryText)
                         Text(lengthLabel)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 12, weight: .medium, design: .default))
                             .foregroundStyle(SublyTheme.tertiaryText)
                     }
                 }
@@ -197,7 +198,7 @@ private struct TrialListRow: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
                 Text(trial.chargeAmount.map(formatUSD) ?? "TBD")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(SublyTheme.primaryText)
                 AccentPill(

@@ -130,16 +130,17 @@ struct CancelFlowSheet: View {
 
                         VStack(alignment: .leading, spacing: 10) {
                             Text("How to cancel \(guide.title)")
-                                .font(.system(size: 30, weight: .bold))
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .foregroundStyle(SublyTheme.primaryText)
                             if let amount = trial.chargeAmount {
                                 Text("At risk: \(formatUSD(amount)) on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .monospacedDigit()
                                     .foregroundStyle(SublyTheme.urgencyWarning)
                             } else {
                                 Text("Renews on \(trial.trialEndDate.formatted(.dateTime.month(.abbreviated).day()))")
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                                    .monospacedDigit()
                                     .foregroundStyle(SublyTheme.secondaryText)
                             }
                         }
@@ -150,11 +151,12 @@ struct CancelFlowSheet: View {
                             ForEach(Array(guide.steps.enumerated()), id: \.offset) { index, step in
                                 HStack(alignment: .top, spacing: 12) {
                                     Text("\(index + 1)")
-                                        .font(.system(size: 14, weight: .bold))
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .monospacedDigit()
                                         .foregroundStyle(SublyTheme.accent)
                                         .frame(width: 18, alignment: .leading)
                                     Text(step)
-                                        .font(.system(size: 15))
+                                        .font(.system(size: 15, weight: .medium, design: .default))
                                         .foregroundStyle(SublyTheme.primaryText)
                                 }
                             }
@@ -213,9 +215,14 @@ struct CancelFlowSheet: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .navigationTitle("Cancel")
+                .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Cancel")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(SublyTheme.primaryText)
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Done") { dismiss() }
                             .foregroundStyle(SublyTheme.primaryText)
@@ -298,7 +305,7 @@ struct TrialDetailSheet: View {
 
                             if let pasteFeedback {
                                 Text(pasteFeedback)
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 12, weight: .medium, design: .default))
                                     .foregroundStyle(SublyTheme.secondaryText)
                             }
                         }
@@ -342,9 +349,14 @@ struct TrialDetailSheet: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .navigationTitle(trial == nil ? "Add Trial" : "Edit Trial")
+                .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text(trial == nil ? "Add Trial" : "Edit Trial")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(SublyTheme.primaryText)
+                    }
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
                             .foregroundStyle(SublyTheme.primaryText)
@@ -376,7 +388,8 @@ struct TrialDetailSheet: View {
                         Task { @MainActor in applyingPreset = false }
                     } label: {
                         Text(preset.label)
-                            .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                            .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
+                            .monospacedDigit()
                             .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.primaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
@@ -395,7 +408,7 @@ struct TrialDetailSheet: View {
                     Haptics.play(.primaryTap)
                 } label: {
                     Text("Custom")
-                        .font(.system(size: 13, weight: customSelected ? .semibold : .medium))
+                        .font(.system(size: 13, weight: customSelected ? .semibold : .medium, design: .default))
                         .foregroundStyle(customSelected ? SublyTheme.background : SublyTheme.primaryText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
@@ -415,11 +428,11 @@ struct TrialDetailSheet: View {
     private func field<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(1.2)
+                .font(.system(size: 10, weight: .semibold, design: .default))
+                .tracking(1.8)
                 .foregroundStyle(SublyTheme.secondaryText)
             content()
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 20, weight: .medium, design: .default))
                 .foregroundStyle(SublyTheme.primaryText)
                 .padding(.vertical, 10)
             HairlineDivider()
