@@ -3,7 +3,6 @@ import SwiftData
 import SwiftUI
 
 struct TrialsView: View {
-    @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.modelContext) private var modelContext
 
     @Query(
@@ -15,39 +14,57 @@ struct TrialsView: View {
     @State private var selectedTrial: Trial?
     @State private var showingManualAdd = false
 
-    private var displayedTrials: [Trial] {
-        if !trials.isEmpty {
-            return trials
-        }
-        return showDemoData ? DemoContent.activeTrials() : []
-    }
-
-    private var isShowingDemoData: Bool {
-        trials.isEmpty && showDemoData
-    }
-
-    private var endingSoon: [Trial] { displayedTrials.filter { daysUntil($0.trialEndDate) <= 7 } }
-    private var later: [Trial] { displayedTrials.filter { daysUntil($0.trialEndDate) > 7 } }
+    private var endingSoon: [Trial] { trials.filter { daysUntil($0.trialEndDate) <= 7 } }
+    private var later: [Trial] { trials.filter { daysUntil($0.trialEndDate) > 7 } }
 
     var body: some View {
         ScreenFrame {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 28) {
                     header
-                    if isShowingDemoData {
-                        demoBanner
-                    }
-
-                    if displayedTrials.isEmpty {
-                        EmptyStateBlock(
-                            title: "Nothing to watch yet",
-                            message: "Share a trial receipt with Subly, or tap the + to add one manually.",
-                            actionTitle: "Add a trial",
-                            action: { showingManualAdd = true }
-                        )
+                    if trials.isEmpty {
+                        emptyState
                     } else {
-                        section(title: "Ending soon", items: endingSoon, isUrgent: endingSoonIsUrgent)
-                        section(title: "Later", items: later, isUrgent: false)
+                        if !endingSoon.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionLabel(title: "Ending soon", trailing: "\(endingSoon.count)")
+                                SurfaceCard(padding: 0) {
+                                    VStack(spacing: 0) {
+                                        ForEach(Array(endingSoon.enumerated()), id: \.element.id) { index, trial in
+                                            Button { selectedTrial = trial } label: {
+                                                TrialListRow(trial: trial)
+                                                    .padding(.horizontal, 18)
+                                                    .padding(.vertical, 14)
+                                            }
+                                            .buttonStyle(PressableRowStyle())
+                                            if index < endingSoon.count - 1 {
+                                                HairlineDivider().padding(.horizontal, 18)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if !later.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionLabel(title: "Later", trailing: "\(later.count)")
+                                SurfaceCard(padding: 0) {
+                                    VStack(spacing: 0) {
+                                        ForEach(Array(later.enumerated()), id: \.element.id) { index, trial in
+                                            Button { selectedTrial = trial } label: {
+                                                TrialListRow(trial: trial)
+                                                    .padding(.horizontal, 18)
+                                                    .padding(.vertical, 14)
+                                            }
+                                            .buttonStyle(PressableRowStyle())
+                                            if index < later.count - 1 {
+                                                HairlineDivider().padding(.horizontal, 18)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 20)
@@ -67,105 +84,60 @@ struct TrialsView: View {
             }
         }
         .sheet(item: $selectedTrial) { trial in
-            TrialDetailSheet(trial: trial, onSaveExisting: { _ in })
+            TrialDetailSheet(
+                trial: trial,
+                onSaveExisting: { _ in },
+                onMarkCancelled: { t in markCancelled(t) }
+            )
         }
         .sheet(isPresented: $showingManualAdd) {
             TrialDetailSheet(onCreateNew: { _ in })
         }
     }
 
-    private var endingSoonIsUrgent: Bool {
-        endingSoon.contains { daysUntil($0.trialEndDate) <= 3 }
-    }
-
-    private var demoBanner: some View {
-        HStack(alignment: .center, spacing: 10) {
-            HStack(spacing: 10) {
-                Text("DEMO")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .tracking(0.8)
-                    .foregroundStyle(SublyTheme.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(Capsule().fill(SublyTheme.accent.opacity(0.12)))
-
-                Text("These sample trials are here so we can tune the layout, logos, and spacing before your real trials fill in.")
-                    .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.secondaryText)
-            }
-
-            Spacer()
-
-            Button("Hide") {
-                showDemoData = false
-            }
-            .buttonStyle(.plain)
-            .font(.system(size: 12, weight: .semibold, design: .default))
-            .foregroundStyle(SublyTheme.primaryText)
-        }
-    }
-
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Trials")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
-                Text("Your alerts and the trials waiting later in the month.")
-                    .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.secondaryText)
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Trials")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(SublyTheme.primaryText)
+            if !trials.isEmpty {
+                Text("\(trials.count) trial\(trials.count == 1 ? "" : "s") tracked")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .monospacedDigit()
             }
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 20) {
+            Spacer(minLength: 60)
+            Image(systemName: "moon.stars.fill")
+                .font(.system(size: 64, weight: .light))
+                .foregroundStyle(SublyTheme.accent.opacity(0.4))
+                .frame(width: 120, height: 120)
+                .accessibilityHidden(true)
+            VStack(spacing: 8) {
+                Text("No trials yet.")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(SublyTheme.primaryText)
+                Text("Add a trial with the + button so we can warn you before it charges.")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(SublyTheme.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
             Spacer()
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
     }
 
-    @ViewBuilder
-    private func section(title: String, items: [Trial], isUrgent: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center) {
-                Text(title.uppercased())
-                    .font(.system(size: 10, weight: .semibold, design: .default))
-                    .tracking(1.8)
-                    .foregroundStyle(isUrgent ? SublyTheme.urgencyCritical : SublyTheme.tertiaryText)
-                Spacer()
-                if !items.isEmpty {
-                    Text("\(items.count)")
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(SublyTheme.tertiaryText)
-                }
-            }
-            if items.isEmpty {
-                Text("Nothing here yet.")
-                    .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.tertiaryText)
-                    .padding(.leading, 2)
-            } else {
-                VStack(spacing: 10) {
-                    ForEach(items) { trial in
-                        if isShowingDemoData {
-                            SurfaceCard(padding: 18) {
-                                TrialListRow(trial: trial)
-                            }
-                        } else {
-                            Button {
-                                selectedTrial = trial
-                            } label: {
-                                SurfaceCard(padding: 18) {
-                                    TrialListRow(trial: trial)
-                                }
-                            }
-                            .buttonStyle(PressableRowStyle())
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func dismiss(_ trial: Trial) {
+    private func markCancelled(_ trial: Trial) {
         trial.userDismissed = true
         try? modelContext.save()
+        // TODO(COL-128): trigger replanAll when notificationEngine is wired through TrialsView
     }
 }
 
@@ -210,4 +182,3 @@ private struct TrialListRow: View {
         .contentShape(Rectangle())
     }
 }
-
