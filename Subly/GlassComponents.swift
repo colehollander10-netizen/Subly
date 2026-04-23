@@ -167,16 +167,14 @@ struct AccentPill: View {
     }
 }
 
-struct SurfaceCard<Content: View>: View {
+struct GlassCard<Content: View>: View {
+    let cornerRadius: CGFloat
     let padding: CGFloat
-    let tint: Color?
-    var emphasized: Bool = false
     let content: Content
 
-    init(padding: CGFloat = 18, tint: Color? = nil, emphasized: Bool = false, @ViewBuilder content: () -> Content) {
+    init(cornerRadius: CGFloat = 24, padding: CGFloat = 18, @ViewBuilder content: () -> Content) {
+        self.cornerRadius = cornerRadius
         self.padding = padding
-        self.tint = tint
-        self.emphasized = emphasized
         self.content = content()
     }
 
@@ -184,25 +182,45 @@ struct SurfaceCard<Content: View>: View {
         content
             .padding(padding)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(tint ?? SublyTheme.glassFill)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(SublyTheme.glassFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(SublyTheme.glassBorder, lineWidth: 1)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(
                         LinearGradient(
-                            colors: [
-                                Color.white.opacity(emphasized ? 0.9 : 0.7),
-                                SublyTheme.divider.opacity(emphasized ? 0.7 : 0.9),
-                            ],
+                            colors: [SublyTheme.glassHighlight, .clear],
                             startPoint: .top,
-                            endPoint: .bottom
+                            endPoint: .center
                         ),
                         lineWidth: 1
                     )
+                    .blendMode(.plusLighter)
             )
-            .shadow(color: Color.black.opacity(emphasized ? 0.055 : 0.035), radius: emphasized ? 18 : 12, y: emphasized ? 8 : 5)
-            .shadow(color: Color.black.opacity(0.02), radius: 2, y: 1)
+    }
+}
+
+struct SurfaceCard<Content: View>: View {
+    let padding: CGFloat
+    let content: Content
+
+    init(padding: CGFloat = 18, @ViewBuilder content: () -> Content) {
+        self.padding = padding
+        self.content = content()
+    }
+
+    var body: some View {
+        GlassCard(cornerRadius: 24, padding: padding) {
+            content
+        }
     }
 }
 
@@ -222,43 +240,25 @@ struct FlagshipCard<Content: View>: View {
     }
 
     var body: some View {
-        content
-            .padding(padding)
-            .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(SublyTheme.backgroundElevated)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(
+        GlassCard(cornerRadius: 28, padding: padding) {
+            content
+        }
+        .overlay(alignment: .trailing) {
+            if urgency != .calm {
+                let color = urgency == .critical ? SublyTheme.urgencyCritical : SublyTheme.urgencyWarning
+                Rectangle()
+                    .fill(
                         LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.95),
-                                SublyTheme.divider.opacity(0.6),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .overlay(alignment: .leading) {
-                if urgency == .critical {
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [SublyTheme.urgencyCritical.opacity(0.22), .clear],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            colors: [.clear, color.opacity(0.18)],
+                            startPoint: .leading,
+                            endPoint: .trailing
                         )
-                        .frame(width: 170)
-                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                        .allowsHitTesting(false)
-                }
+                    )
+                    .frame(width: 170)
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .allowsHitTesting(false)
             }
-            .shadow(color: Color.black.opacity(0.05), radius: 24, y: 10)
-            .shadow(color: Color.black.opacity(0.03), radius: 4, y: 1)
+        }
     }
 }
 

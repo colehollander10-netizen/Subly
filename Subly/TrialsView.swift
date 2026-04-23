@@ -144,14 +144,14 @@ struct TrialsView: View {
                 VStack(spacing: 10) {
                     ForEach(items) { trial in
                         if isShowingDemoData {
-                            SurfaceCard(padding: 18, emphasized: isUrgent) {
+                            SurfaceCard(padding: 18) {
                                 TrialListRow(trial: trial)
                             }
                         } else {
                             Button {
                                 selectedTrial = trial
                             } label: {
-                                SurfaceCard(padding: 18, emphasized: isUrgent) {
+                                SurfaceCard(padding: 18) {
                                     TrialListRow(trial: trial)
                                 }
                             }
