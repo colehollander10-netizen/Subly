@@ -17,9 +17,9 @@ final class AppRouter {
 
 struct ContentView: View {
     let notificationEngine: NotificationEngine
-    @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @Query private var existingTrials: [Trial]
     @State private var showingDemoPreview = false
-    @State private var onboardingComplete = false
 
     var body: some View {
         Group {
@@ -29,7 +29,7 @@ struct ContentView: View {
                         showingDemoPreview = true
                     },
                     onFinish: {
-                        onboardingComplete = true
+                        hasCompletedOnboarding = true
                     }
                 )
             } else {
@@ -37,19 +37,17 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            if !accounts.isEmpty {
-                onboardingComplete = true
-            }
-        }
-        .onChange(of: accounts.count) { _, newValue in
-            if newValue > 0 {
-                onboardingComplete = true
+            // One-time migration: anyone who already has real trial data
+            // (from the prior Gmail build, or who added trials before
+            // tapping "Open Subly" in onboarding) shouldn't be re-onboarded.
+            if !hasCompletedOnboarding && !existingTrials.isEmpty {
+                hasCompletedOnboarding = true
             }
         }
     }
 
     private var shouldShowOnboarding: Bool {
-        accounts.isEmpty && !showingDemoPreview && !onboardingComplete
+        !hasCompletedOnboarding && !showingDemoPreview
     }
 }
 

@@ -328,13 +328,6 @@ struct TrialDetailSheet: View {
                                 .monospacedDigit()
                         }
 
-                        if let trial {
-                            field(title: "Source") {
-                                Text(trial.sourceEmailID == nil ? "Manual entry" : "Detected from Gmail")
-                                    .foregroundStyle(SublyTheme.secondaryText)
-                            }
-                        }
-
                         VStack(spacing: 10) {
                             Button {
                                 save()
@@ -447,13 +440,10 @@ struct TrialDetailSheet: View {
             onSaveExisting?(trial)
         } else {
             let newTrial = Trial(
-                accountID: "",
                 serviceName: trimmedName,
                 senderDomain: inferredDomain ?? "",
                 trialEndDate: trialEndDate,
-                chargeAmount: amount,
-                sourceEmailID: nil,
-                isManual: true
+                chargeAmount: amount
             )
             modelContext.insert(newTrial)
             onCreateNew?(newTrial)

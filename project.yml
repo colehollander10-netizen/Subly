@@ -14,8 +14,8 @@ settings:
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1,2"
 packages:
-  EmailEngine:
-    path: Packages/EmailEngine
+  TrialParsingCore:
+    path: Packages/TrialParsingCore
   SubscriptionStore:
     path: Packages/SubscriptionStore
   TrialEngine:
@@ -47,22 +47,11 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: Subly
-    resources:
-      - path: Subly/GoogleService-Info.plist
     dependencies:
-      - package: EmailEngine
+      - package: TrialParsingCore
       - package: SubscriptionStore
       - package: TrialEngine
       - package: NotificationEngine
       - package: LogoService
     info:
       path: Subly/Info.plist
-      properties:
-        CFBundleURLTypes:
-          - CFBundleURLSchemes:
-              - com.googleusercontent.apps.332703006085-tb86ofvs1h5mjiftsp182h779b813tll
-        UIBackgroundModes:
-          - fetch
-          - processing
-        BGTaskSchedulerPermittedIdentifiers:
-          - com.colehollander.subly.scan.refresh

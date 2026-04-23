@@ -72,7 +72,7 @@ actor TrialAlertCoordinator {
     private func fetchSchedulableTrials(context: ModelContext, now: Date) -> [Trial] {
         let descriptor = FetchDescriptor<Trial>()
         let all = (try? context.fetch(descriptor)) ?? []
-        return all.filter { !$0.userDismissed && !$0.isLead && $0.trialEndDate > now }
+        return all.filter { !$0.userDismissed && $0.trialEndDate > now }
     }
 
     private func fetchTrialMap(context: ModelContext) -> [UUID: Trial] {
@@ -112,7 +112,7 @@ actor TrialAlertCoordinator {
                 continue
             }
 
-            if trial.userDismissed || trial.isLead || trial.trialEndDate <= now {
+            if trial.userDismissed || trial.trialEndDate <= now {
                 context.delete(alert)
                 continue
             }
@@ -136,7 +136,7 @@ actor TrialAlertCoordinator {
 
         let scheduled: [ScheduledAlert] = pending.compactMap { alert in
             guard let trial = trialMap[alert.trialID] else { return nil }
-            guard !trial.userDismissed, !trial.isLead, trial.trialEndDate > now else { return nil }
+            guard !trial.userDismissed, trial.trialEndDate > now else { return nil }
             guard schedulableTrialIDs.contains(trial.id) || alert.alertType == .followUp else { return nil }
             let (title, body) = notificationCopy(for: alert.alertType, trial: trial)
             return ScheduledAlert(

@@ -492,17 +492,10 @@ enum BrandDirectory {
 enum DemoContent {
     static func activeTrials(referenceDate: Date = Date()) -> [Trial] {
         [
-            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, manual: false, length: 14, from: referenceDate),
-            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, manual: false, length: 30, from: referenceDate),
-            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, manual: true, length: 14, from: referenceDate),
-            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, manual: false, length: 30, from: referenceDate),
-        ]
-    }
-
-    static func leads(referenceDate: Date = Date()) -> [Trial] {
-        [
-            demoLead("Perplexity Pro", domain: "perplexity.ai", daysOut: 7, from: referenceDate),
-            demoLead("Headspace", domain: "headspace.com", daysOut: 11, from: referenceDate),
+            demoTrial("Figma", domain: "figma.com", daysOut: 2, amount: 16, length: 14, from: referenceDate),
+            demoTrial("Spotify", domain: "spotify.com", daysOut: 5, amount: 11.99, length: 30, from: referenceDate),
+            demoTrial("Notion", domain: "notion.so", daysOut: 9, amount: 10, length: 14, from: referenceDate),
+            demoTrial("MasterClass", domain: "masterclass.com", daysOut: 13, amount: 15, length: 30, from: referenceDate),
         ]
     }
 
@@ -511,38 +504,16 @@ enum DemoContent {
         domain: String,
         daysOut: Int,
         amount: Decimal,
-        manual: Bool,
         length: Int? = nil,
         from referenceDate: Date
     ) -> Trial {
         Trial(
-            accountID: "demo",
             serviceName: serviceName,
             senderDomain: domain,
             trialEndDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
             chargeAmount: amount,
             detectedAt: referenceDate,
-            sourceEmailID: manual ? nil : "demo-\(serviceName)",
-            isManual: manual,
             trialLengthDays: length
-        )
-    }
-
-    private static func demoLead(
-        _ serviceName: String,
-        domain: String,
-        daysOut: Int,
-        from referenceDate: Date
-    ) -> Trial {
-        Trial(
-            accountID: "demo",
-            serviceName: serviceName,
-            senderDomain: domain,
-            trialEndDate: Calendar.current.date(byAdding: .day, value: daysOut, to: referenceDate) ?? referenceDate,
-            chargeAmount: nil,
-            detectedAt: referenceDate,
-            sourceEmailID: "demo-lead-\(serviceName)",
-            isLead: true
         )
     }
 }

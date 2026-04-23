@@ -1,4 +1,3 @@
-import EmailEngine
 import NotificationEngine
 import OSLog
 import SubscriptionStore
@@ -15,8 +14,6 @@ struct SublyApp: App {
         let schema = Schema([
             Trial.self,
             TrialAlert.self,
-            ConnectedAccount.self,
-            EmailScanState.self,
         ])
         let configuration = ModelConfiguration(schema: schema)
 
@@ -70,10 +67,6 @@ struct SublyApp: App {
         let router = AppRouter()
         self.appRouter = router
 
-        EmailEngine.shared.configure(
-            clientID: "332703006085-tb86ofvs1h5mjiftsp182h779b813tll.apps.googleusercontent.com"
-        )
-
         let delegate = NotificationDelegate(
             modelContainer: Self.modelContainer,
             appRouter: router
@@ -84,19 +77,7 @@ struct SublyApp: App {
         let container = Self.modelContainer
         let engine = notificationEngine
 
-        ScanScheduler.register(modelContainer: container, notificationEngine: engine)
-        ScanScheduler.scheduleNext()
-
         Task {
-            // Restore the most recent Google sign-in silently so scans can run.
-            _ = try? await EmailEngine.shared.restorePreviousSignIn()
-
-            // Reconcile: any SwiftData ConnectedAccount whose userID is not
-            // in the Keychain has no refresh token backing it and will fail
-            // every scan with .notSignedIn. Drop those ghost rows so the UI
-            // nudges the user back to onboarding to reconnect.
-            await Self.reconcileConnectedAccounts(container: container)
-
             let coordinator = TrialAlertCoordinator(
                 modelContainer: container,
                 notificationEngine: engine
@@ -110,31 +91,6 @@ struct SublyApp: App {
             ContentView(notificationEngine: notificationEngine)
                 .modelContainer(Self.modelContainer)
                 .environment(appRouter)
-                .onOpenURL { url in
-                    EmailEngine.shared.handle(url)
-                }
-        }
-    }
-}
-
-extension SublyApp {
-    /// Drop SwiftData `ConnectedAccount` rows that have no matching Keychain
-    /// entry in `EmailEngine.shared.connectedAccounts`. These are ghosts from
-    /// a prior Keychain schema version or a manual Keychain wipe — keeping
-    /// them makes the UI claim the user is signed in when every scan will
-    /// throw `.notSignedIn`.
-    @MainActor
-    static func reconcileConnectedAccounts(container: ModelContainer) async {
-        let keychainIDs = Set(EmailEngine.shared.connectedAccounts.map { $0.userID })
-        let context = container.mainContext
-        guard let stored = try? context.fetch(FetchDescriptor<ConnectedAccount>()) else { return }
-        var removed = 0
-        for row in stored where !keychainIDs.contains(row.id) {
-            context.delete(row)
-            removed += 1
-        }
-        if removed > 0 {
-            try? context.save()
         }
     }
 }
@@ -154,4 +110,3 @@ private func wipeStore() {
         try? FileManager.default.removeItem(at: url)
     }
 }
-

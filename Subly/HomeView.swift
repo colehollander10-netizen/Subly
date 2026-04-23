@@ -1,11 +1,8 @@
 import NotificationEngine
-import OSLog
 import SubscriptionStore
 import SwiftData
 import SwiftUI
 import TrialEngine
-
-private let scanLog = Logger(subsystem: "com.subly.Subly", category: "scan")
 
 struct HomeView: View {
     @Environment(AppRouter.self) private var appRouter
@@ -14,15 +11,11 @@ struct HomeView: View {
     @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.modelContext) private var modelContext
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed && !$0.isLead },
+        filter: #Predicate<Trial> { !$0.userDismissed },
         sort: \Trial.trialEndDate,
         order: .forward
     ) private var activeTrials: [Trial]
-    @Query(sort: \ConnectedAccount.addedAt) private var accounts: [ConnectedAccount]
 
-    @State private var isScanning = false
-    @State private var lastSummary: ScanCoordinator.Summary?
-    @State private var errorMessage: String?
     @State private var showingSettings = false
     @State private var selectedCancelTrial: Trial?
     @State private var showingManualAdd = false
@@ -110,21 +103,11 @@ struct HomeView: View {
 
             Spacer()
 
-            HStack(spacing: 8) {
-                HeaderIconButton(
-                    systemImage: isScanning ? "ellipsis" : "arrow.triangle.2.circlepath",
-                    accessibilityLabel: "Scan inbox",
-                    isBusy: isScanning,
-                    action: { Task { await runScan() } }
-                )
-                .disabled(isScanning)
-
-                HeaderIconButton(
-                    systemImage: "gearshape",
-                    accessibilityLabel: "Settings",
-                    action: { showingSettings = true }
-                )
-            }
+            HeaderIconButton(
+                systemImage: "gearshape",
+                accessibilityLabel: "Settings",
+                action: { showingSettings = true }
+            )
         }
     }
 
@@ -211,7 +194,7 @@ struct HomeView: View {
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundStyle(SublyTheme.primaryText)
                                 Text(isShowingDemoTrials
-                                     ? "Connect Gmail or add a real trial to enable swipe-to-cancel."
+                                     ? "Add a real trial to enable swipe-to-cancel."
                                      : "Swipe left to open the real cancel steps for this service.")
                                     .font(.system(size: 13))
                                     .foregroundStyle(SublyTheme.secondaryText)
@@ -256,7 +239,7 @@ struct HomeView: View {
             } else {
                 EmptyStateBlock(
                     title: "No active trials yet",
-                    message: "Scan Gmail or add one manually from the button below. The next charge will show up here.",
+                    message: "Share a trial receipt with Subly, or add one manually from the button below. The next charge will show up here.",
                     actionTitle: "Add a trial",
                     action: { showingManualAdd = true }
                 )
@@ -313,37 +296,15 @@ struct HomeView: View {
     @ViewBuilder
     private var statusLine: some View {
         HStack(spacing: 10) {
-            if isScanning {
-                ProgressView()
-                    .controlSize(.mini)
-                    .tint(SublyTheme.secondaryText)
-                Text("Scanning your inbox…")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.secondaryText)
-            } else if let lastSummary {
-                Circle()
-                    .fill(SublyTheme.accent)
-                    .frame(width: 5, height: 5)
-                Text("\(lastSummary.accountsScanned) inbox · \(lastSummary.messagesInspected) checked · \(lastSummary.trialsAdded) new")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.tertiaryText)
-            } else if !accounts.isEmpty {
-                Circle()
-                    .fill(SublyTheme.tertiaryText.opacity(0.4))
-                    .frame(width: 5, height: 5)
-                Text(accounts.count == 1 ? "1 inbox connected · tap refresh to scan" : "\(accounts.count) inboxes connected · tap refresh to scan")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.tertiaryText)
-            }
-
+            Circle()
+                .fill(SublyTheme.tertiaryText.opacity(0.4))
+                .frame(width: 5, height: 5)
+            Text(activeTrials.isEmpty
+                 ? "Share a trial receipt with Subly to start tracking."
+                 : "\(activeTrials.count) trial\(activeTrials.count == 1 ? "" : "s") tracked")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(SublyTheme.tertiaryText)
             Spacer()
-
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.critical)
-                    .lineLimit(1)
-            }
         }
         .padding(.top, 4)
     }
@@ -402,29 +363,6 @@ struct HomeView: View {
         appRouter.pendingCancelTrialID = nil
     }
 
-    private func runScan() async {
-        scanLog.info("runScan START — accounts=\(accounts.count, privacy: .public)")
-        errorMessage = nil
-        isScanning = true
-        defer {
-            isScanning = false
-            Haptics.play(.scanComplete)
-        }
-
-        let coordinator = ScanCoordinator(modelContainer: modelContext.container)
-        let summary = await coordinator.runScan()
-        scanLog.info("runScan summary — accountsScanned=\(summary.accountsScanned, privacy: .public) messagesInspected=\(summary.messagesInspected, privacy: .public) added=\(summary.trialsAdded, privacy: .public) updated=\(summary.trialsUpdated, privacy: .public) error=\(summary.errorMessage ?? "nil", privacy: .public)")
-        lastSummary = summary
-        if let err = summary.errorMessage {
-            errorMessage = err
-        }
-
-        let alertCoordinator = TrialAlertCoordinator(
-            modelContainer: modelContext.container,
-            notificationEngine: notificationEngine
-        )
-        await alertCoordinator.replanAll()
-    }
 }
 
 private struct CompactTrialRow: View {
