@@ -1,77 +1,109 @@
 import NotificationEngine
+import SubscriptionStore
 import SwiftData
 import SwiftUI
 import UIKit
 import UserNotifications
 
 struct SettingsView: View {
-    @AppStorage(AppPreferences.showDemoData) private var showDemoData = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
+    @Query private var allTrials: [Trial]
     @State private var errorMessage: String?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var isUpdatingNotifications = false
+    @State private var exportedCSVURL: URL?
+    @State private var showingDeleteConfirm = false
 
     var body: some View {
         NavigationStack {
             ScreenFrame {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        SectionLabel(title: "Notifications", trailing: notificationStatusLabel)
-                            .padding(.top, 12)
-                        HairlineDivider()
-
+                    VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(notificationSummary)
-                                .font(.system(size: 15, weight: .medium, design: .default))
-                                .foregroundStyle(SublyTheme.secondaryText)
+                            SectionLabel(title: "Notifications", trailing: notificationStatusLabel)
+                            SurfaceCard(padding: 18) {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    Text(notificationSummary)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundStyle(SublyTheme.secondaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
 
-                            Button {
-                                Task { await handleNotificationAction() }
-                            } label: {
-                                HStack {
-                                    if isUpdatingNotifications {
-                                        ProgressView()
-                                            .tint(SublyTheme.background)
+                                    Button {
+                                        Task { await handleNotificationAction() }
+                                    } label: {
+                                        HStack {
+                                            if isUpdatingNotifications {
+                                                ProgressView().tint(SublyTheme.background)
+                                            }
+                                            Text(notificationActionTitle).frame(maxWidth: .infinity)
+                                        }
                                     }
-                                    Text(notificationActionTitle)
-                                        .frame(maxWidth: .infinity)
+                                    .buttonStyle(PrimaryButton())
+                                    .disabled(isUpdatingNotifications)
+
+                                    if let errorMessage {
+                                        Text(errorMessage)
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundStyle(SublyTheme.urgencyCritical)
+                                    }
                                 }
                             }
-                            .buttonStyle(PrimaryButton())
-                            .disabled(isUpdatingNotifications)
                         }
-
-                        if let errorMessage {
-                            Text(errorMessage)
-                                .font(.system(size: 12, weight: .medium, design: .default))
-                                .foregroundStyle(SublyTheme.urgencyCritical)
-                        }
-
-                        SectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")
-                        HairlineDivider()
 
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Show branded sample trials when your list is empty. Turn this off any time if you want a strictly real-data experience.")
-                                .font(.system(size: 15, weight: .medium, design: .default))
-                                .foregroundStyle(SublyTheme.secondaryText)
-
-                            Toggle(isOn: $showDemoData) {
-                                Text("Show demo data when empty")
-                                    .font(.system(size: 15, weight: .medium, design: .default))
-                                    .foregroundStyle(SublyTheme.primaryText)
+                            SectionLabel(title: "Data")
+                            SurfaceCard(padding: 0) {
+                                VStack(spacing: 0) {
+                                    settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: SublyTheme.primaryText) {
+                                        exportTrials()
+                                    }
+                                    HairlineDivider().padding(.horizontal, 18)
+                                    settingsRow(title: "Delete all data", subtitle: "Wipe every trial from this device. This cannot be undone.", tint: SublyTheme.urgencyCritical) {
+                                        showingDeleteConfirm = true
+                                    }
+                                }
                             }
-                            .tint(SublyTheme.accent)
                         }
 
-                        SectionLabel(title: "About")
-                        HairlineDivider()
-
-                        Text("Subly tracks the free trials you share with it — no email connection, no backend. Everything stays on your device.")
-                            .font(.system(size: 15, weight: .medium, design: .default))
-                            .foregroundStyle(SublyTheme.secondaryText)
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionLabel(title: "About")
+                            SurfaceCard(padding: 18) {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    HStack {
+                                        Text("Version")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundStyle(SublyTheme.primaryText)
+                                        Spacer()
+                                        Text(appVersion)
+                                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                                            .monospacedDigit()
+                                            .foregroundStyle(SublyTheme.secondaryText)
+                                    }
+                                    HairlineDivider()
+                                    Button {
+                                        if let url = URL(string: "https://subly.app/privacy") {
+                                            UIApplication.shared.open(url)
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text("Privacy policy")
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundStyle(SublyTheme.primaryText)
+                                            Spacer()
+                                            Image(systemName: "arrow.up.right")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundStyle(SublyTheme.tertiaryText)
+                                        }
+                                        .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(PressableRowStyle())
+                                }
+                            }
+                        }
                     }
+                    .padding(.top, 16)
                     .padding(.horizontal, 20)
                 }
                 .navigationTitle("")
@@ -90,9 +122,70 @@ struct SettingsView: View {
             }
         }
         .presentationDetents([.large])
+        .confirmationDialog("Delete all trials?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
+            Button("Delete all", role: .destructive) { deleteAllData() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This removes every trial from this device. Cannot be undone.")
+        }
+        .sheet(item: $exportedCSVURL) { url in
+            ShareSheet(activityItems: [url])
+        }
         .task {
             await refreshNotificationStatus()
         }
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+        return "\(version) (\(build))"
+    }
+
+    @ViewBuilder
+    private func settingsRow(title: String, subtitle: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(tint)
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(SublyTheme.tertiaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableRowStyle())
+    }
+
+    private func exportTrials() {
+        let header = "Service,End Date,Charge Amount\n"
+        let rows = allTrials.map { trial -> String in
+            let service = trial.serviceName.replacingOccurrences(of: ",", with: " ")
+            let date = ISO8601DateFormatter().string(from: trial.trialEndDate)
+            let amount = trial.chargeAmount.map { "\($0)" } ?? ""
+            return "\(service),\(date),\(amount)"
+        }.joined(separator: "\n")
+        let csv = header + rows
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("subly-trials.csv")
+        try? csv.data(using: .utf8)?.write(to: url)
+        exportedCSVURL = url
+    }
+
+    private func deleteAllData() {
+        for trial in allTrials {
+            modelContext.delete(trial)
+        }
+        try? modelContext.save()
     }
 
     private var notificationStatusLabel: String {
@@ -172,4 +265,16 @@ struct SettingsView: View {
             await refreshNotificationStatus()
         }
     }
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+extension URL: @retroactive Identifiable {
+    public var id: String { absoluteString }
 }
