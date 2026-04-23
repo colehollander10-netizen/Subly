@@ -65,14 +65,14 @@ private struct RootTabView: View {
         self.notificationEngine = notificationEngine
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
-        appearance.backgroundColor = UIColor(SublyTheme.surface)
+        appearance.backgroundColor = UIColor(SublyTheme.backgroundElevated)
         appearance.shadowColor = UIColor(SublyTheme.divider).withAlphaComponent(0.6)
 
         let inactive = UIColor(SublyTheme.tertiaryText)
         appearance.stackedLayoutAppearance.normal.iconColor = inactive
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: inactive]
 
-        let active = UIColor(SublyTheme.ink)
+        let active = UIColor(SublyTheme.primaryText)
         appearance.stackedLayoutAppearance.selected.iconColor = active
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: active]
 
@@ -90,7 +90,7 @@ private struct RootTabView: View {
                 .tabItem { Label("Trials", systemImage: "bell.badge") }
                 .tag(Tab.trials)
         }
-        .tint(SublyTheme.ink)
+        .tint(SublyTheme.primaryText)
         .onChange(of: appRouter.pendingCancelTrialID) { _, newValue in
             if newValue != nil {
                 selection = .home

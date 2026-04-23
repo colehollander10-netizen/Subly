@@ -298,7 +298,7 @@ struct OnboardingView: View {
 
                 PremiumGlassPanel(tint: Color.white.opacity(0.12)) {
                     HStack(alignment: .top, spacing: 14) {
-                        StatOrb(icon: "shield.slash", tint: SublyTheme.critical)
+                        StatOrb(icon: "shield.slash", tint: SublyTheme.urgencyCritical)
 
                         VStack(alignment: .leading, spacing: 10) {
                             TerminalSectionLabel(title: "What we never use")
@@ -360,7 +360,7 @@ struct OnboardingView: View {
                             Text(formatUSD(item.amount))
                                 .font(.system(size: 17, weight: .semibold))
                                 .monospacedDigit()
-                                .foregroundStyle(index == 0 ? SublyTheme.ink : SublyTheme.primaryText)
+                                .foregroundStyle(SublyTheme.primaryText)
                         }
                         .padding(.vertical, index == 0 ? 4 : 0)
 
@@ -421,7 +421,7 @@ struct OnboardingView: View {
                 Button("Continue") {
                     advance()
                 }
-                .buttonStyle(TerminalButtonStyle(background: SublyTheme.ink, foreground: .white))
+                .buttonStyle(TerminalButtonStyle(background: SublyTheme.accent, foreground: .white))
 
                 if step == .portal, let onPreviewDemo {
                     Button("Preview app first") {

@@ -115,7 +115,7 @@ struct HomeView: View {
         HStack(alignment: .center, spacing: 10) {
             HStack(spacing: 10) {
                 Circle()
-                    .fill(SublyTheme.highlight.opacity(0.85))
+                    .fill(SublyTheme.accent.opacity(0.85))
                     .frame(width: 7, height: 7)
 
                 Text("Preview data is showing until your first real trial is found.")
@@ -180,7 +180,7 @@ struct HomeView: View {
                             Text(nextTrial.chargeAmount.map(formatUSD) ?? "Amount unknown")
                                 .font(.system(size: 50, weight: .bold))
                                 .monospacedDigit()
-                                .foregroundStyle(SublyTheme.ink)
+                                .foregroundStyle(SublyTheme.primaryText)
                                 .minimumScaleFactor(0.72)
                                 .lineLimit(1)
                             Text(daysLabel(days))
@@ -391,7 +391,7 @@ private struct CompactTrialRow: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(SublyTheme.surface.opacity(0.7))
+                .fill(SublyTheme.glassFill.opacity(0.7))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)

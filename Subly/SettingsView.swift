@@ -46,7 +46,7 @@ struct SettingsView: View {
                         if let errorMessage {
                             Text(errorMessage)
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(SublyTheme.critical)
+                                .foregroundStyle(SublyTheme.urgencyCritical)
                         }
 
                         TerminalSectionLabel(title: "Preview data", trailing: showDemoData ? "On" : "Off")

@@ -41,7 +41,7 @@ struct PrimaryAddButton: View {
                 backdrop
                 Image(systemName: icon)
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(SublyTheme.surface)
+                    .foregroundStyle(SublyTheme.accent)
             }
             .frame(width: diameter, height: diameter)
         }
@@ -53,12 +53,12 @@ struct PrimaryAddButton: View {
         if #available(iOS 26, *) {
             Color.clear
                 .glassEffect(
-                    .regular.tint(SublyTheme.primaryText.opacity(0.88)).interactive(true),
+                    .regular.tint(SublyTheme.accent.opacity(0.88)).interactive(true),
                     in: .circle
                 )
         } else {
             ZStack {
-                Circle().fill(SublyTheme.primaryText)
+                Circle().fill(SublyTheme.backgroundElevated)
                 Circle()
                     .stroke(
                         LinearGradient(

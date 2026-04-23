@@ -84,10 +84,10 @@ struct TrialsView: View {
                 Text("DEMO")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1.0)
-                    .foregroundStyle(SublyTheme.highlight)
+                    .foregroundStyle(SublyTheme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
-                    .background(Capsule().fill(SublyTheme.highlight.opacity(0.12)))
+                    .background(Capsule().fill(SublyTheme.accent.opacity(0.12)))
 
                 Text("These sample trials are here so we can tune the layout, logos, and spacing before your real trials fill in.")
                     .font(.system(size: 13, weight: .medium))
@@ -126,7 +126,7 @@ struct TrialsView: View {
                 Text(title.uppercased())
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(2.2)
-                    .foregroundStyle(isUrgent ? SublyTheme.critical : SublyTheme.tertiaryText)
+                    .foregroundStyle(isUrgent ? SublyTheme.urgencyCritical : SublyTheme.tertiaryText)
                 Spacer()
                 if !items.isEmpty {
                     Text("\(items.count)")
