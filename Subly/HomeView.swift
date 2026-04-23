@@ -54,12 +54,18 @@ struct HomeView: View {
         .sheet(isPresented: $showingManualAdd) {
             TrialDetailSheet(onCreateNew: { _ in })
         }
+        .onChange(of: showingManualAdd) { _, newValue in
+            if newValue { Haptics.play(.sheetPresent) }
+        }
         .sheet(item: $selectedTrial) { trial in
             TrialDetailSheet(
                 trial: trial,
                 onSaveExisting: { _ in },
                 onMarkCancelled: { t in markCancelled(t) }
             )
+        }
+        .onChange(of: selectedTrial?.id) { _, newValue in
+            if newValue != nil { Haptics.play(.sheetPresent) }
         }
         .onAppear {
             resolvePendingNotificationRoute()
@@ -103,6 +109,7 @@ struct HomeView: View {
             SectionLabel(title: "Next ending trial", trailing: "\(days)D")
 
             Button {
+                Haptics.play(.rowTap)
                 selectedTrial = trial
             } label: {
                 FlagshipCard(urgency: urgencyLevel(days: days)) {
@@ -173,6 +180,7 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(upcomingAfterHero.enumerated()), id: \.element.id) { index, trial in
                         Button {
+                            Haptics.play(.rowTap)
                             selectedTrial = trial
                         } label: {
                             CompactTrialRow(trial: trial)

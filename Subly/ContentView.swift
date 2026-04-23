@@ -91,6 +91,9 @@ private struct RootTabView: View {
                 .tag(Tab.trials)
         }
         .tint(SublyTheme.primaryText)
+        .onChange(of: selection) { _, _ in
+            Haptics.play(.tabSwitch)
+        }
         .onChange(of: appRouter.pendingCancelTrialID) { _, newValue in
             if newValue != nil {
                 selection = .home

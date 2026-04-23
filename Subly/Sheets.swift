@@ -344,6 +344,7 @@ struct TrialDetailSheet: View {
 
                         VStack(spacing: 10) {
                             Button {
+                                Haptics.play(.save)
                                 save()
                             } label: {
                                 Text("Save")
@@ -479,7 +480,6 @@ struct TrialDetailSheet: View {
             onCreateNew?(newTrial)
         }
         try? modelContext.save()
-        Haptics.play(.save)
 
         let container = modelContext.container
         Task {
