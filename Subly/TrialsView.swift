@@ -31,7 +31,10 @@ struct TrialsView: View {
                                 SurfaceCard(padding: 0) {
                                     VStack(spacing: 0) {
                                         ForEach(Array(endingSoon.enumerated()), id: \.element.id) { index, trial in
-                                            Button { selectedTrial = trial } label: {
+                                            Button {
+                                                Haptics.play(.rowTap)
+                                                selectedTrial = trial
+                                            } label: {
                                                 TrialListRow(trial: trial)
                                                     .padding(.horizontal, 18)
                                                     .padding(.vertical, 14)
@@ -51,7 +54,10 @@ struct TrialsView: View {
                                 SurfaceCard(padding: 0) {
                                     VStack(spacing: 0) {
                                         ForEach(Array(later.enumerated()), id: \.element.id) { index, trial in
-                                            Button { selectedTrial = trial } label: {
+                                            Button {
+                                                Haptics.play(.rowTap)
+                                                selectedTrial = trial
+                                            } label: {
                                                 TrialListRow(trial: trial)
                                                     .padding(.horizontal, 18)
                                                     .padding(.vertical, 14)
@@ -90,8 +96,14 @@ struct TrialsView: View {
                 onMarkCancelled: { t in markCancelled(t) }
             )
         }
+        .onChange(of: selectedTrial?.id) { _, newValue in
+            if newValue != nil { Haptics.play(.sheetPresent) }
+        }
         .sheet(isPresented: $showingManualAdd) {
             TrialDetailSheet(onCreateNew: { _ in })
+        }
+        .onChange(of: showingManualAdd) { _, newValue in
+            if newValue { Haptics.play(.sheetPresent) }
         }
     }
 

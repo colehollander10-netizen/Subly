@@ -31,7 +31,10 @@ struct SettingsView: View {
                                         .fixedSize(horizontal: false, vertical: true)
 
                                     Button {
-                                        Task { await handleNotificationAction() }
+                                        Task {
+                                            Haptics.play(.primaryTap)
+                                            await handleNotificationAction()
+                                        }
                                     } label: {
                                         HStack {
                                             if isUpdatingNotifications {
@@ -57,10 +60,12 @@ struct SettingsView: View {
                             SurfaceCard(padding: 0) {
                                 VStack(spacing: 0) {
                                     settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: SublyTheme.primaryText) {
+                                        Haptics.play(.rowTap)
                                         exportTrials()
                                     }
                                     HairlineDivider().padding(.horizontal, 18)
                                     settingsRow(title: "Delete all data", subtitle: "Wipe every trial from this device. This cannot be undone.", tint: SublyTheme.urgencyCritical) {
+                                        Haptics.play(.rowTap)
                                         showingDeleteConfirm = true
                                     }
                                 }
@@ -83,6 +88,7 @@ struct SettingsView: View {
                                     }
                                     HairlineDivider()
                                     Button {
+                                        Haptics.play(.rowTap)
                                         if let url = URL(string: "https://subly.app/privacy") {
                                             UIApplication.shared.open(url)
                                         }
@@ -123,13 +129,19 @@ struct SettingsView: View {
         }
         .presentationDetents([.large])
         .confirmationDialog("Delete all trials?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
-            Button("Delete all", role: .destructive) { deleteAllData() }
+            Button("Delete all", role: .destructive) {
+                Haptics.play(.destructiveConfirm)
+                deleteAllData()
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This removes every trial from this device. Cannot be undone.")
         }
         .sheet(item: $exportedCSVURL) { url in
             ShareSheet(activityItems: [url])
+        }
+        .onChange(of: exportedCSVURL?.id) { _, newValue in
+            if newValue != nil { Haptics.play(.sheetPresent) }
         }
         .task {
             await refreshNotificationStatus()

@@ -12,6 +12,10 @@ enum HapticEvent: Equatable {
     case markCanceled
     case scheduleReminder
     case swipeThresholdCrossed
+    case rowTap
+    case sheetPresent
+    case tabSwitch
+    case destructiveConfirm
 }
 
 enum Haptics {
@@ -54,6 +58,22 @@ enum Haptics {
             let g = UIImpactFeedbackGenerator(style: .light)
             g.prepare()
             g.impactOccurred()
+        case .rowTap:
+            let g = UISelectionFeedbackGenerator()
+            g.prepare()
+            g.selectionChanged()
+        case .sheetPresent:
+            let g = UIImpactFeedbackGenerator(style: .light)
+            g.prepare()
+            g.impactOccurred()
+        case .tabSwitch:
+            let g = UISelectionFeedbackGenerator()
+            g.prepare()
+            g.selectionChanged()
+        case .destructiveConfirm:
+            let g = UINotificationFeedbackGenerator()
+            g.prepare()
+            g.notificationOccurred(.warning)
         }
     }
 
@@ -78,6 +98,10 @@ extension View {
                 case .markCanceled: return .success
                 case .scheduleReminder: return .impact(flexibility: .soft)
                 case .swipeThresholdCrossed: return .impact(weight: .light)
+                case .rowTap: return .selection
+                case .sheetPresent: return .impact(flexibility: .soft)
+                case .tabSwitch: return .selection
+                case .destructiveConfirm: return .warning
                 }
             }
         } else {
