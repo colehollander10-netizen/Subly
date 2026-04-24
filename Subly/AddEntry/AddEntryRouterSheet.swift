@@ -15,9 +15,9 @@ struct AddEntryRouterSheet: View {
         NavigationStack {
             ScreenFrame {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Add to Subly")
+                    Text("Add to Finn")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(SublyTheme.primaryText)
+                        .foregroundStyle(FinnTheme.primaryText)
 
                     VStack(spacing: 12) {
                         Button {
@@ -26,7 +26,7 @@ struct AddEntryRouterSheet: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Ph.clock.fill
-                                    .color(SublyTheme.background)
+                                    .color(FinnTheme.background)
                                     .frame(width: 20, height: 20)
                                 Text("Add Trial")
                             }
@@ -40,7 +40,7 @@ struct AddEntryRouterSheet: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Ph.repeat.fill
-                                    .color(SublyTheme.background)
+                                    .color(FinnTheme.background)
                                     .frame(width: 20, height: 20)
                                 Text("Add Subscription")
                             }
@@ -57,6 +57,6 @@ struct AddEntryRouterSheet: View {
         }
         .presentationDetents([.height(260)])
         .presentationDragIndicator(.visible)
-        .presentationBackground(SublyTheme.background)
+        .presentationBackground(FinnTheme.background)
     }
 }

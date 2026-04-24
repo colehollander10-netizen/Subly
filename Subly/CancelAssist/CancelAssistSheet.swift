@@ -21,7 +21,7 @@ struct CancelAssistSheet: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("How to cancel \(trial.serviceName)")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                             .padding(.top, 12)
 
                         if let guide {
@@ -33,11 +33,11 @@ struct CancelAssistSheet: View {
                                         HStack(alignment: .firstTextBaseline, spacing: 12) {
                                             Text("\(i + 1)")
                                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                                .foregroundStyle(SublyTheme.accent)
+                                                .foregroundStyle(FinnTheme.accent)
                                                 .frame(width: 20, alignment: .leading)
                                             Text(guide.steps[i])
                                                 .font(.system(size: 15, weight: .medium))
-                                                .foregroundStyle(SublyTheme.primaryText)
+                                                .foregroundStyle(FinnTheme.primaryText)
                                                 .fixedSize(horizontal: false, vertical: true)
                                         }
                                     }
@@ -93,7 +93,7 @@ struct CancelAssistSheet: View {
                             dismiss()
                         } label: {
                             Ph.x.bold
-                                .color(SublyTheme.tertiaryText)
+                                .color(FinnTheme.tertiaryText)
                                 .frame(width: 22, height: 22)
                         }
                         .buttonStyle(.plain)

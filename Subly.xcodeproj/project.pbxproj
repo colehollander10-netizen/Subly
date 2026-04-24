@@ -10,7 +10,6 @@
 		0E0DE27729B561D0AF7A63A3 /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */; };
 		1A59DA56E2C62B37CCB6576E /* AutoImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6053E8417ADDF29B317D3EF /* AutoImportService.swift */; };
 		29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */ = {isa = PBXBuildFile; productRef = DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */; };
-		2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124542706504627C05A31D7 /* SublyApp.swift */; };
 		2FC7F3D5A44F85391FAEF3AD /* FoxState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */; };
 		3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BFB77DC074BCDBE021E77E /* GlassComponents.swift */; };
 		3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */; };
@@ -34,6 +33,7 @@
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
 		BF4CFE9C343E74C570ADE99B /* ImportConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5612D25D0F0BA879829F012 /* ImportConfirmationSheet.swift */; };
+		CA7C24CC8D98F62202C06E5A /* FinnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4B1472DD6CB90B7E3F8F09 /* FinnApp.swift */; };
 		CC4E3FD0124403E98E3D39A5 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
 		CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC3064989A01167627CCCF /* DatePickerField.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
@@ -53,7 +53,6 @@
 		0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntryRouterSheet.swift; sourceTree = "<group>"; };
 		0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxState.swift; sourceTree = "<group>"; };
 		1A6204A3276C8AF12CA8274C /* FieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldRow.swift; sourceTree = "<group>"; };
-		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
 		2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuideStore.swift; sourceTree = "<group>"; };
 		36DC3064989A01167627CCCF /* DatePickerField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerField.swift; sourceTree = "<group>"; };
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -80,6 +79,7 @@
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33219BCDF7580951DCCF281 /* FoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxView.swift; sourceTree = "<group>"; };
 		C6053E8417ADDF29B317D3EF /* AutoImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoImportService.swift; sourceTree = "<group>"; };
+		CA4B1472DD6CB90B7E3F8F09 /* FinnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnApp.swift; sourceTree = "<group>"; };
 		D1F9F92E36A7C6D95521F73A /* CancelGuides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CancelGuides.json; sourceTree = "<group>"; };
 		D209A72C5AA04D39E813619C /* ServicesCatalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ServicesCatalog.json; sourceTree = "<group>"; };
 		D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialParsingCore; path = Packages/TrialParsingCore; sourceTree = SOURCE_ROOT; };
@@ -208,6 +208,7 @@
 			children = (
 				83008B962C3682D08736BF7F /* Assets.xcassets */,
 				46C27551FBD7D8F0A3E32A75 /* ContentView.swift */,
+				CA4B1472DD6CB90B7E3F8F09 /* FinnApp.swift */,
 				90BFB77DC074BCDBE021E77E /* GlassComponents.swift */,
 				014D90B895BE78821E85C8D0 /* Haptics.swift */,
 				4AC817B909A0E79AA12666CC /* HomeView.swift */,
@@ -217,7 +218,6 @@
 				6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */,
 				4F53E060DE358F2E3A716C1F /* SettingsView.swift */,
 				99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */,
-				2124542706504627C05A31D7 /* SublyApp.swift */,
 				048969444CC82A881219AB65 /* SubscriptionsView.swift */,
 				ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */,
 				9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */,
@@ -326,6 +326,7 @@
 				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
 				CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */,
 				E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */,
+				CA7C24CC8D98F62202C06E5A /* FinnApp.swift in Sources */,
 				2FC7F3D5A44F85391FAEF3AD /* FoxState.swift in Sources */,
 				EDF7FAF8D1FCEE1D0FEEFE1E /* FoxView.swift in Sources */,
 				3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */,
@@ -340,7 +341,6 @@
 				80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */,
 				D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */,
 				88BA65309060B87A6D079D0E /* StoreKitImport.swift in Sources */,
-				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
 				B783B0AC355335604401EC9B /* SubscriptionsView.swift in Sources */,
 				8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */,
 				3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */,
@@ -396,6 +396,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Finn;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -480,6 +481,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Finn;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

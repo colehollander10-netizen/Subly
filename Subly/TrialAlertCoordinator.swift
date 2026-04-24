@@ -228,8 +228,8 @@ actor TrialAlertCoordinator {
         case .followUp:
             let title = "Still need to cancel \(name)?"
             let body = amountString.map {
-                "Open Subly for the cancel steps before the \($0) charge lands."
-            } ?? "Open Subly for the cancel steps before the charge lands."
+                "Open Finn for the cancel steps before the \($0) charge lands."
+            } ?? "Open Finn for the cancel steps before the charge lands."
             return (title, body)
         }
     }

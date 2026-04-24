@@ -14,7 +14,7 @@ struct FieldRow<Content: View>: View {
                 Text(label.uppercased())
                     .font(.system(size: 10, weight: .semibold, design: .default))
                     .tracking(1.8)
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                 content()
             }
         }

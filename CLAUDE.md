@@ -1,21 +1,23 @@
-# Subly — agent briefing
+# Finn — agent briefing
 
-Slim pointers. Full project context lives in Cole's Obsidian vault (`Wiki/Projects/Subly.md`) and in Linear.
+Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Finn/Finn.md`) and in Linear. **App is renamed Subly → Finn as of 2026-04-24** — display name is "Finn" but bundle id, Xcode project filename, and folder paths (`Subly/`, `Subly.xcodeproj`) stay "Subly" to preserve on-device SwiftData + App Store Connect linkage.
 
 ## Right now
 
-- **Active epic:** `COL-140` subscription pivot. P1–P4 merged. Recommended next: **P9 (COL-149)** — 4-tab bar + SubscriptionsView. That's what makes the already-shipped `AddSubscriptionSheet` reachable.
-- **Source of truth:** `docs/superpowers/specs/2026-04-23-subscription-pivot-design.md` (spec) + `docs/superpowers/plans/2026-04-23-subscription-pivot-implementation.md` (10-phase plan with per-task files + AC). Read both before touching pivot tickets.
-- **Prior epic done:** COL-120 v2 design. See `DESIGN.md` for tokens + component library.
+- **Active spec:** [[Finn v1 Launch Design]] (`docs/superpowers/specs/2026-04-24-finn-v1-design.md`) — full v1 launch spec.
+- **Active plan:** [[Finn v1 Implementation Plan]] (`docs/superpowers/plans/2026-04-24-finn-v1-implementation.md`) — 16 sub-plans, sub-plan 01 (rename) fully written.
+- **Prior epic done:** COL-140 subscription pivot (P1–P9 merged; P10 audit fixes are sub-plan 02). COL-120 v2 design complete.
+- **Paired vault docs:** [[Finn]] (canonical state) + [[Finn v1 Launch Design]] + [[Finn v1 Implementation Plan]] + [[Finn Content Strategy]].
 
 ## Hard rules
 
-- **Phosphor icons only** in app-owned UI. Zero `Image(systemName:)`. Use `Ph.<name>.<weight>.color(...)` — not `.foregroundStyle()`, not `.resizable()`.
-- **`SublyTheme.*` tokens only** — no hardcoded colors, no `.regular` font weight.
-- **`PrimaryButton` contrast:** lavender fill + `SublyTheme.background` (dark charcoal) label. Never white. Reason: WCAG.
-- **No `VersionedSchema` migration plan exists** and it's deliberate — a prior session backed out. Don't rebuild it.
+- **Phosphor icons only** in app-owned UI. Zero `Image(systemName:)`. Use `Ph.<name>.<weight>.color(...)` — not `.foregroundStyle()`, not `.resizable()`. Exception: SwiftUI `.tabItem` slot — SF Symbols only (SwiftUI doesn't honor custom views there).
+- **`FinnTheme.*` tokens only** — no hardcoded colors, no `.regular` font weight. Vulpine palette locked.
+- **`PrimaryButton` contrast:** Vulpine orange fill + `FinnTheme.background` (warm charcoal) label. Never white. Reason: WCAG.
+- **No `VersionedSchema` migration plan exists** and it's deliberate — a prior session backed out. Don't rebuild it. Lightweight `@Attribute(originalName:)` migrations only.
 - **PR per ticket.** Never push directly to `main`. Never merge to `main` locally.
 - **Run `route` skill** before writing non-trivial code. Default pattern: Claude plans, Codex executes, Cursor scaffolds UI, Opus reviews.
+- **Docs to vault first.** All specs/plans/design docs go to `/Users/colehollander/Obsidian/Projects/Finn/` as the canonical copy; repo copies (`docs/superpowers/`) are secondary.
 
 ## Build
 
@@ -32,4 +34,4 @@ cd Packages/<Pkg> && swift test
 
 1. `gh pr list --state open`
 2. `git log --oneline -10`
-3. Check Linear `COL-140` sub-issues for current phase statuses — but verify against code (Linear "Done" has been wrong before).
+3. Read [[Finn]] in the vault for current state — and verify against code (Linear "Done" has been wrong before).

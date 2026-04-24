@@ -7,6 +7,7 @@ options:
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.colehollander.subly
+    INFOPLIST_KEY_CFBundleDisplayName: Finn
     GENERATE_INFOPLIST_FILE: YES
     INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
     INFOPLIST_KEY_UILaunchScreen_Generation: YES

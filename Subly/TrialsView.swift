@@ -114,11 +114,11 @@ struct TrialsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Trials")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
             if !trials.isEmpty {
                 Text("\(trials.count) trial\(trials.count == 1 ? "" : "s") tracked")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .foregroundStyle(FinnTheme.tertiaryText)
                     .monospacedDigit()
             }
         }
@@ -128,16 +128,16 @@ struct TrialsView: View {
         VStack(spacing: 20) {
             Spacer(minLength: 60)
             Ph.moonStars.duotone
-                .color(SublyTheme.accent.opacity(0.4))
+                .color(FinnTheme.accent.opacity(0.4))
                 .frame(width: 120, height: 120)
                 .accessibilityHidden(true)
             VStack(spacing: 8) {
                 Text("No trials yet.")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 Text("Add a trial with the + button so we can warn you before it charges.")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -159,19 +159,19 @@ private struct TrialListRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(trial.serviceName)
                     .font(.system(size: 16, weight: .semibold, design: .default))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 HStack(spacing: 6) {
                     Text(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                         .font(.system(size: 12, weight: .medium, design: .default))
                         .monospacedDigit()
-                        .foregroundStyle(SublyTheme.secondaryText)
+                        .foregroundStyle(FinnTheme.secondaryText)
                     if let lengthLabel = trialLengthDescription(for: trial) {
                         Text("·")
                             .font(.system(size: 12, weight: .medium, design: .default))
-                            .foregroundStyle(SublyTheme.tertiaryText)
+                            .foregroundStyle(FinnTheme.tertiaryText)
                         Text(lengthLabel)
                             .font(.system(size: 12, weight: .medium, design: .default))
-                            .foregroundStyle(SublyTheme.tertiaryText)
+                            .foregroundStyle(FinnTheme.tertiaryText)
                     }
                 }
             }
@@ -180,10 +180,10 @@ private struct TrialListRow: View {
                 Text(trial.chargeAmount.map(formatUSD) ?? "TBD")
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 AccentPill(
                     text: days <= 0 ? "TODAY" : "\(days)D",
-                    color: SublyTheme.urgencyColor(daysLeft: days)
+                    color: FinnTheme.urgencyColor(daysLeft: days)
                 )
             }
         }

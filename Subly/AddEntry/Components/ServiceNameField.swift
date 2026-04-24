@@ -9,7 +9,7 @@ struct ServiceNameField: View {
 
     var body: some View {
         FieldRow(
-            icon: AnyView(Ph.briefcase.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+            icon: AnyView(Ph.briefcase.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
             label: label
         ) {
             if let focusBinding {
@@ -17,12 +17,12 @@ struct ServiceNameField: View {
                     .textInputAutocapitalization(.words)
                     .focused(focusBinding)
                     .font(.system(size: 17, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
             } else {
                 TextField(placeholder, text: $text)
                     .textInputAutocapitalization(.words)
                     .font(.system(size: 17, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
             }
         }
     }

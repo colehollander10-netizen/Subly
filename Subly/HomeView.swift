@@ -46,7 +46,7 @@ struct HomeView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 PrimaryAddButton(
-                    accessibilityLabel: "Add to Subly",
+                    accessibilityLabel: "Add to Finn",
                     accessibilityHint: "Choose whether to add a trial or subscription.",
                     onTap: { showingRouter = true },
                     diameter: 62
@@ -104,11 +104,11 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(Date.now.formatted(.dateTime.month(.wide).day()))
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(SublyTheme.tertiaryText)
-            Text("Subly")
+                .foregroundStyle(FinnTheme.tertiaryText)
+            Text("Finn")
                 .font(.system(size: 30, weight: .heavy, design: .rounded))
-                .foregroundStyle(SublyTheme.accent)
-                .accessibilityLabel("Subly")
+                .foregroundStyle(FinnTheme.accent)
+                .accessibilityLabel("Finn")
         }
     }
 
@@ -142,19 +142,19 @@ struct HomeView: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(trial.serviceName)
                                     .font(.system(size: 22, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(SublyTheme.primaryText)
+                                    .foregroundStyle(FinnTheme.primaryText)
                                 HStack(spacing: 6) {
                                     Text("Renews \(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
                                         .font(.system(size: 12, weight: .medium, design: .default))
                                         .monospacedDigit()
-                                        .foregroundStyle(SublyTheme.secondaryText)
+                                        .foregroundStyle(FinnTheme.secondaryText)
                                     if let lengthLabel = trialLengthDescription(for: trial) {
                                         Text("·")
                                             .font(.system(size: 12, weight: .medium, design: .default))
-                                            .foregroundStyle(SublyTheme.tertiaryText)
+                                            .foregroundStyle(FinnTheme.tertiaryText)
                                         Text(lengthLabel)
                                             .font(.system(size: 12, weight: .medium, design: .default))
-                                            .foregroundStyle(SublyTheme.tertiaryText)
+                                            .foregroundStyle(FinnTheme.tertiaryText)
                                     }
                                 }
                             }
@@ -163,7 +163,7 @@ struct HomeView: View {
 
                             AccentPill(
                                 text: days <= 0 ? "TODAY" : "\(max(days, 0))D LEFT",
-                                color: SublyTheme.urgencyColor(daysLeft: days)
+                                color: FinnTheme.urgencyColor(daysLeft: days)
                             )
                             .breathing(days <= 3)
                         }
@@ -174,13 +174,13 @@ struct HomeView: View {
                             Text(trial.chargeAmount.map(formatUSD) ?? "Amount unknown")
                                 .font(.system(size: 56, weight: .bold, design: .rounded))
                                 .monospacedDigit()
-                                .foregroundStyle(SublyTheme.primaryText)
+                                .foregroundStyle(FinnTheme.primaryText)
                                 .minimumScaleFactor(0.72)
                                 .lineLimit(1)
                             Text(daysLabel(days))
                                 .font(.system(size: 15, weight: .medium, design: .default))
                                 .monospacedDigit()
-                                .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
+                                .foregroundStyle(FinnTheme.urgencyColor(daysLeft: days))
                         }
 
                         nextAlertRow(for: trial)
@@ -223,16 +223,16 @@ struct HomeView: View {
         VStack(spacing: 20) {
             Spacer(minLength: 60)
             Ph.moonStars.duotone
-                .color(SublyTheme.accent.opacity(0.4))
+                .color(FinnTheme.accent.opacity(0.4))
                 .frame(width: 120, height: 120)
                 .accessibilityHidden(true)
             VStack(spacing: 8) {
                 Text("Nothing charging soon.")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 Text("The next 7 days are clear. Your full list lives in Trials.")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -256,12 +256,12 @@ struct HomeView: View {
             }()
             HStack(spacing: 10) {
                 Ph.bellSimple.fill
-                    .color(SublyTheme.accent)
+                    .color(FinnTheme.accent)
                     .frame(width: 14, height: 14)
                 Text("Alert · \(planned.triggerDate.formatted(.relative(presentation: .named))) (\(kindLabel))")
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
             }
         }
     }
@@ -295,18 +295,18 @@ private struct CompactTrialRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(trial.serviceName)
                     .font(.system(size: 16, weight: .semibold, design: .default))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 Text(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .foregroundStyle(FinnTheme.tertiaryText)
             }
             Spacer()
             Text(days <= 0 ? "TODAY" : "\(days)D")
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .tracking(0.8)
-                .foregroundStyle(SublyTheme.urgencyColor(daysLeft: days))
+                .foregroundStyle(FinnTheme.urgencyColor(daysLeft: days))
         }
     }
 }

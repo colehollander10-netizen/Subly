@@ -6,7 +6,7 @@ import UserNotifications
 /// Receives notification tap and delivery callbacks and marks the
 /// corresponding `TrialAlert` row as delivered.
 ///
-/// Must be stored as a `let` property on `SublyApp` so it isn't
+/// Must be stored as a `let` property on `FinnApp` so it isn't
 /// deallocated before UNUserNotificationCenter fires callbacks.
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     private let modelContainer: ModelContainer

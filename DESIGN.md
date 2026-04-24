@@ -1,4 +1,4 @@
-# Subly Design System
+# Finn Design System (v2 — lavender era; v1 Launch spec supersedes parts of this)
 
 ## Visual Direction
 
@@ -15,7 +15,7 @@ Subly is a **premium, calm financial utility** with a **dark liquid-glass aesthe
 
 ---
 
-## Color System (`SublyTheme` in `GlassComponents.swift`)
+## Color System (`FinnTheme` in `GlassComponents.swift`)
 
 All values are dark-mode-only. There is no light variant.
 
@@ -80,18 +80,18 @@ RoundedRectangle(cornerRadius: 24, style: .continuous)
     .fill(.ultraThinMaterial)
     .overlay(
         RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .fill(SublyTheme.glassFill) // white @ 4%
+            .fill(FinnTheme.glassFill) // white @ 4%
     )
     .overlay(
         RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(SublyTheme.glassBorder, lineWidth: 1) // white @ 12%
+            .stroke(FinnTheme.glassBorder, lineWidth: 1) // white @ 12%
     )
     .overlay(
         // Top-edge highlight for lit-from-within quality
         RoundedRectangle(cornerRadius: 24, style: .continuous)
             .stroke(
                 LinearGradient(
-                    colors: [SublyTheme.glassHighlight, .clear],
+                    colors: [FinnTheme.glassHighlight, .clear],
                     startPoint: .top,
                     endPoint: .center
                 ),
@@ -127,7 +127,7 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 - `CompactTrialRow` — row inside a `SurfaceCard` (logo, name, date, urgency value). Rows are divided by `HairlineDivider`, not their own cards.
 
 ### Buttons
-- `PrimaryButton` — lavender fill, **dark text** (`SublyTheme.background`), 16pt radius. Main CTA. Label uses the dark charcoal token, NOT near-white — lavender-on-white fails WCAG AA (2.05:1); lavender-on-dark-charcoal passes at ~10.7:1.
+- `PrimaryButton` — lavender fill, **dark text** (`FinnTheme.background`), 16pt radius. Main CTA. Label uses the dark charcoal token, NOT near-white — lavender-on-white fails WCAG AA (2.05:1); lavender-on-dark-charcoal passes at ~10.7:1.
 - `GhostButton` — transparent fill, 1pt lavender border, lavender text. Lavender-on-charcoal ~7.9:1 passes AA for 14pt.
 - All buttons: `.frame(minHeight: 44)` to satisfy the 44pt touch-target minimum.
 - `HeaderIconButton` — 40pt glass circle, icon inside. (40pt < 44pt is acceptable per HIG when icon button is paired with a larger tap area via `.contentShape(Rectangle())` or enlarged via padding; verify in ticket 4.)
@@ -136,7 +136,7 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 ### Typography helpers
 - `SectionLabel` — UPPERCASE section header. Replaces `TerminalSectionLabel`. Optional trailing count in monospaced digit.
 - `AccentPill` — colored urgency badge ("3D LEFT", "TODAY"). Capsule, tinted fill @ 14%, 1pt tinted border.
-- `HairlineDivider` — 1pt divider line at `SublyTheme.divider`.
+- `HairlineDivider` — 1pt divider line at `FinnTheme.divider`.
 
 ### Icons
 - `ServiceIcon` — brand logo with fallback monogram. Always use this. Sizes: `72` (flagship), `40` (standard), `32` (compact row).
@@ -314,7 +314,7 @@ SurfaceCard
 
 ## Tab Bar
 
-Native-feel bottom tab bar, 3 tabs: **Home** / **Trials** / **Settings**. Selected tab icon + label tint: `SublyTheme.accent` (lavender). Unselected: `SublyTheme.tertiaryText`. Tab bar background: glass material.
+Native-feel bottom tab bar, 3 tabs: **Home** / **Trials** / **Settings**. Selected tab icon + label tint: `FinnTheme.accent` (lavender). Unselected: `FinnTheme.tertiaryText`. Tab bar background: glass material.
 
 Do not replace this with a top pill selector. The bottom tab bar is part of what makes the app feel native.
 
@@ -333,7 +333,7 @@ Do not replace this with a top pill selector. The bottom tab bar is part of what
 
 **Don't:**
 - Use warm/paper colors or light backgrounds — wrong aesthetic direction.
-- Hardcode colors outside `SublyTheme`.
+- Hardcode colors outside `FinnTheme`.
 - Use lavender for urgency — lavender is brand only.
 - Put each trial in its own card. Group rows into one `SurfaceCard`.
 - Add decorative UI that doesn't carry information.
@@ -345,8 +345,8 @@ Do not replace this with a top pill selector. The bottom tab bar is part of what
 
 ## Migration Checklist (from warm-paper DESIGN.md)
 
-- [ ] Replace `SublyTheme` values with dark palette
-- [ ] Replace `AppBackground` — solid `SublyTheme.background`, no gradients, no blur blobs
+- [ ] Replace `FinnTheme` values with dark palette
+- [ ] Replace `AppBackground` — solid `FinnTheme.background`, no gradients, no blur blobs
 - [ ] Add `GlassCard` primitive; make `FlagshipCard`/`SurfaceCard` wrap it
 - [ ] Change `ServiceIcon` background to glass-over-dark
 - [ ] Rename `TerminalSectionLabel` → `SectionLabel`

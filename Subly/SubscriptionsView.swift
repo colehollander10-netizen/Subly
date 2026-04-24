@@ -96,11 +96,11 @@ struct SubscriptionsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Subscriptions")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
             Text("\(subscriptions.count) active · \(formatUSD(monthlyTotal))/mo")
                 .font(.system(size: 12, weight: .medium))
                 .monospacedDigit()
-                .foregroundStyle(SublyTheme.tertiaryText)
+                .foregroundStyle(FinnTheme.tertiaryText)
         }
     }
 
@@ -110,15 +110,15 @@ struct SubscriptionsView: View {
             SurfaceCard {
                 VStack(spacing: 10) {
                     Ph.repeat.regular
-                        .color(SublyTheme.tertiaryText)
+                        .color(FinnTheme.tertiaryText)
                         .frame(width: 32, height: 32)
                         .accessibilityHidden(true)
                     Text("No subscriptions yet")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(SublyTheme.primaryText)
+                        .foregroundStyle(FinnTheme.primaryText)
                     Text("Tap + to add one.")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(SublyTheme.secondaryText)
+                        .foregroundStyle(FinnTheme.secondaryText)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
@@ -158,7 +158,7 @@ private struct SubscriptionListRow: View {
     let subscription: Trial
 
     private var highlightColor: Color {
-        daysUntil(subscription.chargeDate) <= 2 ? SublyTheme.accent : SublyTheme.urgencyCalm
+        daysUntil(subscription.chargeDate) <= 2 ? FinnTheme.accent : FinnTheme.urgencyCalm
     }
 
     var body: some View {
@@ -167,11 +167,11 @@ private struct SubscriptionListRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(subscription.serviceName)
                     .font(.system(size: 16, weight: .semibold, design: .default))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 Text("Renews \(subscription.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
             }
             Spacer()
             Text(subscription.chargeAmount.map(formatUSD) ?? "TBD")
@@ -220,7 +220,7 @@ private struct SubscriptionDetailSheet: View {
                             SectionLabel(title: "Active subscription")
                             Text("Edit Subscription")
                                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(SublyTheme.primaryText)
+                                .foregroundStyle(FinnTheme.primaryText)
                         }
 
                         SurfaceCard(padding: 0) {
@@ -250,10 +250,10 @@ private struct SubscriptionDetailSheet: View {
                                 .font(.system(size: 14, weight: .semibold))
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .foregroundStyle(SublyTheme.urgencyCritical)
+                        .foregroundStyle(FinnTheme.urgencyCritical)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(SublyTheme.urgencyCritical, lineWidth: 1)
+                                .stroke(FinnTheme.urgencyCritical, lineWidth: 1)
                         )
                     }
                     .padding(.horizontal, 20)
@@ -264,7 +264,7 @@ private struct SubscriptionDetailSheet: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                     }
                 }
             }
@@ -273,7 +273,7 @@ private struct SubscriptionDetailSheet: View {
 
     private var billingCycleField: some View {
         FieldRow(
-            icon: AnyView(Ph.repeat.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+            icon: AnyView(Ph.repeat.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
             label: "Billing cycle"
         ) {
             Picker("", selection: $billingCycle) {

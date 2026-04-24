@@ -38,21 +38,21 @@ struct OnboardingView: View {
         VStack(spacing: 24) {
             Spacer()
             Ph.moonStars.duotone
-                .color(SublyTheme.accent.opacity(0.6))
+                .color(FinnTheme.accent.opacity(0.6))
                 .frame(width: 100, height: 100)
                 .accessibilityHidden(true)
             VStack(spacing: 12) {
-                Text("Subly")
+                Text("Finn")
                     .font(.system(size: 56, weight: .heavy, design: .rounded))
-                    .foregroundStyle(SublyTheme.accent)
+                    .foregroundStyle(FinnTheme.accent)
                 Text("Know before your trials charge you.")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("Without linking your bank. Without reading your email.")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -76,7 +76,7 @@ struct OnboardingView: View {
             VStack(spacing: 12) {
                 Text("No bank. No inbox. No account.")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -91,7 +91,7 @@ struct OnboardingView: View {
 
             Text("Everything lives on this device. Always.")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(SublyTheme.secondaryText)
+                .foregroundStyle(FinnTheme.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -111,12 +111,12 @@ struct OnboardingView: View {
         SurfaceCard(padding: 16) {
             HStack(spacing: 14) {
                 icon
-                    .color(SublyTheme.accent)
+                    .color(FinnTheme.accent)
                     .frame(width: 24, height: 24)
                     .frame(width: 32, alignment: .leading)
                 Text(text)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
             }
@@ -130,20 +130,20 @@ struct OnboardingView: View {
             Spacer()
             Text("How you add a trial.")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
 
             VStack(spacing: 10) {
                 differentiatorRow(icon: Ph.pencilSimple.bold, text: "Tap + and type it in.")
-                differentiatorRow(icon: Ph.clipboardText.fill, text: "Paste a receipt and Subly fills it in.")
+                differentiatorRow(icon: Ph.clipboardText.fill, text: "Paste a receipt and Finn fills it in.")
             }
             .padding(.horizontal, 20)
 
             Text("Takes 10 seconds. Alerts fire 3 days before and day-of.")
                 .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(SublyTheme.secondaryText)
+                .foregroundStyle(FinnTheme.secondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 32)
@@ -165,18 +165,18 @@ struct OnboardingView: View {
         VStack(spacing: 24) {
             Spacer()
             Ph.bellRinging.duotone
-                .color(SublyTheme.accent.opacity(0.6))
+                .color(FinnTheme.accent.opacity(0.6))
                 .frame(width: 72, height: 72)
                 .accessibilityHidden(true)
 
             VStack(spacing: 12) {
                 Text("One last thing.")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Subly uses local notifications to warn you before a charge. No push server, no tracking.")
+                Text("Finn uses local notifications to warn you before a charge. No push server, no tracking.")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }

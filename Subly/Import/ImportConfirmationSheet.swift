@@ -60,7 +60,7 @@ struct ImportConfirmationSheet: View {
                             dismiss()
                         } label: {
                             Ph.x.bold
-                                .color(SublyTheme.tertiaryText)
+                                .color(FinnTheme.tertiaryText)
                                 .frame(width: 22, height: 22)
                         }
                     }
@@ -76,11 +76,11 @@ struct ImportConfirmationSheet: View {
             foxPlaceholder
             Text("Import from Apple")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
                 .frame(maxWidth: .infinity)
-            Text("Select the Apple-billed subscriptions you want Subly to track.")
+            Text("Select the Apple-billed subscriptions you want Finn to track.")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(SublyTheme.secondaryText)
+                .foregroundStyle(FinnTheme.secondaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
         }
@@ -89,7 +89,7 @@ struct ImportConfirmationSheet: View {
     private var foxPlaceholder: some View {
         // TODO COL-146: replace placeholder with FoxView(state: .happy) when Fox system lands
         Ph.smiley.fill
-            .color(SublyTheme.accent)
+            .color(FinnTheme.accent)
             .frame(width: 64, height: 64)
             .padding(.top, 8)
             .padding(.bottom, 4)
@@ -99,16 +99,16 @@ struct ImportConfirmationSheet: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Ph.appleLogo.regular
-                .color(SublyTheme.tertiaryText)
+                .color(FinnTheme.tertiaryText)
                 .frame(width: 48, height: 48)
                 .accessibilityHidden(true)
             Text("No App Store subscriptions found")
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
                 .multilineTextAlignment(.center)
             Text("Apple did not return any active auto-renewable subscriptions for this Apple ID. For everything else, add it manually.")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(SublyTheme.secondaryText)
+                .foregroundStyle(FinnTheme.secondaryText)
                 .multilineTextAlignment(.center)
             Button {
                 dismiss()
@@ -130,16 +130,16 @@ struct ImportConfirmationSheet: View {
         } label: {
             HStack(spacing: 12) {
                 (checkedIDs.contains(subscription.id) ? Ph.checkSquare.fill : Ph.square.regular)
-                    .color(checkedIDs.contains(subscription.id) ? SublyTheme.accent : SublyTheme.tertiaryText)
+                    .color(checkedIDs.contains(subscription.id) ? FinnTheme.accent : FinnTheme.tertiaryText)
                     .frame(width: 22, height: 22)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(subscription.displayName)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(SublyTheme.primaryText)
+                        .foregroundStyle(FinnTheme.primaryText)
                     Text("\(formatUSD(subscription.amount)) / \(subscription.billingCycle.displayName)")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(SublyTheme.secondaryText)
+                        .foregroundStyle(FinnTheme.secondaryText)
                         .monospacedDigit()
                 }
 
@@ -148,7 +148,7 @@ struct ImportConfirmationSheet: View {
                 if let nextBillingDate = subscription.nextBillingDate {
                     Text(nextBillingDate.formatted(.dateTime.month(.abbreviated).day()))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(SublyTheme.tertiaryText)
+                        .foregroundStyle(FinnTheme.tertiaryText)
                         .monospacedDigit()
                 }
             }
