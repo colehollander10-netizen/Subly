@@ -46,7 +46,7 @@ struct HomeView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 PrimaryAddButton(
-                    accessibilityLabel: "Add to Subly",
+                    accessibilityLabel: "Add to Finn",
                     accessibilityHint: "Choose whether to add a trial or subscription.",
                     onTap: { showingRouter = true },
                     diameter: 62
@@ -105,10 +105,10 @@ struct HomeView: View {
             Text(Date.now.formatted(.dateTime.month(.wide).day()))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(FinnTheme.tertiaryText)
-            Text("Subly")
+            Text("Finn")
                 .font(.system(size: 30, weight: .heavy, design: .rounded))
                 .foregroundStyle(FinnTheme.accent)
-                .accessibilityLabel("Subly")
+                .accessibilityLabel("Finn")
         }
     }
 

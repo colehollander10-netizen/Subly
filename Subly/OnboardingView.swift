@@ -42,7 +42,7 @@ struct OnboardingView: View {
                 .frame(width: 100, height: 100)
                 .accessibilityHidden(true)
             VStack(spacing: 12) {
-                Text("Subly")
+                Text("Finn")
                     .font(.system(size: 56, weight: .heavy, design: .rounded))
                     .foregroundStyle(FinnTheme.accent)
                 Text("Know before your trials charge you.")
@@ -137,7 +137,7 @@ struct OnboardingView: View {
 
             VStack(spacing: 10) {
                 differentiatorRow(icon: Ph.pencilSimple.bold, text: "Tap + and type it in.")
-                differentiatorRow(icon: Ph.clipboardText.fill, text: "Paste a receipt and Subly fills it in.")
+                differentiatorRow(icon: Ph.clipboardText.fill, text: "Paste a receipt and Finn fills it in.")
             }
             .padding(.horizontal, 20)
 
@@ -174,7 +174,7 @@ struct OnboardingView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(FinnTheme.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Subly uses local notifications to warn you before a charge. No push server, no tracking.")
+                Text("Finn uses local notifications to warn you before a charge. No push server, no tracking.")
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(FinnTheme.secondaryText)
                     .multilineTextAlignment(.center)

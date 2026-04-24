@@ -40,7 +40,7 @@ struct ContentView: View {
         .onAppear {
             // One-time migration: anyone who already has real trial data
             // (from the prior Gmail build, or who added trials before
-            // tapping "Open Subly" in onboarding) shouldn't be re-onboarded.
+            // tapping "Open Finn" in onboarding) shouldn't be re-onboarded.
             if !hasCompletedOnboarding && !existingTrials.isEmpty {
                 hasCompletedOnboarding = true
             }

@@ -15,7 +15,7 @@ struct AddEntryRouterSheet: View {
         NavigationStack {
             ScreenFrame {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Add to Subly")
+                    Text("Add to Finn")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(FinnTheme.primaryText)
 

@@ -78,7 +78,7 @@ struct ImportConfirmationSheet: View {
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(FinnTheme.primaryText)
                 .frame(maxWidth: .infinity)
-            Text("Select the Apple-billed subscriptions you want Subly to track.")
+            Text("Select the Apple-billed subscriptions you want Finn to track.")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(FinnTheme.secondaryText)
                 .multilineTextAlignment(.center)

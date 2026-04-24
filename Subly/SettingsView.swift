@@ -265,13 +265,13 @@ struct SettingsView: View {
     private var notificationSummary: String {
         switch notificationStatus {
         case .authorized, .provisional, .ephemeral:
-            return "Subly will remind you before a trial charges and can send a follow-up nudge if you put cancellation off."
+            return "Finn will remind you before a trial charges and can send a follow-up nudge if you put cancellation off."
         case .denied:
-            return "Alerts are off right now. Turn them back on in iPhone Settings so Subly can warn you before a free trial bills your card."
+            return "Alerts are off right now. Turn them back on in iPhone Settings so Finn can warn you before a free trial bills your card."
         case .notDetermined:
-            return "Turn on alerts so Subly can catch upcoming charges in time and follow up if you meant to cancel later."
+            return "Turn on alerts so Finn can catch upcoming charges in time and follow up if you meant to cancel later."
         @unknown default:
-            return "Subly uses notifications to warn you before trial charges land."
+            return "Finn uses notifications to warn you before trial charges land."
         }
     }
 
