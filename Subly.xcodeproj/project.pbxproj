@@ -22,10 +22,12 @@
 		71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3313827943DC2A298F2E59 /* CancelGuide.swift */; };
 		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
 		80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F53E060DE358F2E3A716C1F /* SettingsView.swift */; };
+		8547ED1D2363738DBBCD28F2 /* ServicesCatalog.json in Resources */ = {isa = PBXBuildFile; fileRef = D209A72C5AA04D39E813619C /* ServicesCatalog.json */; };
 		88BA65309060B87A6D079D0E /* StoreKitImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */; };
 		8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */; };
 		8F9A6E55A611D718BF89EF30 /* AmountField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E28F7FBA1F29D7CB6E29A1D /* AmountField.swift */; };
 		A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */; };
+		AF652EFE85CE4F710BC6631E /* CatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69DD04C2382FCB31BA95915F /* CatalogService.swift */; };
 		B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC817B909A0E79AA12666CC /* HomeView.swift */; };
 		B783B0AC355335604401EC9B /* SubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048969444CC82A881219AB65 /* SubscriptionsView.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
@@ -57,6 +59,7 @@
 		4AC817B909A0E79AA12666CC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F53E060DE358F2E3A716C1F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportableSubscription.swift; sourceTree = "<group>"; };
+		69DD04C2382FCB31BA95915F /* CatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogService.swift; sourceTree = "<group>"; };
 		6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryAddButton.swift; sourceTree = "<group>"; };
 		72669D27DD5FF4259740BAAF /* ServiceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceNameField.swift; sourceTree = "<group>"; };
 		75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelAssistSheet.swift; sourceTree = "<group>"; };
@@ -76,6 +79,7 @@
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33219BCDF7580951DCCF281 /* FoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxView.swift; sourceTree = "<group>"; };
 		D1F9F92E36A7C6D95521F73A /* CancelGuides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CancelGuides.json; sourceTree = "<group>"; };
+		D209A72C5AA04D39E813619C /* ServicesCatalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ServicesCatalog.json; sourceTree = "<group>"; };
 		D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialParsingCore; path = Packages/TrialParsingCore; sourceTree = SOURCE_ROOT; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSubscriptionSheet.swift; sourceTree = "<group>"; };
@@ -121,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				D1F9F92E36A7C6D95521F73A /* CancelGuides.json */,
+				D209A72C5AA04D39E813619C /* ServicesCatalog.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -167,6 +172,14 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
+		B5A9B3787EC0392A6411CBD0 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				69DD04C2382FCB31BA95915F /* CatalogService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		DDF01BFF1E5404E77F59E55D /* Import */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,6 +223,7 @@
 				1862D81D5E74A33980A70469 /* Fox */,
 				DDF01BFF1E5404E77F59E55D /* Import */,
 				6F201247D98E274178532DDF /* Resources */,
+				B5A9B3787EC0392A6411CBD0 /* Services */,
 			);
 			path = Subly;
 			sourceTree = "<group>";
@@ -287,6 +301,7 @@
 			files = (
 				564CB94AD248FE9096A06153 /* Assets.xcassets in Resources */,
 				DFAAB41EEBF3955C8AD98094 /* CancelGuides.json in Resources */,
+				8547ED1D2363738DBBCD28F2 /* ServicesCatalog.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,6 +318,7 @@
 				560CE291FA5CB2A1A41F37E1 /* CancelAssistSheet.swift in Sources */,
 				71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */,
 				EC2C926E4491286107536EC5 /* CancelGuideStore.swift in Sources */,
+				AF652EFE85CE4F710BC6631E /* CatalogService.swift in Sources */,
 				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
 				CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */,
 				E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */,
