@@ -23,11 +23,13 @@
 		8F9A6E55A611D718BF89EF30 /* AmountField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E28F7FBA1F29D7CB6E29A1D /* AmountField.swift */; };
 		A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */; };
 		B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC817B909A0E79AA12666CC /* HomeView.swift */; };
+		B783B0AC355335604401EC9B /* SubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048969444CC82A881219AB65 /* SubscriptionsView.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
 		CC4E3FD0124403E98E3D39A5 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
 		CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC3064989A01167627CCCF /* DatePickerField.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
+		D5D3F1A0F4EB17335C0A5C86 /* AddEntryRouterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */; };
 		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
 		E24A57104511E6C37547388F /* ServiceNameField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72669D27DD5FF4259740BAAF /* ServiceNameField.swift */; };
 		E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A6204A3276C8AF12CA8274C /* FieldRow.swift */; };
@@ -37,6 +39,8 @@
 
 /* Begin PBXFileReference section */
 		014D90B895BE78821E85C8D0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		048969444CC82A881219AB65 /* SubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsView.swift; sourceTree = "<group>"; };
+		0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntryRouterSheet.swift; sourceTree = "<group>"; };
 		0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxState.swift; sourceTree = "<group>"; };
 		1A6204A3276C8AF12CA8274C /* FieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldRow.swift; sourceTree = "<group>"; };
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
@@ -134,6 +138,7 @@
 		DF62C04EBAD5204AA3B7B98D /* AddEntry */ = {
 			isa = PBXGroup;
 			children = (
+				0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */,
 				F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */,
 				71DDBA753604C5FE256552FA /* Components */,
 			);
@@ -155,6 +160,7 @@
 				4F53E060DE358F2E3A716C1F /* SettingsView.swift */,
 				99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */,
 				2124542706504627C05A31D7 /* SublyApp.swift */,
+				048969444CC82A881219AB65 /* SubscriptionsView.swift */,
 				ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */,
 				9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */,
 				DF62C04EBAD5204AA3B7B98D /* AddEntry */,
@@ -245,6 +251,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5D3F1A0F4EB17335C0A5C86 /* AddEntryRouterSheet.swift in Sources */,
 				A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */,
 				8F9A6E55A611D718BF89EF30 /* AmountField.swift in Sources */,
 				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
@@ -262,6 +269,7 @@
 				80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */,
 				D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */,
 				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
+				B783B0AC355335604401EC9B /* SubscriptionsView.swift in Sources */,
 				8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */,
 				3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */,
 			);
