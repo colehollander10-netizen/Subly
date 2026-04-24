@@ -3,7 +3,7 @@ import LogoService
 import SubscriptionStore
 import SwiftUI
 
-enum SublyTheme {
+enum FinnTheme {
     // Vulpine palette (2026-04-23). Warm charcoal base + Phosphor-orange accent
     // tied to the fox mascot. Higher contrast text than the prior cool lavender
     // palette — primaryText is pure white, secondaryText is a warm tan that
@@ -34,7 +34,7 @@ enum SublyTheme {
 
 struct AppBackground: View {
     var body: some View {
-        SublyTheme.background
+        FinnTheme.background
             .ignoresSafeArea()
     }
 }
@@ -63,13 +63,13 @@ struct SectionLabel: View {
             Text(title.uppercased())
                 .font(.system(size: 10, weight: .semibold, design: .default))
                 .tracking(1.8)
-                .foregroundStyle(SublyTheme.tertiaryText)
+                .foregroundStyle(FinnTheme.tertiaryText)
             Spacer()
             if let trailing {
                 Text(trailing)
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .foregroundStyle(FinnTheme.tertiaryText)
             }
         }
     }
@@ -78,7 +78,7 @@ struct SectionLabel: View {
 struct HairlineDivider: View {
     var body: some View {
         Rectangle()
-            .fill(SublyTheme.divider)
+            .fill(FinnTheme.divider)
             .frame(height: 1)
     }
 }
@@ -87,13 +87,13 @@ struct PrimaryButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(SublyTheme.background)
+            .foregroundStyle(FinnTheme.background)
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
                 Capsule(style: .continuous)
-                    .fill(SublyTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
+                    .fill(FinnTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
             )
     }
 }
@@ -102,7 +102,7 @@ struct GhostButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(SublyTheme.accent)
+            .foregroundStyle(FinnTheme.accent)
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -112,7 +112,7 @@ struct GhostButton: ButtonStyle {
             )
             .overlay(
                 Capsule(style: .continuous)
-                    .stroke(SublyTheme.accent, lineWidth: 1)
+                    .stroke(FinnTheme.accent, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.82 : 1)
     }
@@ -128,17 +128,17 @@ struct HeaderIconButton: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(SublyTheme.backgroundElevated)
-                    .overlay(Circle().fill(SublyTheme.glassFill))
-                    .overlay(Circle().stroke(SublyTheme.glassBorder, lineWidth: 1))
+                    .fill(FinnTheme.backgroundElevated)
+                    .overlay(Circle().fill(FinnTheme.glassFill))
+                    .overlay(Circle().stroke(FinnTheme.glassBorder, lineWidth: 1))
                 if isBusy {
                     ProgressView()
                         .controlSize(.small)
-                        .tint(SublyTheme.primaryText)
+                        .tint(FinnTheme.primaryText)
                 } else {
                     Image(systemName: systemImage)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(SublyTheme.primaryText)
+                        .foregroundStyle(FinnTheme.primaryText)
                 }
             }
             .frame(width: 40, height: 40)
@@ -186,8 +186,8 @@ struct TrialPreviewRow: View {
     }
 
     private var urgencyColor: Color {
-        guard let days = daysUntilEnd else { return SublyTheme.tertiaryText }
-        return SublyTheme.urgencyColor(daysLeft: days)
+        guard let days = daysUntilEnd else { return FinnTheme.tertiaryText }
+        return FinnTheme.urgencyColor(daysLeft: days)
     }
 
     private var daysLeftText: String {
@@ -216,12 +216,12 @@ struct TrialPreviewRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .lineLimit(1)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .lineLimit(1)
             }
 
@@ -238,11 +238,11 @@ struct TrialPreviewRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(SublyTheme.backgroundElevated)
+                .fill(FinnTheme.backgroundElevated)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(SublyTheme.divider, lineWidth: 1)
+                .stroke(FinnTheme.divider, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
     }
@@ -267,17 +267,17 @@ struct GlassCard<Content: View>: View {
                 // washed-out gray on the flat charcoal background and ruins
                 // legibility of fields inside the card.
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(SublyTheme.backgroundElevated)
+                    .fill(FinnTheme.backgroundElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(SublyTheme.glassBorder, lineWidth: 1)
+                    .stroke(FinnTheme.glassBorder, lineWidth: 1)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(
                         LinearGradient(
-                            colors: [SublyTheme.glassHighlight.opacity(0.4), .clear],
+                            colors: [FinnTheme.glassHighlight.opacity(0.4), .clear],
                             startPoint: .top,
                             endPoint: .center
                         ),
@@ -362,10 +362,10 @@ struct ServiceIcon: View {
 
     private var fallbackColor: Color {
         let colors: [Color] = [
-            SublyTheme.accent,
-            SublyTheme.urgencyWarning,
-            SublyTheme.urgencyCritical,
-            SublyTheme.urgencyCalm,
+            FinnTheme.accent,
+            FinnTheme.urgencyWarning,
+            FinnTheme.urgencyCritical,
+            FinnTheme.urgencyCalm,
         ]
         let index = abs(name.hashValue) % colors.count
         return colors[index]
@@ -405,7 +405,7 @@ struct ServiceIcon: View {
                 .fill(fallbackColor)
             Text(String(name.prefix(1)).uppercased())
                 .font(.system(size: size * 0.44, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
         }
         .frame(width: size, height: size)
     }
@@ -565,19 +565,19 @@ struct EmptyStateBlock: View {
         VStack(alignment: .leading, spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(SublyTheme.accentSoft)
+                    .fill(FinnTheme.accentSoft)
                     .frame(width: 56, height: 56)
                 Image(systemName: "sparkle")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(SublyTheme.accent)
+                    .foregroundStyle(FinnTheme.accent)
             }
             Text(title)
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Text(message)
                 .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundStyle(SublyTheme.secondaryText)
+                .foregroundStyle(FinnTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)

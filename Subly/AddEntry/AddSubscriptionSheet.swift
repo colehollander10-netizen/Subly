@@ -72,7 +72,7 @@ struct AddSubscriptionSheet: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                     }
                 }
             }
@@ -87,7 +87,7 @@ struct AddSubscriptionSheet: View {
             SectionLabel(title: "New subscription")
             Text("Add Subscription")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
         }
     }
 
@@ -95,11 +95,11 @@ struct AddSubscriptionSheet: View {
     private var catalogSearch: some View {
         HStack(spacing: 10) {
             Ph.magnifyingGlass.regular
-                .color(SublyTheme.tertiaryText)
+                .color(FinnTheme.tertiaryText)
                 .frame(width: 18, height: 18)
             TextField("Search Netflix, Spotify, ChatGPT…", text: $searchQuery)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
                 .focused($searchFocused)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
@@ -117,7 +117,7 @@ struct AddSubscriptionSheet: View {
                     Haptics.play(.primaryTap)
                 } label: {
                     Ph.xCircle.fill
-                        .color(SublyTheme.tertiaryText)
+                        .color(FinnTheme.tertiaryText)
                         .frame(width: 18, height: 18)
                 }
                 .buttonStyle(.plain)
@@ -127,11 +127,11 @@ struct AddSubscriptionSheet: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(SublyTheme.backgroundElevated)
+                .fill(FinnTheme.backgroundElevated)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(SublyTheme.glassBorder, lineWidth: 1)
+                .stroke(FinnTheme.glassBorder, lineWidth: 1)
         )
     }
 
@@ -160,11 +160,11 @@ struct AddSubscriptionSheet: View {
                 } label: {
                     HStack(spacing: 12) {
                         Ph.plusCircle.regular
-                            .color(SublyTheme.accent)
+                            .color(FinnTheme.accent)
                             .frame(width: 22, height: 22)
                         Text("Add \"\(searchQuery.trimmingCharacters(in: .whitespacesAndNewlines))\" as custom")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                             .lineLimit(1)
                         Spacer()
                     }
@@ -183,15 +183,15 @@ struct AddSubscriptionSheet: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(service.name)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                 Text("\(service.category) · \(formatUSD(service.suggestedPriceDecimal))/\(billingCycleSuffix(for: service.billingCycleEnum))")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .foregroundStyle(FinnTheme.tertiaryText)
                     .monospacedDigit()
             }
             Spacer()
             Ph.caretRight.bold
-                .color(SublyTheme.tertiaryText)
+                .color(FinnTheme.tertiaryText)
                 .frame(width: 12, height: 12)
         }
         .contentShape(Rectangle())
@@ -215,7 +215,7 @@ struct AddSubscriptionSheet: View {
     @ViewBuilder
     private var billingCycleField: some View {
         FieldRow(
-            icon: AnyView(Ph.repeat.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+            icon: AnyView(Ph.repeat.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
             label: "Billing cycle"
         ) {
             Picker("", selection: $billingCycle) {
@@ -287,7 +287,7 @@ struct AddSubscriptionSheet: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     ) {
         ZStack {
-            SublyTheme.background.ignoresSafeArea()
+            FinnTheme.background.ignoresSafeArea()
             AddSubscriptionSheet()
         }
         .modelContainer(container)

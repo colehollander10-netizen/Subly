@@ -9,7 +9,7 @@ struct DatePickerField<Footer: View>: View {
 
     var body: some View {
         FieldRow(
-            icon: AnyView(Ph.calendar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+            icon: AnyView(Ph.calendar.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
             label: label
         ) {
             VStack(alignment: .leading, spacing: 12) {

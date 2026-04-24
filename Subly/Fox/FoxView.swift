@@ -59,5 +59,5 @@ struct FoxView: View {
         FoxView(state: .proud, size: 200)
     }
     .padding()
-    .background(SublyTheme.background)
+    .background(FinnTheme.background)
 }

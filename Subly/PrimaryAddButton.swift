@@ -39,9 +39,9 @@ struct PrimaryAddButton: View {
         } label: {
             ZStack {
                 Circle()
-                    .fill(SublyTheme.accent)
+                    .fill(FinnTheme.accent)
                 Ph.plus.bold
-                    .color(SublyTheme.background)
+                    .color(FinnTheme.background)
                     .frame(width: 24, height: 24)
             }
             .frame(width: diameter, height: diameter)
@@ -61,7 +61,7 @@ private struct PrimaryAddButtonStyle: ButtonStyle {
 
 #Preview {
     ZStack {
-        SublyTheme.background.ignoresSafeArea()
+        FinnTheme.background.ignoresSafeArea()
         VStack(spacing: 40) {
             PrimaryAddButton(onTap: {})
             PrimaryAddButton(onTap: {}, onLongPress: {}, diameter: 72)

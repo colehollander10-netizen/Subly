@@ -33,7 +33,7 @@ struct SettingsView: View {
                                 VStack(alignment: .leading, spacing: 14) {
                                     Text(notificationSummary)
                                         .font(.system(size: 15, weight: .medium))
-                                        .foregroundStyle(SublyTheme.secondaryText)
+                                        .foregroundStyle(FinnTheme.secondaryText)
                                         .fixedSize(horizontal: false, vertical: true)
 
                                     Button {
@@ -44,7 +44,7 @@ struct SettingsView: View {
                                     } label: {
                                         HStack {
                                             if isUpdatingNotifications {
-                                                ProgressView().tint(SublyTheme.background)
+                                                ProgressView().tint(FinnTheme.background)
                                             }
                                             Text(notificationActionTitle).frame(maxWidth: .infinity)
                                         }
@@ -55,7 +55,7 @@ struct SettingsView: View {
                                     if let errorMessage {
                                         Text(errorMessage)
                                             .font(.system(size: 12, weight: .medium))
-                                            .foregroundStyle(SublyTheme.urgencyCritical)
+                                            .foregroundStyle(FinnTheme.urgencyCritical)
                                     }
                                 }
                             }
@@ -65,23 +65,23 @@ struct SettingsView: View {
                             SectionLabel(title: "Data")
                             SurfaceCard(padding: 0) {
                                 VStack(spacing: 0) {
-                                    settingsRow(title: "Sync now", subtitle: "Auto-sync is on for Apple subscriptions.", tint: SublyTheme.primaryText) {
+                                    settingsRow(title: "Sync now", subtitle: "Auto-sync is on for Apple subscriptions.", tint: FinnTheme.primaryText) {
                                         Haptics.play(.rowTap)
                                         Task { await runAppleSync() }
                                     }
                                     Text(lastAppleSyncText)
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(SublyTheme.tertiaryText)
+                                        .foregroundStyle(FinnTheme.tertiaryText)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, 18)
                                         .padding(.bottom, 16)
                                     HairlineDivider().padding(.horizontal, 18)
-                                    settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: SublyTheme.primaryText) {
+                                    settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: FinnTheme.primaryText) {
                                         Haptics.play(.rowTap)
                                         exportTrials()
                                     }
                                     HairlineDivider().padding(.horizontal, 18)
-                                    settingsRow(title: "Delete all data", subtitle: "Wipe every trial from this device. This cannot be undone.", tint: SublyTheme.urgencyCritical) {
+                                    settingsRow(title: "Delete all data", subtitle: "Wipe every trial from this device. This cannot be undone.", tint: FinnTheme.urgencyCritical) {
                                         Haptics.play(.rowTap)
                                         showingDeleteConfirm = true
                                     }
@@ -96,12 +96,12 @@ struct SettingsView: View {
                                     HStack {
                                         Text("Version")
                                             .font(.system(size: 15, weight: .medium))
-                                            .foregroundStyle(SublyTheme.primaryText)
+                                            .foregroundStyle(FinnTheme.primaryText)
                                         Spacer()
                                         Text(appVersion)
                                             .font(.system(size: 15, weight: .medium, design: .rounded))
                                             .monospacedDigit()
-                                            .foregroundStyle(SublyTheme.secondaryText)
+                                            .foregroundStyle(FinnTheme.secondaryText)
                                     }
                                     HairlineDivider()
                                     Button {
@@ -113,10 +113,10 @@ struct SettingsView: View {
                                         HStack {
                                             Text("Privacy policy")
                                                 .font(.system(size: 15, weight: .medium))
-                                                .foregroundStyle(SublyTheme.primaryText)
+                                                .foregroundStyle(FinnTheme.primaryText)
                                             Spacer()
                                             Ph.arrowUpRight.bold
-                                                .color(SublyTheme.tertiaryText)
+                                                .color(FinnTheme.tertiaryText)
                                                 .frame(width: 14, height: 14)
                                         }
                                         .contentShape(Rectangle())
@@ -135,7 +135,7 @@ struct SettingsView: View {
                     ToolbarItem(placement: .principal) {
                         Text("Settings")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                     }
                 }
             }
@@ -158,10 +158,10 @@ struct SettingsView: View {
         .overlay {
             if isFetchingImport {
                 ZStack {
-                    SublyTheme.background.opacity(0.6).ignoresSafeArea()
+                    FinnTheme.background.opacity(0.6).ignoresSafeArea()
                     ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(SublyTheme.accent)
+                        .tint(FinnTheme.accent)
                 }
                 .transition(.opacity)
             }
@@ -203,12 +203,12 @@ struct SettingsView: View {
                         .foregroundStyle(tint)
                     Text(subtitle)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(SublyTheme.tertiaryText)
+                        .foregroundStyle(FinnTheme.tertiaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 Ph.caretRight.bold
-                    .color(SublyTheme.tertiaryText)
+                    .color(FinnTheme.tertiaryText)
                     .frame(width: 12, height: 12)
             }
             .padding(.horizontal, 18)

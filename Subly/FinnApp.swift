@@ -10,7 +10,7 @@ private let schemaLog = Logger(subsystem: "com.subly.Subly", category: "schema")
 
 @main
 @MainActor
-struct SublyApp: App {
+struct FinnApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     private static let modelContainer: ModelContainer = {
@@ -99,7 +99,7 @@ struct SublyApp: App {
                 // (tab switches, sheets) don't flash white→gray before content
                 // composites in. Also forces dark color scheme everywhere so
                 // any system-rendered surface (sheet edges, alerts) matches.
-                .background(SublyTheme.background.ignoresSafeArea())
+                .background(FinnTheme.background.ignoresSafeArea())
                 .preferredColorScheme(.dark)
                 .task {
                     let context = Self.modelContainer.mainContext

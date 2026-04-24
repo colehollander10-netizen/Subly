@@ -106,11 +106,11 @@ struct TrialDetailSheet: View {
                                 } label: {
                                     HStack(spacing: 8) {
                                         Ph.prohibit.bold
-                                            .color(SublyTheme.urgencyCritical)
+                                            .color(FinnTheme.urgencyCritical)
                                             .frame(width: 16, height: 16)
                                         Text("Cancel trial")
                                             .font(.system(size: 15, weight: .medium, design: .default))
-                                            .foregroundStyle(SublyTheme.urgencyCritical)
+                                            .foregroundStyle(FinnTheme.urgencyCritical)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
@@ -128,7 +128,7 @@ struct TrialDetailSheet: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                     }
                 }
             }
@@ -163,7 +163,7 @@ struct TrialDetailSheet: View {
             SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
             Text(trial == nil ? "Add Trial" : "Edit Trial")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
         }
     }
 
@@ -194,11 +194,11 @@ struct TrialDetailSheet: View {
                 Group {
                     if pasteShowsSuccess {
                         Ph.checkCircle.fill
-                            .color(SublyTheme.accent)
+                            .color(FinnTheme.accent)
                             .frame(width: 22, height: 22)
                     } else {
                         Ph.clipboardText.regular
-                            .color(SublyTheme.tertiaryText)
+                            .color(FinnTheme.tertiaryText)
                             .frame(width: 22, height: 22)
                     }
                 }
@@ -209,7 +209,7 @@ struct TrialDetailSheet: View {
                      ? "Filled: \(pasteFilledFields.joined(separator: ", "))"
                      : "Paste from clipboard")
                     .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(pasteShowsSuccess ? SublyTheme.accent : SublyTheme.primaryText)
+                    .foregroundStyle(pasteShowsSuccess ? FinnTheme.accent : FinnTheme.primaryText)
 
                 Spacer()
             }
@@ -260,14 +260,14 @@ struct TrialDetailSheet: View {
                         Text(preset.label)
                             .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.secondaryText)
+                            .foregroundStyle(isSelected ? FinnTheme.background : FinnTheme.secondaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(
-                                Capsule().fill(isSelected ? SublyTheme.accent : SublyTheme.backgroundElevated)
+                                Capsule().fill(isSelected ? FinnTheme.accent : FinnTheme.backgroundElevated)
                             )
                             .overlay(
-                                Capsule().strokeBorder(isSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
+                                Capsule().strokeBorder(isSelected ? Color.clear : FinnTheme.divider, lineWidth: 1)
                             )
                             .animation(.easeInOut(duration: 0.15), value: isSelected)
                     }

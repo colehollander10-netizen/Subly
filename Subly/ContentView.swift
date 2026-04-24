@@ -68,15 +68,15 @@ private struct RootTabView: View {
         self.notificationEngine = notificationEngine
         let appearance = UITabBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = UIColor(SublyTheme.background).withAlphaComponent(0.72)
+        appearance.backgroundColor = UIColor(FinnTheme.background).withAlphaComponent(0.72)
         appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        appearance.shadowColor = UIColor(SublyTheme.divider).withAlphaComponent(0.8)
+        appearance.shadowColor = UIColor(FinnTheme.divider).withAlphaComponent(0.8)
 
-        let inactive = UIColor(SublyTheme.tertiaryText)
+        let inactive = UIColor(FinnTheme.tertiaryText)
         appearance.stackedLayoutAppearance.normal.iconColor = inactive
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: inactive]
 
-        let active = UIColor(SublyTheme.accent)
+        let active = UIColor(FinnTheme.accent)
         appearance.stackedLayoutAppearance.selected.iconColor = active
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: active]
 
@@ -86,7 +86,7 @@ private struct RootTabView: View {
 
     var body: some View {
         // SwiftUI tabItem icons must be SF Symbols — custom views render at intrinsic size and blow out the tab bar.
-        // Falling back to SF Symbols for tab chrome only (SublyTheme.accent tint preserves the lavender brand).
+        // Falling back to SF Symbols for tab chrome only (FinnTheme.accent tint preserves the lavender brand).
         TabView(selection: $selection) {
             HomeView(notificationEngine: notificationEngine)
                 .tabItem {
@@ -112,7 +112,7 @@ private struct RootTabView: View {
                 }
                 .tag(Tab.settings)
         }
-        .tint(SublyTheme.accent)
+        .tint(FinnTheme.accent)
         .onChange(of: selection) { _, _ in
             Haptics.play(.tabSwitch)
         }
