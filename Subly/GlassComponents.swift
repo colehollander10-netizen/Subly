@@ -92,7 +92,7 @@ struct PrimaryButton: ButtonStyle {
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                Capsule(style: .continuous)
                     .fill(SublyTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
             )
     }
@@ -107,11 +107,11 @@ struct GhostButton: ButtonStyle {
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                Capsule(style: .continuous)
                     .fill(Color.clear)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                Capsule(style: .continuous)
                     .stroke(SublyTheme.accent, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.82 : 1)
@@ -304,40 +304,18 @@ struct SurfaceCard<Content: View>: View {
     }
 }
 
-enum UrgencyLevel {
-    case calm, warning, critical
-}
-
 struct FlagshipCard<Content: View>: View {
     let padding: CGFloat
-    let urgency: UrgencyLevel
     let content: Content
 
-    init(padding: CGFloat = 22, urgency: UrgencyLevel = .calm, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = 22, @ViewBuilder content: () -> Content) {
         self.padding = padding
-        self.urgency = urgency
         self.content = content()
     }
 
     var body: some View {
         GlassCard(cornerRadius: 28, padding: padding) {
             content
-        }
-        .overlay(alignment: .trailing) {
-            if urgency != .calm {
-                let color = urgency == .critical ? SublyTheme.urgencyCritical : SublyTheme.urgencyWarning
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.clear, color.opacity(0.18)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: 170)
-                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                    .allowsHitTesting(false)
-            }
         }
     }
 }
