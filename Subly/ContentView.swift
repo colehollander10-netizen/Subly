@@ -10,10 +10,28 @@ enum AppPreferences {
     static let showDemoData = "showDemoData"
 }
 
+/// Typed route used when a notification is tapped. Keeps tab + detail-sheet
+/// selection in sync with the entry type the user was alerted about.
+enum PendingNotificationRoute: Equatable {
+    case trial(UUID)
+    case subscription(UUID)
+
+    var entryID: UUID {
+        switch self {
+        case .trial(let id), .subscription(let id):
+            return id
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class AppRouter {
+    /// Legacy compat — mirrored from `pendingRoute` when the route targets a
+    /// trial so existing HomeView code keeps working. New callers should
+    /// observe `pendingRoute`.
     var pendingCancelTrialID: UUID?
+    var pendingRoute: PendingNotificationRoute?
 }
 
 struct ContentView: View {
@@ -116,9 +134,17 @@ private struct RootTabView: View {
         .onChange(of: selection) { _, _ in
             Haptics.play(.tabSwitch)
         }
-        .onChange(of: appRouter.pendingCancelTrialID) { _, newValue in
-            if newValue != nil {
+        .onChange(of: appRouter.pendingRoute) { _, newRoute in
+            // Switch to the tab that owns the entry type so the sheet lands
+            // in the right place. HomeView + SubscriptionsView each watch
+            // `pendingRoute` and present their own detail sheet.
+            switch newRoute {
+            case .trial:
                 selection = .home
+            case .subscription:
+                selection = .subscriptions
+            case .none:
+                break
             }
         }
     }

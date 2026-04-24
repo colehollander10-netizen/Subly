@@ -1,7 +1,11 @@
+import NotificationEngine
+import OSLog
 import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
+
+private let addSubscriptionLog = Logger(subsystem: "com.subly.Subly", category: "add-subscription")
 
 struct AddSubscriptionSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -275,7 +279,24 @@ struct AddSubscriptionSheet: View {
             notificationOffset: nil
         )
         modelContext.insert(entry)
+        do {
+            try modelContext.save()
+        } catch {
+            addSubscriptionLog.error("Subscription save failed: \(String(describing: error), privacy: .public)")
+            // Keep the sheet open so the user doesn't silently lose the entry.
+            return
+        }
         Haptics.play(.save)
+
+        let container = modelContext.container
+        Task {
+            let coordinator = TrialAlertCoordinator(
+                modelContainer: container,
+                notificationEngine: NotificationEngine()
+            )
+            await coordinator.replanAll()
+        }
+
         onSave(entry)
         dismiss()
     }

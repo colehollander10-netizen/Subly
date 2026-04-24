@@ -282,6 +282,7 @@ struct HomeView: View {
         guard let trial = activeTrials.first(where: { $0.id == pendingTrialID }) else { return }
         selectedTrial = trial
         appRouter.pendingCancelTrialID = nil
+        if case .trial = appRouter.pendingRoute { appRouter.pendingRoute = nil }
     }
 }
 

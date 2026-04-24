@@ -1,9 +1,14 @@
+import NotificationEngine
+import OSLog
 import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
 
+private let subscriptionsViewLog = Logger(subsystem: "com.subly.Subly", category: "subscriptions-view")
+
 struct SubscriptionsView: View {
+    @Environment(AppRouter.self) private var appRouter
     @Query(
         filter: #Predicate<Trial> {
             $0.entryTypeRaw == "subscription" && $0.statusRaw == "active"
@@ -90,6 +95,17 @@ struct SubscriptionsView: View {
         .onChange(of: showingAddSubscription) { _, newValue in
             if newValue { Haptics.play(.sheetPresent) }
         }
+        .onAppear { resolvePendingNotificationRoute() }
+        .onChange(of: appRouter.pendingRoute) { _, _ in
+            resolvePendingNotificationRoute()
+        }
+    }
+
+    private func resolvePendingNotificationRoute() {
+        guard case .subscription(let id) = appRouter.pendingRoute else { return }
+        guard let subscription = subscriptions.first(where: { $0.id == id }) else { return }
+        selectedSubscription = subscription
+        appRouter.pendingRoute = nil
     }
 
     private var header: some View {
@@ -297,16 +313,39 @@ private struct SubscriptionDetailSheet: View {
         trial.chargeDate = chargeDate
         trial.billingCycle = billingCycle
         trial.chargeAmount = amount
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            subscriptionsViewLog.error("Subscription edit save failed: \(String(describing: error), privacy: .public)")
+            return
+        }
         Haptics.play(.save)
+        replanAlerts()
         dismiss()
     }
 
     private func delete() {
         modelContext.delete(trial)
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            subscriptionsViewLog.error("Subscription delete save failed: \(String(describing: error), privacy: .public)")
+            return
+        }
         Haptics.play(.destructiveConfirm)
+        replanAlerts()
         dismiss()
+    }
+
+    private func replanAlerts() {
+        let container = modelContext.container
+        Task {
+            let coordinator = TrialAlertCoordinator(
+                modelContainer: container,
+                notificationEngine: NotificationEngine()
+            )
+            await coordinator.replanAll()
+        }
     }
 }
 
