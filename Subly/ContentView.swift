@@ -1,5 +1,6 @@
 import Observation
 import NotificationEngine
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -55,6 +56,7 @@ private struct RootTabView: View {
     enum Tab {
         case home
         case trials
+        case subscriptions
         case settings
     }
 
@@ -83,17 +85,31 @@ private struct RootTabView: View {
     }
 
     var body: some View {
+        // SwiftUI tabItem icons must be SF Symbols — custom views render at intrinsic size and blow out the tab bar.
+        // Falling back to SF Symbols for tab chrome only (SublyTheme.accent tint preserves the lavender brand).
         TabView(selection: $selection) {
             HomeView(notificationEngine: notificationEngine)
-                .tabItem { Label("Home", systemImage: "house.fill") }
+                .tabItem {
+                    Label("Home", systemImage: selection == .home ? "house.fill" : "house")
+                }
                 .tag(Tab.home)
 
-            TrialsView()
-                .tabItem { Label("Trials", systemImage: "list.bullet.rectangle.fill") }
+            TrialsView(notificationEngine: notificationEngine)
+                .tabItem {
+                    Label("Trials", systemImage: selection == .trials ? "clock.fill" : "clock")
+                }
                 .tag(Tab.trials)
 
+            SubscriptionsView()
+                .tabItem {
+                    Label("Subscriptions", systemImage: selection == .subscriptions ? "repeat.circle.fill" : "repeat")
+                }
+                .tag(Tab.subscriptions)
+
             SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tabItem {
+                    Label("Settings", systemImage: selection == .settings ? "gearshape.fill" : "gearshape")
+                }
                 .tag(Tab.settings)
         }
         .tint(SublyTheme.accent)

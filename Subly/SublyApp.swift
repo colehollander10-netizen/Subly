@@ -91,6 +91,12 @@ struct SublyApp: App {
             ContentView(notificationEngine: notificationEngine)
                 .modelContainer(Self.modelContainer)
                 .environment(appRouter)
+                // Force the warm-charcoal window background so view transitions
+                // (tab switches, sheets) don't flash white→gray before content
+                // composites in. Also forces dark color scheme everywhere so
+                // any system-rendered surface (sheet edges, alerts) matches.
+                .background(SublyTheme.background.ignoresSafeArea())
+                .preferredColorScheme(.dark)
         }
     }
 }

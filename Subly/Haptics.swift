@@ -105,7 +105,7 @@ extension View {
                 }
             }
         } else {
-            self.onChange(of: trigger) { _ in
+            self.onChange(of: trigger) { _, _ in
                 Haptics.play(event)
             }
         }

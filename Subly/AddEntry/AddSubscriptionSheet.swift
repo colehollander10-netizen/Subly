@@ -10,9 +10,13 @@ struct AddSubscriptionSheet: View {
     var onSave: (Trial) -> Void = { _ in }
 
     @State private var serviceName: String = ""
+    @State private var senderDomain: String = ""
     @State private var chargeDate: Date
     @State private var billingCycle: BillingCycle = .monthly
     @State private var chargeAmountText: String = ""
+    @State private var searchQuery: String = ""
+    @State private var hasPickedFromCatalog = false
+    @FocusState private var searchFocused: Bool
 
     init(onSave: @escaping (Trial) -> Void = { _ in }) {
         self.onSave = onSave
@@ -28,22 +32,37 @@ struct AddSubscriptionSheet: View {
         !serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && parsedAmount != nil
     }
 
+    private var searchResults: [CatalogService] {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+        return Array(ServicesCatalog.search(trimmed).prefix(8))
+    }
+
+    private var showCatalogResults: Bool {
+        !searchResults.isEmpty && !hasPickedFromCatalog
+    }
+
     var body: some View {
         NavigationStack {
             ScreenFrame {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         header
-                        HairlineDivider()
-                        fieldsCard
-                        Button {
-                            save()
-                        } label: {
-                            Text("Save").frame(maxWidth: .infinity)
+                        catalogSearch
+                        if showCatalogResults {
+                            catalogResultsCard
+                        } else {
+                            HairlineDivider()
+                            fieldsCard
+                            Button {
+                                save()
+                            } label: {
+                                Text("Save").frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(PrimaryButton())
+                            .disabled(!canSave)
+                            .padding(.top, 4)
                         }
-                        .buttonStyle(PrimaryButton())
-                        .disabled(!canSave)
-                        .padding(.top, 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 12)
@@ -70,6 +89,112 @@ struct AddSubscriptionSheet: View {
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(SublyTheme.primaryText)
         }
+    }
+
+    @ViewBuilder
+    private var catalogSearch: some View {
+        HStack(spacing: 10) {
+            Ph.magnifyingGlass.regular
+                .color(SublyTheme.tertiaryText)
+                .frame(width: 18, height: 18)
+            TextField("Search Netflix, Spotify, ChatGPT…", text: $searchQuery)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(SublyTheme.primaryText)
+                .focused($searchFocused)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .onChange(of: searchQuery) { _, newValue in
+                    if newValue.isEmpty {
+                        hasPickedFromCatalog = false
+                    } else if hasPickedFromCatalog && newValue != serviceName {
+                        hasPickedFromCatalog = false
+                    }
+                }
+            if !searchQuery.isEmpty {
+                Button {
+                    searchQuery = ""
+                    hasPickedFromCatalog = false
+                    Haptics.play(.primaryTap)
+                } label: {
+                    Ph.xCircle.fill
+                        .color(SublyTheme.tertiaryText)
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(SublyTheme.backgroundElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(SublyTheme.glassBorder, lineWidth: 1)
+        )
+    }
+
+    @ViewBuilder
+    private var catalogResultsCard: some View {
+        SurfaceCard(padding: 0) {
+            VStack(spacing: 0) {
+                ForEach(Array(searchResults.enumerated()), id: \.element.id) { index, service in
+                    Button {
+                        applyCatalog(service)
+                    } label: {
+                        catalogResultRow(service)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                    }
+                    .buttonStyle(PressableRowStyle())
+                    if index < searchResults.count - 1 {
+                        HairlineDivider().padding(.horizontal, 14)
+                    }
+                }
+
+                HairlineDivider()
+
+                Button {
+                    useCustomService()
+                } label: {
+                    HStack(spacing: 12) {
+                        Ph.plusCircle.regular
+                            .color(SublyTheme.accent)
+                            .frame(width: 22, height: 22)
+                        Text("Add \"\(searchQuery.trimmingCharacters(in: .whitespacesAndNewlines))\" as custom")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(SublyTheme.primaryText)
+                            .lineLimit(1)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                }
+                .buttonStyle(PressableRowStyle())
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func catalogResultRow(_ service: CatalogService) -> some View {
+        HStack(spacing: 12) {
+            ServiceIcon(name: service.name, domain: service.domain, size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(service.name)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(SublyTheme.primaryText)
+                Text("\(service.category) · \(formatUSD(service.suggestedPriceDecimal))/\(billingCycleSuffix(for: service.billingCycleEnum))")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .monospacedDigit()
+            }
+            Spacer()
+            Ph.caretRight.bold
+                .color(SublyTheme.tertiaryText)
+                .frame(width: 12, height: 12)
+        }
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder
@@ -107,12 +232,41 @@ struct AddSubscriptionSheet: View {
         }
     }
 
+    private func applyCatalog(_ service: CatalogService) {
+        serviceName = service.name
+        senderDomain = service.domain
+        billingCycle = service.billingCycleEnum
+        chargeAmountText = String(format: "%.2f", service.suggestedPrice)
+        searchQuery = service.name
+        hasPickedFromCatalog = true
+        searchFocused = false
+        Haptics.play(.primaryTap)
+    }
+
+    private func useCustomService() {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        serviceName = trimmed
+        senderDomain = ""
+        hasPickedFromCatalog = true
+        searchFocused = false
+        Haptics.play(.primaryTap)
+    }
+
+    private func billingCycleSuffix(for cycle: BillingCycle) -> String {
+        switch cycle {
+        case .monthly: return "mo"
+        case .yearly: return "yr"
+        case .weekly: return "wk"
+        case .custom: return "period"
+        }
+    }
+
     private func save() {
         let trimmed = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let amount = parsedAmount else { return }
         let entry = Trial(
             serviceName: trimmed,
-            senderDomain: "",
+            senderDomain: senderDomain,
             chargeDate: chargeDate,
             chargeAmount: amount,
             entryType: .subscription,
@@ -128,13 +282,16 @@ struct AddSubscriptionSheet: View {
 }
 
 #Preview {
-    let container = try! ModelContainer(
+    if let container = try? ModelContainer(
         for: Schema([Trial.self]),
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    return ZStack {
-        SublyTheme.background.ignoresSafeArea()
-        AddSubscriptionSheet()
+    ) {
+        ZStack {
+            SublyTheme.background.ignoresSafeArea()
+            AddSubscriptionSheet()
+        }
+        .modelContainer(container)
+    } else {
+        Text("Preview unavailable")
     }
-    .modelContainer(container)
 }

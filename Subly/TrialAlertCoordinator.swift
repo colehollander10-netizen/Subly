@@ -39,11 +39,20 @@ actor TrialAlertCoordinator {
         for trial in trials {
             deleteUndeliveredPlannedAlerts(for: trial.id, context: context)
 
-            let planned = TrialEngine.plan(
-                trialID: trial.id,
-                chargeDate: trial.chargeDate,
-                now: now
-            )
+            let planned: [PlannedTrialAlert]
+            if trial.entryType == .subscription {
+                planned = TrialEngine.planSubscription(
+                    entryID: trial.id,
+                    chargeDate: trial.chargeDate,
+                    now: now
+                )
+            } else {
+                planned = TrialEngine.plan(
+                    trialID: trial.id,
+                    chargeDate: trial.chargeDate,
+                    now: now
+                )
+            }
 
             for p in planned {
                 let alert = TrialAlert(
@@ -72,7 +81,9 @@ actor TrialAlertCoordinator {
     private func fetchSchedulableTrials(context: ModelContext, now: Date) -> [Trial] {
         let descriptor = FetchDescriptor<Trial>()
         let all = (try? context.fetch(descriptor)) ?? []
-        return all.filter { !$0.userDismissed && $0.chargeDate > now }
+        return all.filter {
+            !$0.userDismissed && $0.status == .active && $0.chargeDate > now
+        }
     }
 
     private func fetchTrialMap(context: ModelContext) -> [UUID: Trial] {
@@ -112,7 +123,7 @@ actor TrialAlertCoordinator {
                 continue
             }
 
-            if trial.userDismissed || trial.chargeDate <= now {
+            if trial.userDismissed || trial.status != .active || trial.chargeDate <= now {
                 context.delete(alert)
                 continue
             }
@@ -136,7 +147,7 @@ actor TrialAlertCoordinator {
 
         let scheduled: [ScheduledAlert] = pending.compactMap { alert in
             guard let trial = trialMap[alert.trialID] else { return nil }
-            guard !trial.userDismissed, trial.chargeDate > now else { return nil }
+            guard !trial.userDismissed, trial.status == .active, trial.chargeDate > now else { return nil }
             guard schedulableTrialIDs.contains(trial.id) || alert.alertType == .followUp else { return nil }
             let (title, body) = notificationCopy(for: alert.alertType, trial: trial)
             return ScheduledAlert(
@@ -192,6 +203,14 @@ actor TrialAlertCoordinator {
             return (title, body)
 
         case .dayBefore:
+            if trial.entryType == .subscription {
+                let title = "\(name) renews tomorrow"
+                let body = amountString.map {
+                    "Your subscription renews tomorrow for \($0)."
+                } ?? "Your subscription renews tomorrow."
+                return (title, body)
+            }
+
             let title = "\(name) trial ends tomorrow"
             let body = amountString.map {
                 "You'll be charged \($0) tomorrow unless you cancel today."
