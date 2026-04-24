@@ -25,6 +25,8 @@ packages:
     path: Packages/NotificationEngine
   LogoService:
     path: Packages/LogoService
+  MascotKit:
+    path: Packages/MascotKit
   PhosphorSwift:
     url: https://github.com/phosphor-icons/swift
     branch: main
@@ -57,6 +59,7 @@ targets:
       - package: TrialEngine
       - package: NotificationEngine
       - package: LogoService
+      - package: MascotKit
       - package: PhosphorSwift
     info:
       path: Subly/Info.plist

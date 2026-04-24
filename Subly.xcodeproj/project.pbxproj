@@ -10,7 +10,6 @@
 		0E0DE27729B561D0AF7A63A3 /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */; };
 		1A59DA56E2C62B37CCB6576E /* AutoImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6053E8417ADDF29B317D3EF /* AutoImportService.swift */; };
 		29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */ = {isa = PBXBuildFile; productRef = DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */; };
-		2FC7F3D5A44F85391FAEF3AD /* FoxState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */; };
 		3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90BFB77DC074BCDBE021E77E /* GlassComponents.swift */; };
 		3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */; };
 		43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014D90B895BE78821E85C8D0 /* Haptics.swift */; };
@@ -21,6 +20,7 @@
 		564CB94AD248FE9096A06153 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83008B962C3682D08736BF7F /* Assets.xcassets */; };
 		71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3313827943DC2A298F2E59 /* CancelGuide.swift */; };
 		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
+		79BF6A0E4F36913A5B1448A9 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
 		80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F53E060DE358F2E3A716C1F /* SettingsView.swift */; };
 		8547ED1D2363738DBBCD28F2 /* ServicesCatalog.json in Resources */ = {isa = PBXBuildFile; fileRef = D209A72C5AA04D39E813619C /* ServicesCatalog.json */; };
 		88BA65309060B87A6D079D0E /* StoreKitImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */; };
@@ -34,7 +34,7 @@
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
 		BF4CFE9C343E74C570ADE99B /* ImportConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5612D25D0F0BA879829F012 /* ImportConfirmationSheet.swift */; };
 		CA7C24CC8D98F62202C06E5A /* FinnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4B1472DD6CB90B7E3F8F09 /* FinnApp.swift */; };
-		CC4E3FD0124403E98E3D39A5 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
+		CC4E3FD0124403E98E3D39A5 /* MascotKit in Frameworks */ = {isa = PBXBuildFile; productRef = C18AE5CA341AB81122E72C00 /* MascotKit */; };
 		CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC3064989A01167627CCCF /* DatePickerField.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
 		D5D3F1A0F4EB17335C0A5C86 /* AddEntryRouterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */; };
@@ -44,14 +44,12 @@
 		E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A6204A3276C8AF12CA8274C /* FieldRow.swift */; };
 		E40C9EF102C9BE67ECE33D7F /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFEF70BAE12EE2AE4FF65A1 /* OnboardingView.swift */; };
 		EC2C926E4491286107536EC5 /* CancelGuideStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */; };
-		EDF7FAF8D1FCEE1D0FEEFE1E /* FoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33219BCDF7580951DCCF281 /* FoxView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		014D90B895BE78821E85C8D0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		048969444CC82A881219AB65 /* SubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsView.swift; sourceTree = "<group>"; };
 		0B4BB0FAB3FBAFDDEA227479 /* AddEntryRouterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntryRouterSheet.swift; sourceTree = "<group>"; };
-		0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxState.swift; sourceTree = "<group>"; };
 		1A6204A3276C8AF12CA8274C /* FieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldRow.swift; sourceTree = "<group>"; };
 		2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuideStore.swift; sourceTree = "<group>"; };
 		36DC3064989A01167627CCCF /* DatePickerField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerField.swift; sourceTree = "<group>"; };
@@ -65,6 +63,7 @@
 		75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelAssistSheet.swift; sourceTree = "<group>"; };
 		7D3313827943DC2A298F2E59 /* CancelGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuide.swift; sourceTree = "<group>"; };
 		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		819F53991CA40A8A9D096FAD /* MascotKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MascotKit; path = Packages/MascotKit; sourceTree = SOURCE_ROOT; };
 		83008B962C3682D08736BF7F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
 		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
@@ -77,7 +76,6 @@
 		A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
 		ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C33219BCDF7580951DCCF281 /* FoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxView.swift; sourceTree = "<group>"; };
 		C6053E8417ADDF29B317D3EF /* AutoImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoImportService.swift; sourceTree = "<group>"; };
 		CA4B1472DD6CB90B7E3F8F09 /* FinnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnApp.swift; sourceTree = "<group>"; };
 		D1F9F92E36A7C6D95521F73A /* CancelGuides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CancelGuides.json; sourceTree = "<group>"; };
@@ -99,22 +97,14 @@
 				BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */,
 				4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */,
 				4847E56243A919BA33F95368 /* LogoService in Frameworks */,
-				CC4E3FD0124403E98E3D39A5 /* PhosphorSwift in Frameworks */,
+				CC4E3FD0124403E98E3D39A5 /* MascotKit in Frameworks */,
+				79BF6A0E4F36913A5B1448A9 /* PhosphorSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1862D81D5E74A33980A70469 /* Fox */ = {
-			isa = PBXGroup;
-			children = (
-				0EF2F50FEA5B701BBAFDAED4 /* FoxState.swift */,
-				C33219BCDF7580951DCCF281 /* FoxView.swift */,
-			);
-			path = Fox;
-			sourceTree = "<group>";
-		};
 		4C0B164B7A75DD4A9A40C1B6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -166,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				845A1AFB35613B0BBCA5AA27 /* LogoService */,
+				819F53991CA40A8A9D096FAD /* MascotKit */,
 				FA91B5213420B1387EF10798 /* NotificationEngine */,
 				88724751DD683D8021D2B1A5 /* SubscriptionStore */,
 				F4190BCC05AEE42E895FA79F /* TrialEngine */,
@@ -223,7 +214,6 @@
 				9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */,
 				DF62C04EBAD5204AA3B7B98D /* AddEntry */,
 				90163918E180852BA3E811C0 /* CancelAssist */,
-				1862D81D5E74A33980A70469 /* Fox */,
 				DDF01BFF1E5404E77F59E55D /* Import */,
 				6F201247D98E274178532DDF /* Resources */,
 				B5A9B3787EC0392A6411CBD0 /* Services */,
@@ -253,6 +243,7 @@
 				8997EAEBC73EFB0F1D6454DC /* TrialEngine */,
 				F682B7F3898CBF29726418B8 /* NotificationEngine */,
 				4125BA4396A89B774859EEE5 /* LogoService */,
+				C18AE5CA341AB81122E72C00 /* MascotKit */,
 				02113626A5476AD311064925 /* PhosphorSwift */,
 			);
 			productName = Subly;
@@ -282,6 +273,7 @@
 			packageReferences = (
 				2376623AEB404BFB277812C9 /* XCRemoteSwiftPackageReference "swift" */,
 				39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */,
+				0A8709237BBB901FD078126B /* XCLocalSwiftPackageReference "Packages/MascotKit" */,
 				FF8D1D533A8BB1B52EAFD9A6 /* XCLocalSwiftPackageReference "Packages/NotificationEngine" */,
 				09CEC8CF485092179CE20A2D /* XCLocalSwiftPackageReference "Packages/SubscriptionStore" */,
 				EC891433965CDE866B412AB6 /* XCLocalSwiftPackageReference "Packages/TrialEngine" */,
@@ -327,8 +319,6 @@
 				CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */,
 				E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */,
 				CA7C24CC8D98F62202C06E5A /* FinnApp.swift in Sources */,
-				2FC7F3D5A44F85391FAEF3AD /* FoxState.swift in Sources */,
-				EDF7FAF8D1FCEE1D0FEEFE1E /* FoxView.swift in Sources */,
 				3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */,
 				43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */,
 				B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */,
@@ -543,6 +533,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/SubscriptionStore;
 		};
+		0A8709237BBB901FD078126B /* XCLocalSwiftPackageReference "Packages/MascotKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MascotKit;
+		};
 		39FDB8423CAC4BEDB8A104D9 /* XCLocalSwiftPackageReference "Packages/LogoService" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/LogoService;
@@ -589,6 +583,10 @@
 		8997EAEBC73EFB0F1D6454DC /* TrialEngine */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TrialEngine;
+		};
+		C18AE5CA341AB81122E72C00 /* MascotKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MascotKit;
 		};
 		DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */ = {
 			isa = XCSwiftPackageProductDependency;

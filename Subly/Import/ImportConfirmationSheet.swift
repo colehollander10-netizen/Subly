@@ -1,3 +1,4 @@
+import MascotKit
 import PhosphorSwift
 import SubscriptionStore
 import SwiftUI
@@ -87,10 +88,8 @@ struct ImportConfirmationSheet: View {
     }
 
     private var foxPlaceholder: some View {
-        // TODO COL-146: replace placeholder with FoxView(state: .happy) when Fox system lands
-        Ph.smiley.fill
-            .color(FinnTheme.accent)
-            .frame(width: 64, height: 64)
+        FoxView(state: .celebrating, size: 72)
+            .frame(width: 72, height: 72)
             .padding(.top, 8)
             .padding(.bottom, 4)
             .accessibilityHidden(true)
