@@ -229,6 +229,7 @@ struct HomeView: View {
                 case .threeDaysBefore: return "3-day heads up"
                 case .dayBefore: return "1-day heads up"
                 case .dayOf: return "day-of"
+                case .subscriptionDayBefore: return "renewal heads up"
                 }
             }()
             HStack(spacing: 10) {
@@ -244,7 +245,7 @@ struct HomeView: View {
     }
 
     private func nextPlannedAlert(for trial: Trial) -> PlannedTrialAlert? {
-        let planned = TrialEngine.plan(trialID: trial.id, trialEndDate: trial.chargeDate)
+        let planned = TrialEngine.plan(trialID: trial.id, chargeDate: trial.chargeDate)
         return planned.min(by: { $0.triggerDate < $1.triggerDate })
     }
 
