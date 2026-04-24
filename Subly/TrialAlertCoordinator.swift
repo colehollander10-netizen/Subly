@@ -10,7 +10,7 @@ import TrialEngine
 ///
 /// Existing *undelivered* TrialAlert rows for a trial are deleted and
 /// replaced on every call — ensuring triggerDates stay fresh if a re-scan
-/// updates the `trialEndDate`. Delivered alerts are kept as history.
+/// updates the `chargeDate`. Delivered alerts are kept as history.
 actor TrialAlertCoordinator {
     private let modelContainer: ModelContainer
     private let notificationEngine: NotificationEngine
@@ -41,7 +41,7 @@ actor TrialAlertCoordinator {
 
             let planned = TrialEngine.plan(
                 trialID: trial.id,
-                trialEndDate: trial.chargeDate,
+                chargeDate: trial.chargeDate,
                 now: now
             )
 
@@ -155,6 +155,7 @@ actor TrialAlertCoordinator {
         case .threeDaysBefore: return .threeDaysBefore
         case .dayBefore:       return .dayBefore
         case .dayOf:           return .dayOf
+        case .subscriptionDayBefore: return .dayBefore
         }
     }
 
