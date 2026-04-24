@@ -88,7 +88,7 @@ private struct RootTabView: View {
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
 
-            TrialsView()
+            TrialsView(notificationEngine: notificationEngine)
                 .tabItem { Label("Trials", systemImage: "list.bullet.rectangle.fill") }
                 .tag(Tab.trials)
 

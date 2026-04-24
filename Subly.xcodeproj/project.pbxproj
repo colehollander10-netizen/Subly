@@ -15,6 +15,8 @@
 		43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014D90B895BE78821E85C8D0 /* Haptics.swift */; };
 		4847E56243A919BA33F95368 /* LogoService in Frameworks */ = {isa = PBXBuildFile; productRef = 4125BA4396A89B774859EEE5 /* LogoService */; };
 		4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */ = {isa = PBXBuildFile; productRef = F682B7F3898CBF29726418B8 /* NotificationEngine */; };
+		560CE291FA5CB2A1A41F37E1 /* CancelAssistSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */; };
+		71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3313827943DC2A298F2E59 /* CancelGuide.swift */; };
 		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
 		80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F53E060DE358F2E3A716C1F /* SettingsView.swift */; };
 		8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */; };
@@ -27,21 +29,26 @@
 		CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC3064989A01167627CCCF /* DatePickerField.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
 		DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C27551FBD7D8F0A3E32A75 /* ContentView.swift */; };
+		DFAAB41EEBF3955C8AD98094 /* CancelGuides.json in Resources */ = {isa = PBXBuildFile; fileRef = D1F9F92E36A7C6D95521F73A /* CancelGuides.json */; };
 		E24A57104511E6C37547388F /* ServiceNameField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72669D27DD5FF4259740BAAF /* ServiceNameField.swift */; };
 		E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A6204A3276C8AF12CA8274C /* FieldRow.swift */; };
 		E40C9EF102C9BE67ECE33D7F /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFEF70BAE12EE2AE4FF65A1 /* OnboardingView.swift */; };
+		EC2C926E4491286107536EC5 /* CancelGuideStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		014D90B895BE78821E85C8D0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		1A6204A3276C8AF12CA8274C /* FieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldRow.swift; sourceTree = "<group>"; };
 		2124542706504627C05A31D7 /* SublyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublyApp.swift; sourceTree = "<group>"; };
+		2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuideStore.swift; sourceTree = "<group>"; };
 		36DC3064989A01167627CCCF /* DatePickerField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerField.swift; sourceTree = "<group>"; };
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4AC817B909A0E79AA12666CC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F53E060DE358F2E3A716C1F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryAddButton.swift; sourceTree = "<group>"; };
 		72669D27DD5FF4259740BAAF /* ServiceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceNameField.swift; sourceTree = "<group>"; };
+		75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelAssistSheet.swift; sourceTree = "<group>"; };
+		7D3313827943DC2A298F2E59 /* CancelGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuide.swift; sourceTree = "<group>"; };
 		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
 		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
@@ -52,6 +59,7 @@
 		A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
 		ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1F9F92E36A7C6D95521F73A /* CancelGuides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CancelGuides.json; sourceTree = "<group>"; };
 		D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialParsingCore; path = Packages/TrialParsingCore; sourceTree = SOURCE_ROOT; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSubscriptionSheet.swift; sourceTree = "<group>"; };
@@ -84,6 +92,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		6F201247D98E274178532DDF /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D1F9F92E36A7C6D95521F73A /* CancelGuides.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		71DDBA753604C5FE256552FA /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -102,6 +118,16 @@
 				E60BE3B5234F4EF499AF0CB7 /* Subly */,
 				4C0B164B7A75DD4A9A40C1B6 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		90163918E180852BA3E811C0 /* CancelAssist */ = {
+			isa = PBXGroup;
+			children = (
+				75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */,
+				7D3313827943DC2A298F2E59 /* CancelGuide.swift */,
+				2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */,
+			);
+			path = CancelAssist;
 			sourceTree = "<group>";
 		};
 		B5734A41E0D149EE60763C79 /* Packages */ = {
@@ -142,6 +168,8 @@
 				ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */,
 				9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */,
 				DF62C04EBAD5204AA3B7B98D /* AddEntry */,
+				90163918E180852BA3E811C0 /* CancelAssist */,
+				6F201247D98E274178532DDF /* Resources */,
 			);
 			path = Subly;
 			sourceTree = "<group>";
@@ -154,6 +182,7 @@
 			buildConfigurationList = 1F8EA3BDC37EBFD5B2C3D069 /* Build configuration list for PBXNativeTarget "Subly" */;
 			buildPhases = (
 				F9D69CFB32D5B0CC49553AC0 /* Sources */,
+				42167084FFF17860C12BF75D /* Resources */,
 				AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */,
 			);
 			buildRules = (
@@ -211,6 +240,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		42167084FFF17860C12BF75D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFAAB41EEBF3955C8AD98094 /* CancelGuides.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F9D69CFB32D5B0CC49553AC0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -218,6 +258,9 @@
 			files = (
 				A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */,
 				8F9A6E55A611D718BF89EF30 /* AmountField.swift in Sources */,
+				560CE291FA5CB2A1A41F37E1 /* CancelAssistSheet.swift in Sources */,
+				71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */,
+				EC2C926E4491286107536EC5 /* CancelGuideStore.swift in Sources */,
 				DE28703C896ECD51C83FE08B /* ContentView.swift in Sources */,
 				CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */,
 				E32C33AD5B04CE87AE53CD8F /* FieldRow.swift in Sources */,
