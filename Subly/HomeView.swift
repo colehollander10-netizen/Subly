@@ -134,7 +134,7 @@ struct HomeView: View {
                 Haptics.play(.rowTap)
                 selectedTrial = trial
             } label: {
-                FlagshipCard(urgency: urgencyLevel(days: days)) {
+                FlagshipCard {
                     VStack(alignment: .leading, spacing: 18) {
                         HStack(alignment: .center, spacing: 14) {
                             ServiceIcon(name: trial.serviceName, domain: trial.senderDomain, size: 64)
@@ -269,12 +269,6 @@ struct HomeView: View {
     private func nextPlannedAlert(for trial: Trial) -> PlannedTrialAlert? {
         let planned = TrialEngine.plan(trialID: trial.id, chargeDate: trial.chargeDate)
         return planned.min(by: { $0.triggerDate < $1.triggerDate })
-    }
-
-    private func urgencyLevel(days: Int) -> UrgencyLevel {
-        if days <= 3 { return .critical }
-        if days <= 7 { return .warning }
-        return .calm
     }
 
     private func daysLabel(_ days: Int) -> String {

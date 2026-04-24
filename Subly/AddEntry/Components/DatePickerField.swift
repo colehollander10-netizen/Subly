@@ -13,12 +13,15 @@ struct DatePickerField<Footer: View>: View {
             label: label
         ) {
             VStack(alignment: .leading, spacing: 12) {
-                DatePicker("", selection: $date, displayedComponents: .date)
-                    .labelsHidden()
-                    .colorScheme(.dark)
-                    .onChange(of: date) { _, newValue in
-                        onDateChange?(newValue)
-                    }
+                HStack(spacing: 0) {
+                    DatePicker("", selection: $date, displayedComponents: .date)
+                        .labelsHidden()
+                        .colorScheme(.dark)
+                        .onChange(of: date) { _, newValue in
+                            onDateChange?(newValue)
+                        }
+                    Spacer(minLength: 0)
+                }
                 footer()
             }
         }

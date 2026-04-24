@@ -94,17 +94,17 @@ private struct RootTabView: View {
                 }
                 .tag(Tab.home)
 
-            TrialsView(notificationEngine: notificationEngine)
-                .tabItem {
-                    Label("Trials", systemImage: selection == .trials ? "clock.fill" : "clock")
-                }
-                .tag(Tab.trials)
-
             SubscriptionsView()
                 .tabItem {
                     Label("Subscriptions", systemImage: selection == .subscriptions ? "repeat.circle.fill" : "repeat")
                 }
                 .tag(Tab.subscriptions)
+
+            TrialsView(notificationEngine: notificationEngine)
+                .tabItem {
+                    Label("Trials", systemImage: selection == .trials ? "clock.fill" : "clock")
+                }
+                .tag(Tab.trials)
 
             SettingsView()
                 .tabItem {
