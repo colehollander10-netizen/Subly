@@ -17,7 +17,9 @@ struct HomeView: View {
     ) private var activeTrials: [Trial]
 
     @State private var selectedTrial: Trial?
-    @State private var showingManualAdd = false
+    @State private var showingRouter = false
+    @State private var showingAddTrial = false
+    @State private var showingAddSubscription = false
 
     private var upcomingSoon: [Trial] {
         activeTrials.filter { daysUntil($0.chargeDate) <= 7 }
@@ -44,17 +46,26 @@ struct HomeView: View {
                 PrimaryAddButton(
                     accessibilityLabel: "Add a trial",
                     accessibilityHint: "Enter trial details manually.",
-                    onTap: { showingManualAdd = true },
+                    onTap: { showingRouter = true },
                     diameter: 62
                 )
                 .padding(.trailing, 20)
                 .padding(.bottom, 24)
             }
         }
-        .sheet(isPresented: $showingManualAdd) {
+        .sheet(isPresented: $showingRouter) {
+            AddEntryRouterSheet(
+                onSelectTrial: { showingAddTrial = true },
+                onSelectSubscription: { showingAddSubscription = true }
+            )
+        }
+        .sheet(isPresented: $showingAddTrial) {
             TrialDetailSheet(onCreateNew: { _ in })
         }
-        .onChange(of: showingManualAdd) { _, newValue in
+        .sheet(isPresented: $showingAddSubscription) {
+            AddSubscriptionSheet()
+        }
+        .onChange(of: showingRouter) { _, newValue in
             if newValue { Haptics.play(.sheetPresent) }
         }
         .sheet(item: $selectedTrial) { trial in

@@ -1,5 +1,6 @@
 import Observation
 import NotificationEngine
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -55,6 +56,7 @@ private struct RootTabView: View {
     enum Tab {
         case home
         case trials
+        case subscriptions
         case settings
     }
 
@@ -85,15 +87,51 @@ private struct RootTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             HomeView(notificationEngine: notificationEngine)
-                .tabItem { Label("Home", systemImage: "house.fill") }
+                .tabItem {
+                    Label {
+                        Text("Home")
+                    } icon: {
+                        (selection == .home ? Ph.houseSimple.fill : Ph.houseSimple.regular)
+                            .color(selection == .home ? SublyTheme.accent : SublyTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
                 .tag(Tab.home)
 
             TrialsView()
-                .tabItem { Label("Trials", systemImage: "list.bullet.rectangle.fill") }
+                .tabItem {
+                    Label {
+                        Text("Trials")
+                    } icon: {
+                        (selection == .trials ? Ph.clock.fill : Ph.clock.regular)
+                            .color(selection == .trials ? SublyTheme.accent : SublyTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
                 .tag(Tab.trials)
 
+            SubscriptionsView()
+                .tabItem {
+                    Label {
+                        Text("Subscriptions")
+                    } icon: {
+                        (selection == .subscriptions ? Ph.repeat.fill : Ph.repeat.regular)
+                            .color(selection == .subscriptions ? SublyTheme.accent : SublyTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
+                .tag(Tab.subscriptions)
+
             SettingsView()
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tabItem {
+                    Label {
+                        Text("Settings")
+                    } icon: {
+                        (selection == .settings ? Ph.gearSix.fill : Ph.gearSix.regular)
+                            .color(selection == .settings ? SublyTheme.accent : SublyTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
                 .tag(Tab.settings)
         }
         .tint(SublyTheme.accent)
