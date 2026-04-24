@@ -1,4 +1,5 @@
 import NotificationEngine
+import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
@@ -251,10 +252,10 @@ struct TrialDetailSheet: View {
         var id: Int { rawValue }
         var label: String {
             switch self {
-            case .sevenDays: return "7 days"
-            case .fourteenDays: return "14 days"
-            case .thirtyDays: return "30 days"
-            case .oneYear: return "1 year"
+            case .sevenDays: return "7d"
+            case .fourteenDays: return "14d"
+            case .thirtyDays: return "30d"
+            case .oneYear: return "1y"
             }
         }
     }
@@ -265,7 +266,9 @@ struct TrialDetailSheet: View {
     @State private var serviceName: String
     @State private var trialEndDate: Date
     @State private var chargeAmountText: String
-    @State private var pasteFeedback: String?
+    @State private var pasteFilledFields: [String] = []
+    @State private var pasteShowsSuccess: Bool = false
+    @State private var pasteResetTask: Task<Void, Never>? = nil
 
     init(
         trial: Trial? = nil,
@@ -290,96 +293,68 @@ struct TrialDetailSheet: View {
         }
     }
 
+    private var parsedAmount: Decimal? {
+        Decimal(string: chargeAmountText.replacingOccurrences(of: "$", with: ""))
+    }
+
+    private var previewDomain: String? {
+        BrandDirectory.logoDomain(for: serviceName, senderDomain: trial?.senderDomain)
+    }
+
     var body: some View {
         NavigationStack {
             ScreenFrame {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
-                            .padding(.top, 12)
+                    VStack(alignment: .leading, spacing: 20) {
+                        header
                         HairlineDivider()
-
-                        if trial == nil {
-                            Button {
-                                applyClipboard()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "doc.on.clipboard")
-                                    Text("Paste email to prefill")
-                                }
-                            }
-                            .buttonStyle(GhostButton())
-
-                            if let pasteFeedback {
-                                Text(pasteFeedback)
-                                    .font(.system(size: 12, weight: .medium, design: .default))
-                                    .foregroundStyle(SublyTheme.secondaryText)
-                            }
+                        TrialPreviewRow(
+                            name: serviceName,
+                            domain: previewDomain,
+                            endDate: trialEndDate,
+                            amount: parsedAmount
+                        )
+                        fieldsCard
+                        Button {
+                            Haptics.play(.save)
+                            save()
+                        } label: {
+                            Text("Save").frame(maxWidth: .infinity)
                         }
-
-                        field(title: "Service") {
-                            TextField("Cursor Pro", text: $serviceName)
-                                .textInputAutocapitalization(.words)
-                                .focused($focused)
-                        }
-
-                        field(title: "Trial ends") {
-                            VStack(alignment: .leading, spacing: 10) {
-                                presetRow
-                                DatePicker("", selection: $trialEndDate, displayedComponents: .date)
-                                    .labelsHidden()
-                                    .colorScheme(.dark)
-                                    .onChange(of: trialEndDate) { _, _ in
-                                        if applyingPreset { return }
-                                        selectedPreset = nil
-                                    }
-                            }
-                        }
-
-                        field(title: "Charge amount") {
-                            HStack(spacing: 4) {
-                                Text("$")
-                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(SublyTheme.tertiaryText)
-                                TextField("20.00", text: $chargeAmountText)
-                                    .keyboardType(.decimalPad)
-                                    .monospacedDigit()
-                            }
-                        }
-
-                        VStack(spacing: 10) {
-                            Button {
-                                Haptics.play(.save)
-                                save()
-                            } label: {
-                                Text("Save")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(PrimaryButton())
-                            .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        }
-                        .padding(.top, 8)
+                        .buttonStyle(PrimaryButton())
+                        .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .padding(.top, 4)
 
                         if let trial {
-                            Button("Mark cancelled") {
-                                Haptics.play(.markCanceled)
-                                onMarkCancelled?(trial)
-                                dismiss()
+                            VStack(spacing: 16) {
+                                HairlineDivider()
+                                Button {
+                                    Haptics.play(.markCanceled)
+                                    onMarkCancelled?(trial)
+                                    dismiss()
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Ph.checkCircle.regular
+                                            .color(SublyTheme.secondaryText)
+                                            .frame(width: 16, height: 16)
+                                        Text("Mark as cancelled")
+                                            .font(.system(size: 15, weight: .medium, design: .default))
+                                            .foregroundStyle(SublyTheme.secondaryText)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(GhostButton())
-                            .padding(.top, 24)
+                            .padding(.top, 20)
                         }
                     }
                     .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 32)
                 }
-                .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Text(trial == nil ? "Add Trial" : "Edit Trial")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(SublyTheme.primaryText)
-                    }
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
                             .foregroundStyle(SublyTheme.primaryText)
@@ -388,6 +363,7 @@ struct TrialDetailSheet: View {
             }
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
         .onAppear {
             if trial == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -395,6 +371,140 @@ struct TrialDetailSheet: View {
                 }
             }
         }
+        .onDisappear {
+            pasteResetTask?.cancel()
+        }
+    }
+
+    @ViewBuilder
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
+            Text(trial == nil ? "Add Trial" : "Edit Trial")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(SublyTheme.primaryText)
+        }
+    }
+
+    @ViewBuilder
+    private var fieldsCard: some View {
+        SurfaceCard(padding: 0) {
+            VStack(spacing: 0) {
+                if trial == nil {
+                    pasteRow
+                    HairlineDivider().padding(.leading, 54)
+                }
+                serviceField
+                HairlineDivider().padding(.leading, 54)
+                trialEndsField
+                HairlineDivider().padding(.leading, 54)
+                chargeAmountField
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var pasteRow: some View {
+        Button {
+            Haptics.play(.primaryTap)
+            applyClipboard()
+        } label: {
+            HStack(spacing: 14) {
+                Group {
+                    if pasteShowsSuccess {
+                        Ph.checkCircle.fill
+                            .color(SublyTheme.accent)
+                            .frame(width: 22, height: 22)
+                    } else {
+                        Ph.clipboardText.regular
+                            .color(SublyTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
+                .frame(width: 24, height: 22, alignment: .center)
+                .padding(.top, 2)
+
+                Text(pasteShowsSuccess
+                     ? "Filled: \(pasteFilledFields.joined(separator: ", "))"
+                     : "Paste from clipboard")
+                    .font(.system(size: 15, weight: .medium, design: .default))
+                    .foregroundStyle(pasteShowsSuccess ? SublyTheme.accent : SublyTheme.primaryText)
+
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var serviceField: some View {
+        fieldRow(icon: AnyView(Ph.briefcase.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+                 label: "Service") {
+            TextField("Cursor Pro", text: $serviceName)
+                .textInputAutocapitalization(.words)
+                .focused($focused)
+                .font(.system(size: 17, weight: .medium, design: .default))
+                .foregroundStyle(SublyTheme.primaryText)
+        }
+    }
+
+    @ViewBuilder
+    private var trialEndsField: some View {
+        fieldRow(icon: AnyView(Ph.calendar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+                 label: "Trial ends") {
+            VStack(alignment: .leading, spacing: 12) {
+                DatePicker("", selection: $trialEndDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .colorScheme(.dark)
+                    .onChange(of: trialEndDate) { _, _ in
+                        if applyingPreset { return }
+                        selectedPreset = nil
+                    }
+                presetRow
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var chargeAmountField: some View {
+        fieldRow(icon: AnyView(Ph.currencyDollar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+                 label: "Charge amount") {
+            HStack(spacing: 4) {
+                Text("$")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(SublyTheme.tertiaryText)
+                TextField("20.00", text: $chargeAmountText)
+                    .keyboardType(.decimalPad)
+                    .monospacedDigit()
+                    .font(.system(size: 20, weight: .medium, design: .rounded))
+                    .foregroundStyle(SublyTheme.primaryText)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func fieldRow<Content: View>(
+        icon: AnyView,
+        label: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            icon
+                .frame(width: 24, alignment: .center)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(label.uppercased())
+                    .font(.system(size: 10, weight: .semibold, design: .default))
+                    .tracking(1.8)
+                    .foregroundStyle(SublyTheme.secondaryText)
+                content()
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 
     @ViewBuilder
@@ -413,58 +523,26 @@ struct TrialDetailSheet: View {
                         Text(preset.label)
                             .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.primaryText)
+                            .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.secondaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(
-                                Capsule().fill(isSelected ? SublyTheme.primaryText : SublyTheme.backgroundElevated)
+                                Capsule().fill(isSelected ? SublyTheme.accent : SublyTheme.backgroundElevated)
                             )
                             .overlay(
                                 Capsule().strokeBorder(isSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
                             )
+                            .animation(.easeInOut(duration: 0.15), value: isSelected)
                     }
                     .buttonStyle(.plain)
                 }
-                let customSelected = selectedPreset == nil
-                Button {
-                    selectedPreset = nil
-                    Haptics.play(.primaryTap)
-                } label: {
-                    Text("Custom")
-                        .font(.system(size: 13, weight: customSelected ? .semibold : .medium, design: .default))
-                        .foregroundStyle(customSelected ? SublyTheme.background : SublyTheme.primaryText)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule().fill(customSelected ? SublyTheme.primaryText : SublyTheme.backgroundElevated)
-                        )
-                        .overlay(
-                            Capsule().strokeBorder(customSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
-                        )
-                }
-                .buttonStyle(.plain)
             }
-        }
-    }
-
-    @ViewBuilder
-    private func field<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(.system(size: 10, weight: .semibold, design: .default))
-                .tracking(1.8)
-                .foregroundStyle(SublyTheme.secondaryText)
-            content()
-                .font(.system(size: 20, weight: .medium, design: .default))
-                .foregroundStyle(SublyTheme.primaryText)
-                .padding(.vertical, 10)
-            HairlineDivider()
         }
     }
 
     private func save() {
         let trimmedName = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let amount = Decimal(string: chargeAmountText.replacingOccurrences(of: "$", with: ""))
+        let amount = parsedAmount
         let inferredDomain = BrandDirectory.logoDomain(for: trimmedName, senderDomain: trial?.senderDomain)
         if let trial {
             trial.serviceName = trimmedName
@@ -500,7 +578,6 @@ struct TrialDetailSheet: View {
 
     private func applyClipboard() {
         guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
-            pasteFeedback = "Clipboard is empty."
             return
         }
         let extracted = ManualTrialExtractor.extract(from: raw)
@@ -517,7 +594,19 @@ struct TrialDetailSheet: View {
             chargeAmountText = amount
             filled.append("amount")
         }
-        pasteFeedback = filled.isEmpty ? "Couldn't detect trial details." : "Filled \(filled.joined(separator: ", "))."
+        guard !filled.isEmpty else { return }
+        pasteFilledFields = filled
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+            pasteShowsSuccess = true
+        }
+        pasteResetTask?.cancel()
+        pasteResetTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                pasteShowsSuccess = false
+            }
+        }
     }
 }
 
