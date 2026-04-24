@@ -8,6 +8,7 @@ public struct PlannedTrialAlert: Sendable, Equatable {
         case threeDaysBefore
         case dayBefore
         case dayOf
+        case subscriptionDayBefore
     }
 
     public let trialID: UUID
@@ -22,21 +23,21 @@ public struct PlannedTrialAlert: Sendable, Equatable {
 }
 
 public enum TrialEngine {
-    /// Plans the 3-day, 1-day, and day-of alerts for a given trial end date.
+    /// Plans the 3-day, 1-day, and day-of alerts for a given trial charge date.
     ///
-    /// - 3-day alert fires at 9:00 local time, 3 days before `trialEndDate`.
-    /// - 1-day alert fires at 9:00 local time, 1 day before `trialEndDate`.
+    /// - 3-day alert fires at 9:00 local time, 3 days before `chargeDate`.
+    /// - 1-day alert fires at 9:00 local time, 1 day before `chargeDate`.
     /// - Day-of alert fires at 9:00 local time on the day the trial ends.
     ///
     /// Alerts whose `triggerDate` is not in the future relative to `now` are
     /// dropped — we don't schedule notifications for times that already passed.
     public static func plan(
         trialID: UUID,
-        trialEndDate: Date,
+        chargeDate: Date,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> [PlannedTrialAlert] {
-        let morningOfEnd = alertTime(on: trialEndDate, calendar: calendar)
+        let morningOfEnd = alertTime(on: chargeDate, calendar: calendar)
         guard let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: morningOfEnd),
               let dayBefore = calendar.date(byAdding: .day, value: -1, to: morningOfEnd) else {
             return []
@@ -49,6 +50,27 @@ public enum TrialEngine {
         ]
 
         return candidates.filter { $0.triggerDate > now }
+    }
+
+    /// Plans the default 1-day-before alert for a subscription renewal.
+    /// Subscriptions are expected charges, so we use a single heads-up alert
+    /// by default (customizable via per-entry notificationOffset).
+    public static func planSubscription(
+        entryID: UUID,
+        chargeDate: Date,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [PlannedTrialAlert] {
+        let morningOfCharge = alertTime(on: chargeDate, calendar: calendar)
+        guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: morningOfCharge) else {
+            return []
+        }
+        let candidate = PlannedTrialAlert(
+            trialID: entryID,
+            kind: .subscriptionDayBefore,
+            triggerDate: dayBefore
+        )
+        return candidate.triggerDate > now ? [candidate] : []
     }
 
     /// 9:00 local time on the day containing `date`.
