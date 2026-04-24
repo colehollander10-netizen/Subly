@@ -27,4 +27,19 @@ final class SubscriptionPlanTests: XCTestCase {
         let alerts = TrialEngine.plan(trialID: id, chargeDate: end, now: now, calendar: .init(identifier: .gregorian))
         XCTAssertFalse(alerts.isEmpty)
     }
+
+    func testTrialPlanDoesNotUseSubscriptionAlertShape() {
+        let id = UUID()
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let charge = now.addingTimeInterval(86400 * 10)
+        let alerts = TrialEngine.plan(
+            trialID: id,
+            chargeDate: charge,
+            now: now,
+            calendar: .init(identifier: .gregorian)
+        )
+
+        XCTAssertEqual(alerts.map(\.kind), [.threeDaysBefore, .dayBefore, .dayOf])
+        XCTAssertFalse(alerts.map(\.kind).contains(.subscriptionDayBefore))
+    }
 }
