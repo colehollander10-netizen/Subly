@@ -85,52 +85,30 @@ private struct RootTabView: View {
     }
 
     var body: some View {
+        // SwiftUI tabItem icons must be SF Symbols — custom views render at intrinsic size and blow out the tab bar.
+        // Falling back to SF Symbols for tab chrome only (SublyTheme.accent tint preserves the lavender brand).
         TabView(selection: $selection) {
             HomeView(notificationEngine: notificationEngine)
                 .tabItem {
-                    Label {
-                        Text("Home")
-                    } icon: {
-                        (selection == .home ? Ph.houseSimple.fill : Ph.houseSimple.regular)
-                            .color(selection == .home ? SublyTheme.accent : SublyTheme.tertiaryText)
-                            .frame(width: 22, height: 22)
-                    }
+                    Label("Home", systemImage: selection == .home ? "house.fill" : "house")
                 }
                 .tag(Tab.home)
 
             TrialsView(notificationEngine: notificationEngine)
                 .tabItem {
-                    Label {
-                        Text("Trials")
-                    } icon: {
-                        (selection == .trials ? Ph.clock.fill : Ph.clock.regular)
-                            .color(selection == .trials ? SublyTheme.accent : SublyTheme.tertiaryText)
-                            .frame(width: 22, height: 22)
-                    }
+                    Label("Trials", systemImage: selection == .trials ? "clock.fill" : "clock")
                 }
                 .tag(Tab.trials)
 
             SubscriptionsView()
                 .tabItem {
-                    Label {
-                        Text("Subscriptions")
-                    } icon: {
-                        (selection == .subscriptions ? Ph.repeat.fill : Ph.repeat.regular)
-                            .color(selection == .subscriptions ? SublyTheme.accent : SublyTheme.tertiaryText)
-                            .frame(width: 22, height: 22)
-                    }
+                    Label("Subscriptions", systemImage: selection == .subscriptions ? "repeat.circle.fill" : "repeat")
                 }
                 .tag(Tab.subscriptions)
 
             SettingsView()
                 .tabItem {
-                    Label {
-                        Text("Settings")
-                    } icon: {
-                        (selection == .settings ? Ph.gearSix.fill : Ph.gearSix.regular)
-                            .color(selection == .settings ? SublyTheme.accent : SublyTheme.tertiaryText)
-                            .frame(width: 22, height: 22)
-                    }
+                    Label("Settings", systemImage: selection == .settings ? "gearshape.fill" : "gearshape")
                 }
                 .tag(Tab.settings)
         }

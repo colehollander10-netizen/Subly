@@ -4,21 +4,25 @@ import SubscriptionStore
 import SwiftUI
 
 enum SublyTheme {
-    static let background = Color(red: 14 / 255, green: 15 / 255, blue: 18 / 255)
-    static let backgroundElevated = Color(red: 20 / 255, green: 22 / 255, blue: 26 / 255)
-    static let glassFill = Color.white.opacity(0.04)
-    static let glassBorder = Color.white.opacity(0.12)
+    // Vulpine palette (2026-04-23). Warm charcoal base + Phosphor-orange accent
+    // tied to the fox mascot. Higher contrast text than the prior cool lavender
+    // palette — primaryText is pure white, secondaryText is a warm tan that
+    // actually reads on the warm charcoal background.
+    static let background = Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255)         // #1A1614 warm charcoal
+    static let backgroundElevated = Color(red: 37 / 255, green: 32 / 255, blue: 25 / 255) // #252019
+    static let glassFill = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255).opacity(0.04)
+    static let glassBorder = Color(red: 58 / 255, green: 47 / 255, blue: 38 / 255).opacity(0.85) // #3A2F26 warm stroke
     static let glassHighlight = Color.white.opacity(0.18)
-    static let primaryText = Color(red: 245 / 255, green: 245 / 255, blue: 247 / 255)
-    static let secondaryText = Color(red: 166 / 255, green: 168 / 255, blue: 181 / 255)
-    static let tertiaryText = Color(red: 110 / 255, green: 112 / 255, blue: 128 / 255)
-    static let divider = Color.white.opacity(0.08)
-    static let accent = Color(red: 184 / 255, green: 164 / 255, blue: 255 / 255)
-    static let accentSoft = Color(red: 184 / 255, green: 164 / 255, blue: 255 / 255).opacity(0.14)
-    static let urgencyCalm = Color(red: 143 / 255, green: 163 / 255, blue: 190 / 255)
-    static let urgencyWarning = Color(red: 245 / 255, green: 179 / 255, blue: 102 / 255)
-    static let urgencyCritical = Color(red: 255 / 255, green: 122 / 255, blue: 107 / 255)
-    static let urgencyDayOf = Color(red: 255 / 255, green: 90 / 255, blue: 74 / 255)
+    static let primaryText = Color.white
+    static let secondaryText = Color(red: 199 / 255, green: 187 / 255, blue: 176 / 255)   // #C7BBB0 warm light tan
+    static let tertiaryText = Color(red: 134 / 255, green: 115 / 255, blue: 106 / 255)    // #86736A Vulpine Neutral
+    static let divider = Color(red: 46 / 255, green: 38 / 255, blue: 32 / 255)            // #2E2620 warm dark divider
+    static let accent = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255)           // #F97316 Vulpine Primary
+    static let accentSoft = Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255).opacity(0.18) // #D97706 deeper amber, soft
+    static let urgencyCalm = Color(red: 0 / 255, green: 162 / 255, blue: 244 / 255)       // #00A2F4 Vulpine Tertiary (sky blue = safe)
+    static let urgencyWarning = Color(red: 172 / 255, green: 101 / 255, blue: 61 / 255)   // #AC653D Vulpine Secondary (cinnamon = warning)
+    static let urgencyCritical = Color(red: 255 / 255, green: 176 / 255, blue: 77 / 255)  // #FFB04D brighter golden-orange (alarm — distinct from brand accent)
+    static let urgencyDayOf = Color(red: 255 / 255, green: 209 / 255, blue: 102 / 255)    // #FFD166 brightest gold (TODAY)
 
     static func urgencyColor(daysLeft: Int) -> Color {
         if daysLeft <= 0 { return urgencyDayOf }
@@ -259,12 +263,11 @@ struct GlassCard<Content: View>: View {
         content
             .padding(padding)
             .background(
+                // Solid warm fill instead of .ultraThinMaterial — material reads
+                // washed-out gray on the flat charcoal background and ruins
+                // legibility of fields inside the card.
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(SublyTheme.glassFill)
+                    .fill(SublyTheme.backgroundElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -274,7 +277,7 @@ struct GlassCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(
                         LinearGradient(
-                            colors: [SublyTheme.glassHighlight, .clear],
+                            colors: [SublyTheme.glassHighlight.opacity(0.4), .clear],
                             startPoint: .top,
                             endPoint: .center
                         ),
