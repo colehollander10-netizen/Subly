@@ -1,9 +1,12 @@
+import NotificationEngine
 import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
 
 struct TrialsView: View {
+    let notificationEngine: NotificationEngine
+
     @Environment(\.modelContext) private var modelContext
 
     @Query(
@@ -93,6 +96,7 @@ struct TrialsView: View {
             TrialDetailSheet(
                 trial: trial,
                 onSaveExisting: { _ in },
+                notificationEngine: notificationEngine,
                 onMarkCancelled: { t in markCancelled(t) }
             )
         }

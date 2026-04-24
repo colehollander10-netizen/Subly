@@ -5,14 +5,14 @@ import SwiftData
 import SwiftUI
 import UIKit
 
-struct CancelGuide {
+struct LegacyCancelGuide {
     let title: String
     let steps: [String]
     let url: URL?
     let searchQuery: String
 }
 
-enum CancelGuideResolver {
+enum LegacyCancelGuideResolver {
     private struct Entry {
         let aliases: [String]
         let title: String
@@ -67,12 +67,12 @@ enum CancelGuideResolver {
         Entry(aliases: ["superhuman"], title: "Superhuman", steps: ["Open Superhuman settings.", "Go to Billing.", "Choose Cancel membership.", "Confirm the flow."], url: "https://mail.superhuman.com/settings"),
     ]
 
-    static func resolve(serviceName: String, senderDomain: String) -> CancelGuide {
+    static func resolve(serviceName: String, senderDomain: String) -> LegacyCancelGuide {
         let lower = serviceName.lowercased()
         if let entry = entries.first(where: { entry in
             entry.aliases.contains(where: { lower.contains($0) })
         }) {
-            return CancelGuide(
+            return LegacyCancelGuide(
                 title: entry.title,
                 steps: entry.steps,
                 url: URL(string: entry.url),
@@ -82,7 +82,7 @@ enum CancelGuideResolver {
 
         if !senderDomain.isEmpty {
             let trimmed = senderDomain.replacingOccurrences(of: "www.", with: "")
-            return CancelGuide(
+            return LegacyCancelGuide(
                 title: serviceName,
                 steps: [
                     "Open \(trimmed) in your browser.",
@@ -95,7 +95,7 @@ enum CancelGuideResolver {
             )
         }
 
-        return CancelGuide(
+        return LegacyCancelGuide(
             title: serviceName,
             steps: [
                 "Open the service account page.",
@@ -109,7 +109,7 @@ enum CancelGuideResolver {
     }
 }
 
-struct CancelFlowSheet: View {
+struct LegacyCancelFlowSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -117,8 +117,8 @@ struct CancelFlowSheet: View {
     let onCancelled: () -> Void
     let onSnooze: () -> Void
 
-    var guide: CancelGuide {
-        CancelGuideResolver.resolve(serviceName: trial.serviceName, senderDomain: trial.senderDomain)
+    var guide: LegacyCancelGuide {
+        LegacyCancelGuideResolver.resolve(serviceName: trial.serviceName, senderDomain: trial.senderDomain)
     }
 
     var body: some View {
@@ -242,6 +242,8 @@ struct TrialDetailSheet: View {
     let trial: Trial?
     let onSaveExisting: ((Trial) -> Void)?
     let onCreateNew: ((Trial) -> Void)?
+    let notificationEngine: NotificationEngine?
+    // TODO COL-145: remove onMarkCancelled once all callers stop threading it through.
     let onMarkCancelled: ((Trial) -> Void)?
 
     private enum Preset: Int, CaseIterable, Identifiable {
@@ -269,16 +271,19 @@ struct TrialDetailSheet: View {
     @State private var pasteFilledFields: [String] = []
     @State private var pasteShowsSuccess: Bool = false
     @State private var pasteResetTask: Task<Void, Never>? = nil
+    @State private var showingCancelAssist = false
 
     init(
         trial: Trial? = nil,
         onSaveExisting: ((Trial) -> Void)? = nil,
         onCreateNew: ((Trial) -> Void)? = nil,
+        notificationEngine: NotificationEngine? = nil,
         onMarkCancelled: ((Trial) -> Void)? = nil
     ) {
         self.trial = trial
         self.onSaveExisting = onSaveExisting
         self.onCreateNew = onCreateNew
+        self.notificationEngine = notificationEngine
         self.onMarkCancelled = onMarkCancelled
         _serviceName = State(initialValue: trial?.serviceName ?? "")
         let resolvedEndDate = trial?.chargeDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
@@ -329,17 +334,17 @@ struct TrialDetailSheet: View {
                             VStack(spacing: 16) {
                                 HairlineDivider()
                                 Button {
+                                    guard trial.status != .cancelled, notificationEngine != nil else { return }
                                     Haptics.play(.markCanceled)
-                                    onMarkCancelled?(trial)
-                                    dismiss()
+                                    showingCancelAssist = true
                                 } label: {
                                     HStack(spacing: 8) {
-                                        Ph.checkCircle.regular
-                                            .color(SublyTheme.secondaryText)
+                                        Ph.prohibit.bold
+                                            .color(SublyTheme.urgencyCritical)
                                             .frame(width: 16, height: 16)
-                                        Text("Mark as cancelled")
+                                        Text("Cancel trial")
                                             .font(.system(size: 15, weight: .medium, design: .default))
-                                            .foregroundStyle(SublyTheme.secondaryText)
+                                            .foregroundStyle(SublyTheme.urgencyCritical)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
@@ -364,6 +369,16 @@ struct TrialDetailSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showingCancelAssist) {
+            if let trial, let notificationEngine {
+                CancelAssistSheet(trial: trial, notificationEngine: notificationEngine)
+            }
+        }
+        .onChange(of: trial?.status) { _, newValue in
+            if newValue == .cancelled {
+                dismiss()
+            }
+        }
         .onAppear {
             if trial == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

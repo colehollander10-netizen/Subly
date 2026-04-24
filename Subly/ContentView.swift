@@ -98,7 +98,7 @@ private struct RootTabView: View {
                 }
                 .tag(Tab.home)
 
-            TrialsView()
+            TrialsView(notificationEngine: notificationEngine)
                 .tabItem {
                     Label {
                         Text("Trials")

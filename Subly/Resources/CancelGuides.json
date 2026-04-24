@@ -1,0 +1,152 @@
+{
+  "spotify": {
+    "steps": [
+      "Open your Spotify account page.",
+      "Select your current plan from the subscription section.",
+      "Choose to change or cancel the plan.",
+      "Confirm that you want to cancel Premium."
+    ],
+    "directURL": "https://www.spotify.com/account/subscription/",
+    "notes": null
+  },
+  "netflix": {
+    "steps": [
+      "Open your Netflix account settings.",
+      "Find the membership and billing section.",
+      "Choose Cancel Membership.",
+      "Confirm the cancellation on the final screen."
+    ],
+    "directURL": "https://www.netflix.com/youraccount",
+    "notes": null
+  },
+  "hulu": {
+    "steps": [
+      "Open your Hulu account page.",
+      "Scroll to the Your Subscription area.",
+      "Choose Cancel under the active plan.",
+      "Continue through the prompts and confirm cancellation."
+    ],
+    "directURL": "https://secure.hulu.com/account",
+    "notes": null
+  },
+  "disney": {
+    "steps": [
+      "Open your Disney+ account settings.",
+      "Select the active subscription.",
+      "Choose Cancel Subscription.",
+      "Finish the confirmation flow."
+    ],
+    "directURL": "https://www.disneyplus.com/account/subscription",
+    "notes": null
+  },
+  "icloud": {
+    "steps": [
+      "Open your Apple account settings for subscriptions.",
+      "Find the iCloud+ or storage subscription.",
+      "Choose the option to cancel or downgrade.",
+      "Confirm the change to stop the paid plan."
+    ],
+    "directURL": "https://www.icloud.com/settings/",
+    "notes": null
+  },
+  "applemusic": {
+    "steps": [
+      "Open your Apple Music account settings.",
+      "Go to the subscriptions section.",
+      "Select Apple Music from the list.",
+      "Tap Cancel Subscription and confirm."
+    ],
+    "directURL": "https://music.apple.com/account/settings",
+    "notes": null
+  },
+  "amazonprime": {
+    "steps": [
+      "Open your Amazon Prime membership page.",
+      "Choose Manage Membership.",
+      "Select End Membership or cancel renewal.",
+      "Confirm the cancellation on the final page."
+    ],
+    "directURL": "https://www.amazon.com/gp/primecentral",
+    "notes": null
+  },
+  "hbomax": {
+    "steps": [
+      "Open your Max account settings.",
+      "Go to the subscription or billing section.",
+      "Choose Cancel Your Subscription.",
+      "Confirm that you want the plan to end."
+    ],
+    "directURL": "https://play.max.com/account",
+    "notes": null
+  },
+  "youtubepremium": {
+    "steps": [
+      "Open YouTube paid memberships.",
+      "Select your Premium membership.",
+      "Choose Deactivate or cancel membership.",
+      "Continue and confirm the cancellation."
+    ],
+    "directURL": "https://www.youtube.com/paid_memberships",
+    "notes": null
+  },
+  "chatgpt": {
+    "steps": [
+      "Open ChatGPT and go to your account settings.",
+      "Find the subscription or plan area.",
+      "Open the billing portal or manage plan flow.",
+      "Choose to cancel the active subscription and confirm."
+    ],
+    "directURL": "https://chat.openai.com/",
+    "notes": null
+  },
+  "notion": {
+    "steps": [
+      "Open your Notion account settings.",
+      "Go to Plans or Billing.",
+      "Select the active plan.",
+      "Cancel or downgrade the workspace subscription."
+    ],
+    "directURL": "https://www.notion.so/my-account",
+    "notes": null
+  },
+  "adobecreativecloud": {
+    "steps": [
+      "Open your Adobe plans page.",
+      "Find the active Creative Cloud plan.",
+      "Choose Manage Plan.",
+      "Select Cancel your plan and confirm."
+    ],
+    "directURL": "https://account.adobe.com/plans",
+    "notes": null
+  },
+  "canva": {
+    "steps": [
+      "Open Canva billing and teams settings.",
+      "Select the active subscription.",
+      "Choose Cancel Subscription.",
+      "Confirm that you want the plan to end."
+    ],
+    "directURL": "https://www.canva.com/settings/billing-and-teams",
+    "notes": null
+  },
+  "duolingo": {
+    "steps": [
+      "Open your Duolingo Super settings.",
+      "Go to the subscription section.",
+      "Choose Cancel Subscription.",
+      "Confirm the cancellation prompts."
+    ],
+    "directURL": "https://www.duolingo.com/settings/super",
+    "notes": null
+  },
+  "audible": {
+    "steps": [
+      "Open your Audible account details.",
+      "Find Membership details.",
+      "Choose Cancel membership.",
+      "Confirm the cancellation to stop renewal."
+    ],
+    "directURL": "https://www.audible.com/account-details",
+    "notes": null
+  }
+}

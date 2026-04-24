@@ -72,6 +72,7 @@ struct HomeView: View {
             TrialDetailSheet(
                 trial: trial,
                 onSaveExisting: { _ in },
+                notificationEngine: notificationEngine,
                 onMarkCancelled: { t in markCancelled(t) }
             )
         }
