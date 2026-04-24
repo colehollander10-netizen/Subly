@@ -1,7 +1,7 @@
 import SwiftUI
+import PhosphorSwift
 
 struct PrimaryAddButton: View {
-    var icon: String = "plus"
     var accessibilityLabel: String = "Add"
     var accessibilityHint: String = ""
     var onTap: () -> Void
@@ -38,50 +38,22 @@ struct PrimaryAddButton: View {
             onTap()
         } label: {
             ZStack {
-                backdrop
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(SublyTheme.accent)
+                Circle()
+                    .fill(SublyTheme.accent)
+                Ph.plus.bold
+                    .color(SublyTheme.background)
+                    .frame(width: 24, height: 24)
             }
             .frame(width: diameter, height: diameter)
         }
         .buttonStyle(PrimaryAddButtonStyle())
-    }
-
-    @ViewBuilder
-    private var backdrop: some View {
-        if #available(iOS 26, *) {
-            Color.clear
-                .glassEffect(
-                    .regular.tint(SublyTheme.accent.opacity(0.88)).interactive(true),
-                    in: .circle
-                )
-        } else {
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(Circle().fill(SublyTheme.glassFill))
-                    .overlay(Circle().stroke(SublyTheme.glassBorder, lineWidth: 1))
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [SublyTheme.glassHighlight, .clear],
-                                    startPoint: .top,
-                                    endPoint: .center
-                                ),
-                                lineWidth: 1
-                            )
-                            .blendMode(.plusLighter)
-                    )
-            }
-        }
     }
 }
 
 private struct PrimaryAddButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .opacity(configuration.isPressed ? 0.82 : 1)
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
             .animation(.spring(response: 0.22, dampingFraction: 0.78), value: configuration.isPressed)
     }

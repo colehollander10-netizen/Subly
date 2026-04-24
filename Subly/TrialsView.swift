@@ -80,7 +80,6 @@ struct TrialsView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 PrimaryAddButton(
-                    icon: "plus",
                     accessibilityLabel: "Add a trial",
                     accessibilityHint: "Enter trial details manually.",
                     onTap: { showingManualAdd = true },
