@@ -13,8 +13,13 @@ struct SettingsView: View {
     @State private var errorMessage: String?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var isUpdatingNotifications = false
+    @State private var isFetchingImport = false
     @State private var exportedCSVURL: URL?
+    @State private var pendingImports: [ImportableSubscription]?
     @State private var showingDeleteConfirm = false
+    @State private var showingImportSheet = false
+
+    private let storeKitImport = StoreKitImport()
 
     var body: some View {
         NavigationStack {
@@ -59,6 +64,11 @@ struct SettingsView: View {
                             SectionLabel(title: "Data")
                             SurfaceCard(padding: 0) {
                                 VStack(spacing: 0) {
+                                    settingsRow(title: "Import subscriptions", subtitle: "Bring in your Apple-billed subscriptions.", tint: SublyTheme.primaryText) {
+                                        Haptics.play(.rowTap)
+                                        Task { await runImport() }
+                                    }
+                                    HairlineDivider().padding(.horizontal, 18)
                                     settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: SublyTheme.primaryText) {
                                         Haptics.play(.rowTap)
                                         exportTrials()
@@ -138,6 +148,23 @@ struct SettingsView: View {
         .onChange(of: exportedCSVURL?.id) { _, newValue in
             if newValue != nil { Haptics.play(.sheetPresent) }
         }
+        .sheet(isPresented: $showingImportSheet) {
+            ImportConfirmationSheet(
+                subscriptions: pendingImports ?? [],
+                onImport: handleImport
+            )
+        }
+        .overlay {
+            if isFetchingImport {
+                ZStack {
+                    SublyTheme.background.opacity(0.6).ignoresSafeArea()
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(SublyTheme.accent)
+                }
+                .transition(.opacity)
+            }
+        }
         .task {
             await refreshNotificationStatus()
         }
@@ -172,6 +199,40 @@ struct SettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressableRowStyle())
+    }
+
+    @MainActor
+    private func runImport() async {
+        isFetchingImport = true
+        defer { isFetchingImport = false }
+
+        do {
+            let results = try await storeKitImport.fetchCurrentEntitlements()
+            pendingImports = results
+            showingImportSheet = true
+        } catch {
+            pendingImports = []
+            showingImportSheet = true
+        }
+    }
+
+    @MainActor
+    private func handleImport(_ chosen: [ImportableSubscription]) {
+        for sub in chosen {
+            let chargeDate = sub.nextBillingDate ?? Date().addingTimeInterval(60 * 60 * 24 * 30)
+            let trial = Trial(
+                serviceName: sub.displayName,
+                senderDomain: "",
+                chargeDate: chargeDate,
+                chargeAmount: sub.amount,
+                entryType: .subscription,
+                status: .active,
+                billingCycle: sub.billingCycle
+            )
+            modelContext.insert(trial)
+        }
+        try? modelContext.save()
+        Haptics.play(.save)
     }
 
     private func exportTrials() {
