@@ -22,6 +22,7 @@ public protocol NotificationCenterProtocol: Sendable {
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
     func add(_ request: UNNotificationRequest) async throws
     func removeAllPendingNotificationRequests()
+    func removePendingNotificationRequests(withIdentifiers: [String])
     func pendingNotificationRequests() async -> [UNNotificationRequest]
 }
 
@@ -76,5 +77,12 @@ public actor NotificationEngine {
             )
             try? await center.add(request)
         }
+    }
+
+    /// Targeted removal of pending notifications by their request identifiers.
+    /// Use when an entry is cancelled or deleted and its pending alerts should
+    /// be cleared without touching the rest of the schedule.
+    public func removePending(ids: [String]) async {
+        center.removePendingNotificationRequests(withIdentifiers: ids)
     }
 }
