@@ -6,6 +6,7 @@ import SwiftUI
 import UIKit
 import UserNotifications
 
+@MainActor
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -15,12 +16,11 @@ struct SettingsView: View {
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var isUpdatingNotifications = false
     @State private var isFetchingImport = false
+    @State private var lastAppleSync: Date? = UserDefaults.standard.object(forKey: "lastAppleSync") as? Date
     @State private var exportedCSVURL: URL?
-    @State private var pendingImports: [ImportableSubscription]?
     @State private var showingDeleteConfirm = false
-    @State private var showingImportSheet = false
 
-    private let storeKitImport = StoreKitImport()
+    private let autoImportService = AutoImportService()
 
     var body: some View {
         NavigationStack {
@@ -65,10 +65,16 @@ struct SettingsView: View {
                             SectionLabel(title: "Data")
                             SurfaceCard(padding: 0) {
                                 VStack(spacing: 0) {
-                                    settingsRow(title: "Import subscriptions", subtitle: "Bring in your Apple-billed subscriptions.", tint: SublyTheme.primaryText) {
+                                    settingsRow(title: "Sync now", subtitle: "Auto-sync is on for Apple subscriptions.", tint: SublyTheme.primaryText) {
                                         Haptics.play(.rowTap)
-                                        Task { await runImport() }
+                                        Task { await runAppleSync() }
                                     }
+                                    Text(lastAppleSyncText)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundStyle(SublyTheme.tertiaryText)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal, 18)
+                                        .padding(.bottom, 16)
                                     HairlineDivider().padding(.horizontal, 18)
                                     settingsRow(title: "Export trials", subtitle: "Share a CSV of every trial on this device.", tint: SublyTheme.primaryText) {
                                         Haptics.play(.rowTap)
@@ -149,12 +155,6 @@ struct SettingsView: View {
         .onChange(of: exportedCSVURL?.id) { _, newValue in
             if newValue != nil { Haptics.play(.sheetPresent) }
         }
-        .sheet(isPresented: $showingImportSheet) {
-            ImportConfirmationSheet(
-                subscriptions: pendingImports ?? [],
-                onImport: handleImport
-            )
-        }
         .overlay {
             if isFetchingImport {
                 ZStack {
@@ -168,10 +168,14 @@ struct SettingsView: View {
         }
         .task {
             await refreshNotificationStatus()
+            lastAppleSync = UserDefaults.standard.object(forKey: "lastAppleSync") as? Date
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
-            Task { await refreshNotificationStatus() }
+            Task {
+                await refreshNotificationStatus()
+                lastAppleSync = UserDefaults.standard.object(forKey: "lastAppleSync") as? Date
+            }
         }
     }
 
@@ -179,6 +183,14 @@ struct SettingsView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
         return "\(version) (\(build))"
+    }
+
+    private var lastAppleSyncText: String {
+        if let lastAppleSync {
+            return "Last synced: \(lastAppleSync.formatted(date: .abbreviated, time: .shortened))"
+        }
+
+        return "Last synced: Never"
     }
 
     @ViewBuilder
@@ -207,36 +219,12 @@ struct SettingsView: View {
     }
 
     @MainActor
-    private func runImport() async {
+    private func runAppleSync() async {
         isFetchingImport = true
         defer { isFetchingImport = false }
 
-        do {
-            let results = try await storeKitImport.fetchCurrentEntitlements()
-            pendingImports = results
-            showingImportSheet = true
-        } catch {
-            pendingImports = []
-            showingImportSheet = true
-        }
-    }
-
-    @MainActor
-    private func handleImport(_ chosen: [ImportableSubscription]) {
-        for sub in chosen {
-            let chargeDate = sub.nextBillingDate ?? Date().addingTimeInterval(60 * 60 * 24 * 30)
-            let trial = Trial(
-                serviceName: sub.displayName,
-                senderDomain: "",
-                chargeDate: chargeDate,
-                chargeAmount: sub.amount,
-                entryType: .subscription,
-                status: .active,
-                billingCycle: sub.billingCycle
-            )
-            modelContext.insert(trial)
-        }
-        try? modelContext.save()
+        await autoImportService.sync(context: modelContext)
+        lastAppleSync = UserDefaults.standard.object(forKey: "lastAppleSync") as? Date
         Haptics.play(.save)
     }
 
