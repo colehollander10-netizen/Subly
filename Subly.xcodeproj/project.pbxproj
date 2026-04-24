@@ -15,14 +15,17 @@
 		43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014D90B895BE78821E85C8D0 /* Haptics.swift */; };
 		4847E56243A919BA33F95368 /* LogoService in Frameworks */ = {isa = PBXBuildFile; productRef = 4125BA4396A89B774859EEE5 /* LogoService */; };
 		4B4EA6964D873C8F56D99E4F /* NotificationEngine in Frameworks */ = {isa = PBXBuildFile; productRef = F682B7F3898CBF29726418B8 /* NotificationEngine */; };
+		51CB5A55E27A1FF1F77183AF /* ImportableSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */; };
 		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
 		80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F53E060DE358F2E3A716C1F /* SettingsView.swift */; };
+		88BA65309060B87A6D079D0E /* StoreKitImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */; };
 		8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */; };
 		8F9A6E55A611D718BF89EF30 /* AmountField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E28F7FBA1F29D7CB6E29A1D /* AmountField.swift */; };
 		A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */; };
 		B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC817B909A0E79AA12666CC /* HomeView.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
+		BF4CFE9C343E74C570ADE99B /* ImportConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5612D25D0F0BA879829F012 /* ImportConfirmationSheet.swift */; };
 		CC4E3FD0124403E98E3D39A5 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
 		CC5F566A6E3844C2E97CE72E /* DatePickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC3064989A01167627CCCF /* DatePickerField.swift */; };
 		D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */; };
@@ -40,15 +43,18 @@
 		46C27551FBD7D8F0A3E32A75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4AC817B909A0E79AA12666CC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F53E060DE358F2E3A716C1F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportableSubscription.swift; sourceTree = "<group>"; };
 		6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryAddButton.swift; sourceTree = "<group>"; };
 		72669D27DD5FF4259740BAAF /* ServiceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceNameField.swift; sourceTree = "<group>"; };
 		7D86B6F6DE128CC1639F74AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
 		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
 		8E28F7FBA1F29D7CB6E29A1D /* AmountField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountField.swift; sourceTree = "<group>"; };
+		8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitImport.swift; sourceTree = "<group>"; };
 		90BFB77DC074BCDBE021E77E /* GlassComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassComponents.swift; sourceTree = "<group>"; };
 		99DBDD8BAD25A9BF42BF6686 /* Sheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sheets.swift; sourceTree = "<group>"; };
 		9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialsView.swift; sourceTree = "<group>"; };
+		A5612D25D0F0BA879829F012 /* ImportConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportConfirmationSheet.swift; sourceTree = "<group>"; };
 		A9A4714DBE61364B60F2DE15 /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
 		ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
 		B1042D755D5117EE14B9CA3D /* Subly.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +122,16 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
+		DDF01BFF1E5404E77F59E55D /* Import */ = {
+			isa = PBXGroup;
+			children = (
+				670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */,
+				A5612D25D0F0BA879829F012 /* ImportConfirmationSheet.swift */,
+				8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */,
+			);
+			path = Import;
+			sourceTree = "<group>";
+		};
 		DF62C04EBAD5204AA3B7B98D /* AddEntry */ = {
 			isa = PBXGroup;
 			children = (
@@ -142,6 +158,7 @@
 				ACFBAA30A421A07EFDB74774 /* TrialAlertCoordinator.swift */,
 				9ADCE2DF47AF10E42DF6624A /* TrialsView.swift */,
 				DF62C04EBAD5204AA3B7B98D /* AddEntry */,
+				DDF01BFF1E5404E77F59E55D /* Import */,
 			);
 			path = Subly;
 			sourceTree = "<group>";
@@ -224,12 +241,15 @@
 				3163EF6143C59693892258A6 /* GlassComponents.swift in Sources */,
 				43DE6B35BA129E193E8612EF /* Haptics.swift in Sources */,
 				B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */,
+				BF4CFE9C343E74C570ADE99B /* ImportConfirmationSheet.swift in Sources */,
+				51CB5A55E27A1FF1F77183AF /* ImportableSubscription.swift in Sources */,
 				0E0DE27729B561D0AF7A63A3 /* NotificationDelegate.swift in Sources */,
 				E40C9EF102C9BE67ECE33D7F /* OnboardingView.swift in Sources */,
 				BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */,
 				E24A57104511E6C37547388F /* ServiceNameField.swift in Sources */,
 				80B03DC36A5E91F8DE785D13 /* SettingsView.swift in Sources */,
 				D15AD54C200BDDAF81BEFC50 /* Sheets.swift in Sources */,
+				88BA65309060B87A6D079D0E /* StoreKitImport.swift in Sources */,
 				2ED1609154F68EA10FDA5BE3 /* SublyApp.swift in Sources */,
 				8F35444856D26D181CE58C38 /* TrialAlertCoordinator.swift in Sources */,
 				3CD46FCA595747AAE0204CB9 /* TrialsView.swift in Sources */,
