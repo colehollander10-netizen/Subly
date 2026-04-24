@@ -128,7 +128,7 @@ struct HeaderIconButton: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(.ultraThinMaterial)
+                    .fill(SublyTheme.backgroundElevated)
                     .overlay(Circle().fill(SublyTheme.glassFill))
                     .overlay(Circle().stroke(SublyTheme.glassBorder, lineWidth: 1))
                 if isBusy {
@@ -384,10 +384,10 @@ struct ServiceIcon: View {
 
     private var fallbackColor: Color {
         let colors: [Color] = [
-            Color(red: 0.31, green: 0.43, blue: 0.82),
-            Color(red: 0.20, green: 0.70, blue: 0.51),
-            Color(red: 0.87, green: 0.64, blue: 0.19),
-            Color(red: 0.87, green: 0.24, blue: 0.33),
+            SublyTheme.accent,
+            SublyTheme.urgencyWarning,
+            SublyTheme.urgencyCritical,
+            SublyTheme.urgencyCalm,
         ]
         let index = abs(name.hashValue) % colors.count
         return colors[index]
@@ -427,7 +427,7 @@ struct ServiceIcon: View {
                 .fill(fallbackColor)
             Text(String(name.prefix(1)).uppercased())
                 .font(.system(size: size * 0.44, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(SublyTheme.primaryText)
         }
         .frame(width: size, height: size)
     }

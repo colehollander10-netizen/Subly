@@ -9,9 +9,10 @@ struct HomeView: View {
     @Environment(AppRouter.self) private var appRouter
     let notificationEngine: NotificationEngine
 
-    @Environment(\.modelContext) private var modelContext
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed },
+        filter: #Predicate<Trial> {
+            !$0.userDismissed && $0.entryTypeRaw == "freeTrial" && $0.statusRaw == "active"
+        },
         sort: \Trial.chargeDate,
         order: .forward
     ) private var activeTrials: [Trial]
@@ -20,6 +21,7 @@ struct HomeView: View {
     @State private var showingRouter = false
     @State private var showingAddTrial = false
     @State private var showingAddSubscription = false
+    @State private var pendingAddChoice: AddEntryRouterSheet.Choice?
 
     private var upcomingSoon: [Trial] {
         activeTrials.filter { daysUntil($0.chargeDate) <= 7 }
@@ -44,8 +46,8 @@ struct HomeView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 PrimaryAddButton(
-                    accessibilityLabel: "Add a trial",
-                    accessibilityHint: "Enter trial details manually.",
+                    accessibilityLabel: "Add to Subly",
+                    accessibilityHint: "Choose whether to add a trial or subscription.",
                     onTap: { showingRouter = true },
                     diameter: 62
                 )
@@ -54,10 +56,7 @@ struct HomeView: View {
             }
         }
         .sheet(isPresented: $showingRouter) {
-            AddEntryRouterSheet(
-                onSelectTrial: { showingAddTrial = true },
-                onSelectSubscription: { showingAddSubscription = true }
-            )
+            AddEntryRouterSheet(onSelect: { pendingAddChoice = $0 })
         }
         .sheet(isPresented: $showingAddTrial) {
             TrialDetailSheet(onCreateNew: { _ in })
@@ -66,14 +65,25 @@ struct HomeView: View {
             AddSubscriptionSheet()
         }
         .onChange(of: showingRouter) { _, newValue in
-            if newValue { Haptics.play(.sheetPresent) }
+            if newValue {
+                Haptics.play(.sheetPresent)
+                return
+            }
+
+            guard let pendingAddChoice else { return }
+            switch pendingAddChoice {
+            case .trial:
+                showingAddTrial = true
+            case .subscription:
+                showingAddSubscription = true
+            }
+            self.pendingAddChoice = nil
         }
         .sheet(item: $selectedTrial) { trial in
             TrialDetailSheet(
                 trial: trial,
                 onSaveExisting: { _ in },
-                notificationEngine: notificationEngine,
-                onMarkCancelled: { t in markCancelled(t) }
+                notificationEngine: notificationEngine
             )
         }
         .onChange(of: selectedTrial?.id) { _, newValue in
@@ -271,18 +281,6 @@ struct HomeView: View {
         if days <= 0 { return "Charges today" }
         if days == 1 { return "Charges in 1 day" }
         return "Charges in \(days) days"
-    }
-
-    private func markCancelled(_ trial: Trial) {
-        trial.userDismissed = true
-        try? modelContext.save()
-        Task {
-            let coordinator = TrialAlertCoordinator(
-                modelContainer: modelContext.container,
-                notificationEngine: notificationEngine
-            )
-            await coordinator.replanAll()
-        }
     }
 
     private func resolvePendingNotificationRoute() {

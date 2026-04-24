@@ -7,10 +7,10 @@ import SwiftUI
 struct TrialsView: View {
     let notificationEngine: NotificationEngine
 
-    @Environment(\.modelContext) private var modelContext
-
     @Query(
-        filter: #Predicate<Trial> { !$0.userDismissed },
+        filter: #Predicate<Trial> {
+            !$0.userDismissed && $0.entryTypeRaw == "freeTrial" && $0.statusRaw == "active"
+        },
         sort: \Trial.chargeDate,
         order: .forward
     ) private var trials: [Trial]
@@ -96,8 +96,7 @@ struct TrialsView: View {
             TrialDetailSheet(
                 trial: trial,
                 onSaveExisting: { _ in },
-                notificationEngine: notificationEngine,
-                onMarkCancelled: { t in markCancelled(t) }
+                notificationEngine: notificationEngine
             )
         }
         .onChange(of: selectedTrial?.id) { _, newValue in
@@ -147,12 +146,6 @@ struct TrialsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
-    }
-
-    private func markCancelled(_ trial: Trial) {
-        trial.userDismissed = true
-        try? modelContext.save()
-        // TODO(COL-128): trigger replanAll when notificationEngine is wired through TrialsView
     }
 }
 

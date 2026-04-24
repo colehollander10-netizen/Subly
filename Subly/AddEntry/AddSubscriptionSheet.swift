@@ -128,13 +128,16 @@ struct AddSubscriptionSheet: View {
 }
 
 #Preview {
-    let container = try! ModelContainer(
+    if let container = try? ModelContainer(
         for: Schema([Trial.self]),
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    return ZStack {
-        SublyTheme.background.ignoresSafeArea()
-        AddSubscriptionSheet()
+    ) {
+        ZStack {
+            SublyTheme.background.ignoresSafeArea()
+            AddSubscriptionSheet()
+        }
+        .modelContainer(container)
+    } else {
+        Text("Preview unavailable")
     }
-    .modelContainer(container)
 }

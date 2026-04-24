@@ -8,6 +8,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @Query private var allTrials: [Trial]
     @State private var errorMessage: String?
@@ -168,6 +169,10 @@ struct SettingsView: View {
         .task {
             await refreshNotificationStatus()
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task { await refreshNotificationStatus() }
+        }
     }
 
     private var appVersion: String {
@@ -190,9 +195,9 @@ struct SettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                Ph.caretRight.bold
+                    .color(SublyTheme.tertiaryText)
+                    .frame(width: 12, height: 12)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 16)

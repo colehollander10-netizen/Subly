@@ -7,11 +7,9 @@ struct AddEntryRouterSheet: View {
         case subscription
     }
 
-    var onSelectTrial: () -> Void
-    var onSelectSubscription: () -> Void
+    var onSelect: (Choice) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var pendingChoice: Choice?
 
     var body: some View {
         NavigationStack {
@@ -23,7 +21,7 @@ struct AddEntryRouterSheet: View {
 
                     VStack(spacing: 12) {
                         Button {
-                            pendingChoice = .trial
+                            onSelect(.trial)
                             dismiss()
                         } label: {
                             HStack(spacing: 10) {
@@ -37,7 +35,7 @@ struct AddEntryRouterSheet: View {
                         .buttonStyle(PrimaryButton())
 
                         Button {
-                            pendingChoice = .subscription
+                            onSelect(.subscription)
                             dismiss()
                         } label: {
                             HStack(spacing: 10) {
@@ -60,15 +58,5 @@ struct AddEntryRouterSheet: View {
         .presentationDetents([.height(260)])
         .presentationDragIndicator(.visible)
         .presentationBackground(SublyTheme.background)
-        .onDisappear {
-            guard let pendingChoice else { return }
-            switch pendingChoice {
-            case .trial:
-                onSelectTrial()
-            case .subscription:
-                onSelectSubscription()
-            }
-        }
     }
 }
-
