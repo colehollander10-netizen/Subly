@@ -441,70 +441,26 @@ struct TrialDetailSheet: View {
 
     @ViewBuilder
     private var serviceField: some View {
-        fieldRow(icon: AnyView(Ph.briefcase.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
-                 label: "Service") {
-            TextField("Cursor Pro", text: $serviceName)
-                .textInputAutocapitalization(.words)
-                .focused($focused)
-                .font(.system(size: 17, weight: .medium, design: .default))
-                .foregroundStyle(SublyTheme.primaryText)
-        }
+        ServiceNameField(text: $serviceName, label: "Service", placeholder: "Cursor Pro", focusBinding: $focused)
     }
 
     @ViewBuilder
     private var trialEndsField: some View {
-        fieldRow(icon: AnyView(Ph.calendar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
-                 label: "Trial ends") {
-            VStack(alignment: .leading, spacing: 12) {
-                DatePicker("", selection: $trialEndDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .colorScheme(.dark)
-                    .onChange(of: trialEndDate) { _, _ in
-                        if applyingPreset { return }
-                        selectedPreset = nil
-                    }
-                presetRow
+        DatePickerField(
+            date: $trialEndDate,
+            label: "Trial ends",
+            onDateChange: { _ in
+                if applyingPreset { return }
+                selectedPreset = nil
             }
+        ) {
+            presetRow
         }
     }
 
     @ViewBuilder
     private var chargeAmountField: some View {
-        fieldRow(icon: AnyView(Ph.currencyDollar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
-                 label: "Charge amount") {
-            HStack(spacing: 4) {
-                Text("$")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(SublyTheme.tertiaryText)
-                TextField("20.00", text: $chargeAmountText)
-                    .keyboardType(.decimalPad)
-                    .monospacedDigit()
-                    .font(.system(size: 20, weight: .medium, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func fieldRow<Content: View>(
-        icon: AnyView,
-        label: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            icon
-                .frame(width: 24, alignment: .center)
-                .padding(.top, 2)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(label.uppercased())
-                    .font(.system(size: 10, weight: .semibold, design: .default))
-                    .tracking(1.8)
-                    .foregroundStyle(SublyTheme.secondaryText)
-                content()
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        AmountField(text: $chargeAmountText, label: "Charge amount", placeholder: "20.00")
     }
 
     @ViewBuilder
