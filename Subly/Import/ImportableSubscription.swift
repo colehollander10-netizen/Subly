@@ -7,4 +7,5 @@ struct ImportableSubscription: Identifiable, Equatable {
     let amount: Decimal
     let billingCycle: BillingCycle
     let nextBillingDate: Date?
+    let appleOriginalTransactionID: String?
 }

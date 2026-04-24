@@ -9,7 +9,10 @@ import UserNotifications
 private let schemaLog = Logger(subsystem: "com.subly.Subly", category: "schema")
 
 @main
+@MainActor
 struct SublyApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     private static let modelContainer: ModelContainer = {
         let schema = Schema([
             Trial.self,
@@ -62,6 +65,7 @@ struct SublyApp: App {
     private let appRouter: AppRouter
     private let notificationDelegate: NotificationDelegate
     private let notificationEngine = NotificationEngine()
+    private let autoImportService = AutoImportService()
 
     init() {
         let router = AppRouter()
@@ -97,6 +101,18 @@ struct SublyApp: App {
                 // any system-rendered surface (sheet edges, alerts) matches.
                 .background(SublyTheme.background.ignoresSafeArea())
                 .preferredColorScheme(.dark)
+                .task {
+                    let context = Self.modelContainer.mainContext
+                    autoImportService.startTransactionUpdates(context: context)
+                    await autoImportService.sync(context: context)
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    guard newPhase == .active else { return }
+
+                    Task {
+                        await autoImportService.sync(context: Self.modelContainer.mainContext)
+                    }
+                }
         }
     }
 }

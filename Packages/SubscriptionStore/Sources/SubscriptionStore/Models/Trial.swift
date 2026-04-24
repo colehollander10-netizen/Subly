@@ -52,6 +52,7 @@ public final class Trial {
     /// Set once when `status` flips to `.cancelled`. Used to compute
     /// "Caught $X this month" on HomeView.
     public var cancelledAt: Date?
+    public var appleOriginalTransactionID: String?
 
     public var entryType: EntryType {
         get { EntryType(rawValue: entryTypeRaw) ?? .freeTrial }
@@ -81,7 +82,8 @@ public final class Trial {
         status: EntryStatus = .active,
         billingCycle: BillingCycle? = nil,
         notificationOffset: Int? = nil,
-        cancelledAt: Date? = nil
+        cancelledAt: Date? = nil,
+        appleOriginalTransactionID: String? = nil
     ) {
         self.id = id
         self.serviceName = serviceName
@@ -96,5 +98,6 @@ public final class Trial {
         self.billingCycleRaw = billingCycle?.rawValue
         self.notificationOffset = notificationOffset
         self.cancelledAt = cancelledAt
+        self.appleOriginalTransactionID = appleOriginalTransactionID
     }
 }
