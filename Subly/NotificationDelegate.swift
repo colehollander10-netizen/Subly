@@ -57,22 +57,45 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// Marks delivered and routes the user into the matching trial flow when
-    /// the notification was explicitly tapped.
+    /// Marks delivered and routes the user into the matching entry flow when
+    /// the notification was explicitly tapped. Routes by entry type so a
+    /// subscription renewal alert opens the Subscriptions tab, and a trial
+    /// charge alert opens the Home tab.
     private func markDeliveredAndRoute(identifier: String) {
         guard let alertID = UUID(uuidString: identifier) else { return }
         let container = modelContainer
         let router = appRouter
         Task { @MainActor in
             let context = ModelContext(container)
-            var descriptor = FetchDescriptor<TrialAlert>(
+            var alertDescriptor = FetchDescriptor<TrialAlert>(
                 predicate: #Predicate { $0.id == alertID }
             )
-            descriptor.fetchLimit = 1
-            guard let alert = (try? context.fetch(descriptor))?.first else { return }
+            alertDescriptor.fetchLimit = 1
+            guard let alert = (try? context.fetch(alertDescriptor))?.first else { return }
             alert.delivered = true
             try? context.save()
-            router.pendingCancelTrialID = alert.trialID
+
+            let trialID = alert.trialID
+            var trialDescriptor = FetchDescriptor<Trial>(
+                predicate: #Predicate { $0.id == trialID }
+            )
+            trialDescriptor.fetchLimit = 1
+            let entry = (try? context.fetch(trialDescriptor))?.first
+            let route: PendingNotificationRoute = {
+                if entry?.entryType == .subscription {
+                    return .subscription(trialID)
+                }
+                return .trial(trialID)
+            }()
+            router.pendingRoute = route
+            // Keep legacy HomeView flow working by also mirroring the trial
+            // id when the route targets a trial. SubscriptionsView will
+            // consume the subscription branch directly.
+            if case .trial(let id) = route {
+                router.pendingCancelTrialID = id
+            } else {
+                router.pendingCancelTrialID = nil
+            }
         }
     }
 }
