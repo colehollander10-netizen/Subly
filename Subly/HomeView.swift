@@ -1,9 +1,23 @@
+import MascotKit
 import NotificationEngine
 import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
 import TrialEngine
+
+/// Home's adaptive state. Finn's pose + what the screen shows keys off the
+/// combined activity of trials and subscriptions. See Finn v1 Launch Design
+/// § 3.2.
+enum HomeDisplayState: Equatable {
+    /// No active trials, no bills within 7 days. Finn sleeps.
+    case quiet
+    /// Trials active, no urgency (no trial within 24h, no sub within 48h).
+    /// Finn watches.
+    case watching
+    /// Trial within 24h OR bill within 48h. Finn is nervous.
+    case urgent
+}
 
 struct HomeView: View {
     @Environment(AppRouter.self) private var appRouter
@@ -17,20 +31,47 @@ struct HomeView: View {
         order: .forward
     ) private var activeTrials: [Trial]
 
+    @Query(
+        filter: #Predicate<Trial> {
+            $0.entryTypeRaw == "subscription" && $0.statusRaw == "active"
+        },
+        sort: \Trial.chargeDate,
+        order: .forward
+    ) private var activeSubscriptions: [Trial]
+
     @State private var selectedTrial: Trial?
     @State private var showingRouter = false
     @State private var showingAddTrial = false
     @State private var showingAddSubscription = false
     @State private var pendingAddChoice: AddEntryRouterSheet.Choice?
 
-    private var upcomingSoon: [Trial] {
+    private var upcomingTrials7d: [Trial] {
         activeTrials.filter { daysUntil($0.chargeDate) <= 7 }
     }
 
-    private var nextTrial: Trial? { upcomingSoon.first }
+    private var upcomingSubs30d: [Trial] {
+        activeSubscriptions.filter {
+            let d = daysUntil($0.chargeDate)
+            return d >= 0 && d <= 30
+        }
+    }
 
-    private var upcomingAfterHero: [Trial] {
-        Array(upcomingSoon.dropFirst().prefix(3))
+    private var nextTrial: Trial? { upcomingTrials7d.first }
+    private var upcomingAfterHero: [Trial] { Array(upcomingTrials7d.dropFirst().prefix(3)) }
+
+    private var displayState: HomeDisplayState {
+        let hasUrgentTrial = activeTrials.contains { daysUntil($0.chargeDate) <= 1 }
+        let hasUrgentBill = activeSubscriptions.contains { daysUntil($0.chargeDate) <= 2 }
+        if hasUrgentTrial || hasUrgentBill { return .urgent }
+        if activeTrials.isEmpty && upcomingSubs30d.isEmpty { return .quiet }
+        return .watching
+    }
+
+    /// The single item that anchors the urgent state hero card.
+    private var urgentItem: Trial? {
+        let urgentTrials = activeTrials.filter { daysUntil($0.chargeDate) <= 1 }
+        let urgentSubs = activeSubscriptions.filter { daysUntil($0.chargeDate) <= 2 }
+        return (urgentTrials + urgentSubs).min(by: { $0.chargeDate < $1.chargeDate })
     }
 
     var body: some View {
@@ -69,13 +110,10 @@ struct HomeView: View {
                 Haptics.play(.sheetPresent)
                 return
             }
-
             guard let pendingAddChoice else { return }
             switch pendingAddChoice {
-            case .trial:
-                showingAddTrial = true
-            case .subscription:
-                showingAddSubscription = true
+            case .trial: showingAddTrial = true
+            case .subscription: showingAddSubscription = true
             }
             self.pendingAddChoice = nil
         }
@@ -89,9 +127,7 @@ struct HomeView: View {
         .onChange(of: selectedTrial?.id) { _, newValue in
             if newValue != nil { Haptics.play(.sheetPresent) }
         }
-        .onAppear {
-            resolvePendingNotificationRoute()
-        }
+        .onAppear { resolvePendingNotificationRoute() }
         .onChange(of: appRouter.pendingCancelTrialID) { _, _ in
             resolvePendingNotificationRoute()
         }
@@ -114,21 +150,152 @@ struct HomeView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        if let nextTrial {
-            heroSection(for: nextTrial)
-            if !upcomingAfterHero.isEmpty {
-                comingUpSection
+        switch displayState {
+        case .quiet:
+            quietState
+        case .watching:
+            watchingState
+        case .urgent:
+            urgentState
+        }
+    }
+
+    // MARK: - Quiet state
+
+    @ViewBuilder
+    private var quietState: some View {
+        VStack(spacing: 24) {
+            Spacer(minLength: 24)
+            FoxView(state: .sleeping, size: 180)
+                .frame(width: 180, height: 180)
+            VStack(spacing: 8) {
+                Text("All clear.")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(FinnTheme.primaryText)
+                Text("Nothing charging soon. Finn is resting.")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(FinnTheme.secondaryText)
+                    .multilineTextAlignment(.center)
             }
-        } else {
-            emptyState
+            .accessibilityElement(children: .combine)
+            Spacer(minLength: 24)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: - Watching state
+
+    @ViewBuilder
+    private var watchingState: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            if let nextTrial {
+                watchingFinnCard(trialCount: upcomingTrials7d.count)
+                heroSection(for: nextTrial)
+                if !upcomingAfterHero.isEmpty {
+                    comingUpSection
+                }
+            } else {
+                // No trials but some upcoming bills — watching Finn anchors
+                // attention on the subscription row instead.
+                watchingFinnCard(trialCount: 0)
+            }
+            if !upcomingSubs30d.isEmpty {
+                upcomingBillsRow
+            }
         }
     }
 
     @ViewBuilder
+    private func watchingFinnCard(trialCount: Int) -> some View {
+        HStack(spacing: 16) {
+            FoxView(state: .watching, size: 64)
+                .frame(width: 64, height: 64)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(trialCount == 0
+                     ? "Finn's keeping an eye on things."
+                     : "Finn's watching \(trialCount) trial\(trialCount == 1 ? "" : "s").")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(FinnTheme.primaryText)
+                Text("You'll hear from him before anything charges.")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(FinnTheme.secondaryText)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(FinnTheme.backgroundElevated)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(FinnTheme.glassBorder, lineWidth: 1)
+        )
+    }
+
+    @ViewBuilder
+    private var upcomingBillsRow: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionLabel(title: "Upcoming bills", trailing: "\(min(upcomingSubs30d.count, 3))")
+            SurfaceCard(padding: 0) {
+                VStack(spacing: 0) {
+                    ForEach(Array(upcomingSubs30d.prefix(3).enumerated()), id: \.element.id) { index, sub in
+                        CompactTrialRow(trial: sub)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                        if index < min(upcomingSubs30d.count, 3) - 1 {
+                            HairlineDivider().padding(.horizontal, 14)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Urgent state
+
+    @ViewBuilder
+    private var urgentState: some View {
+        if let item = urgentItem {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(alignment: .center, spacing: 14) {
+                    FoxView(state: .nervous, size: 72)
+                        .frame(width: 72, height: 72)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.entryType == .subscription
+                             ? "Finn's tapping his watch."
+                             : "Finn caught one ending.")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(FinnTheme.primaryText)
+                        Text(item.entryType == .subscription
+                             ? "A bill is about to hit."
+                             : "Act now — this trial ends soon.")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FinnTheme.secondaryText)
+                    }
+                    Spacer()
+                }
+                heroSection(for: item)
+            }
+        } else {
+            // Fallback — shouldn't happen given the displayState guard, but
+            // keep a safe path so we never render an empty body.
+            watchingState
+        }
+    }
+
+    // MARK: - Hero (shared by watching + urgent)
+
+    @ViewBuilder
     private func heroSection(for trial: Trial) -> some View {
         let days = daysUntil(trial.chargeDate)
+        let isSubscription = trial.entryType == .subscription
         VStack(alignment: .leading, spacing: 14) {
-            SectionLabel(title: "Next ending trial", trailing: "\(days)D")
+            SectionLabel(
+                title: isSubscription ? "Next bill" : "Next ending trial",
+                trailing: "\(max(days, 0))D"
+            )
 
             Button {
                 Haptics.play(.rowTap)
@@ -144,11 +311,13 @@ struct HomeView: View {
                                     .font(.system(size: 22, weight: .semibold, design: .rounded))
                                     .foregroundStyle(FinnTheme.primaryText)
                                 HStack(spacing: 6) {
-                                    Text("Renews \(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
+                                    Text(isSubscription
+                                         ? "Charges \(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))"
+                                         : "Renews \(trial.chargeDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))")
                                         .font(.system(size: 12, weight: .medium, design: .default))
                                         .monospacedDigit()
                                         .foregroundStyle(FinnTheme.secondaryText)
-                                    if let lengthLabel = trialLengthDescription(for: trial) {
+                                    if !isSubscription, let lengthLabel = trialLengthDescription(for: trial) {
                                         Text("·")
                                             .font(.system(size: 12, weight: .medium, design: .default))
                                             .foregroundStyle(FinnTheme.tertiaryText)
@@ -217,30 +386,6 @@ struct HomeView: View {
                 }
             }
         }
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 20) {
-            Spacer(minLength: 60)
-            Ph.moonStars.duotone
-                .color(FinnTheme.accent.opacity(0.4))
-                .frame(width: 120, height: 120)
-                .accessibilityHidden(true)
-            VStack(spacing: 8) {
-                Text("Nothing charging soon.")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(FinnTheme.primaryText)
-                Text("The next 7 days are clear. Your full list lives in Trials.")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(FinnTheme.secondaryText)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .accessibilityElement(children: .combine)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 20)
     }
 
     @ViewBuilder
