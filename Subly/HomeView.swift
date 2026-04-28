@@ -1,3 +1,4 @@
+import MascotKit
 import NotificationEngine
 import PhosphorSwift
 import SubscriptionStore
@@ -222,10 +223,8 @@ struct HomeView: View {
     private var emptyState: some View {
         VStack(spacing: 20) {
             Spacer(minLength: 60)
-            Ph.moonStars.duotone
-                .color(FinnTheme.accent.opacity(0.4))
+            FoxView(state: .sleeping, size: 120)
                 .frame(width: 120, height: 120)
-                .accessibilityHidden(true)
             VStack(spacing: 8) {
                 Text("Nothing charging soon.")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
