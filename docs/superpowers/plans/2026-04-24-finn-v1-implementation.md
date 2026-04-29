@@ -11,13 +11,16 @@ description: "Master plan + sub-plans for shipping Finn v1 to the App Store. Per
 
 # Finn v1 Implementation Plan — Master
 
+> [!important] Reconciled 2026-04-29 against [[Finn Brand Foundation]]
+> Sub-plans implementing paw-print confetti, fox moods beyond Neutral/Concerned/Sleeping, and fox in banned surfaces (HuntSheet, Calendar header, HomeView flagship card, etc.) are marked REMOVED or REMAPPED below. The remaining sub-plans are valid as written. When this plan conflicts with [[Finn Brand Foundation]], Brand Foundation wins.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement each sub-plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship Finn v1 to the App Store with the full feature set from [[Finn v1 Launch Design]] — Duolingo-art mascot with 7 emotional states, screenshot-based hunt flow, red alert calendar, 4 intelligence features (hybrid heuristic + Apple Intelligence), contextual paywall, and the full UI/UX doctrine applied to every surface.
+**Goal:** Ship Finn v1 to the App Store with the full feature set from [[Finn v1 Launch Design]] — ~~Duolingo-art mascot with 7 emotional states~~ quiet vector mascot with **3 moods only (Neutral / Concerned / Sleeping)** per [[Finn Brand Foundation]] §3, screenshot-based hunt flow, red alert calendar, 4 intelligence features (hybrid heuristic + Apple Intelligence), contextual paywall, and the full UI/UX doctrine applied to every surface.
 
 **Architecture:** Extend the existing 6-package Subly app with 4 new Swift packages (`MascotKit`, `VisionCapture`, `IntelligenceCore`, `BillingCalendar`) and an `Entitlements` lightweight module in the app target. Schema extended via `@Attribute(originalName:)` lightweight migration — no `VersionedSchema` pre-TestFlight. Screens get audited + rebuilt against the UI/UX doctrine (grid layouts, one action, hierarchy, instant feedback, motion-with-purpose).
 
-**Tech Stack:** SwiftUI, SwiftData, StoreKit 2, VisionKit (`VNRecognizeTextRequest`), Apple Intelligence / Foundation Models (`SystemLanguageModel` + `LanguageModelSession`), Core ML, `PhaseAnimator` + `TimelineView` for motion, `Canvas` for paw print confetti, `xcodegen` for project file regeneration.
+**Tech Stack:** SwiftUI, SwiftData, StoreKit 2, VisionKit (`VNRecognizeTextRequest`), Apple Intelligence / Foundation Models (`SystemLanguageModel` + `LanguageModelSession`), Core ML, `PhaseAnimator` + `TimelineView` for motion, ~~`Canvas` for paw print confetti~~ **REMOVED (Brand Foundation 2026-04-29: confetti is banned)**, `xcodegen` for project file regeneration.
 
 ---
 
@@ -30,7 +33,7 @@ Each sub-plan is a separate Linear ticket + PR. Execute **strictly in order** wh
 2. P10 HIGH audit fixes             [blocks launch, 1-2h]               │  MUST be first
 3. P7 Home rebuild (3-state adaptive) [COL-147 upgrade]                 │
                                                                         ▼
-4. MascotKit package + 7 states                                ────┐
+4. MascotKit package + ~~7 states~~ **3 moods (Neutral/Concerned/Sleeping)**  ────┐
 5. SubscriptionStore schema expansion                               │  foundations
                                                                     ▼
 6. VisionCapture + HuntSheet (flagship)      [depends on 4]  ────┐
@@ -77,27 +80,40 @@ Existing ticket: COL-150. Adjust scope to "apply the 4 HIGH findings" + land.
 
 ### 3. Finn Plan 03 — HomeView 3-state adaptive rebuild [stub]
 
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> HomeView's flagship card and active trial rows are **banned fox surfaces**. State 2 and State 3 fox usages below are REMOVED. State 1 (empty state) is allowed but the pose remaps to **Sleeping** (already correct). State 3's "Charges in 1 day" surface may show a small **Concerned** fox (allowed exception per Brand Foundation §3).
+
 Extends existing ticket **COL-147** (was: P7 empty state).
 
 New scope:
 - **State 1 (quiet):** Sleeping Finn empty state + $X caught pill if > $0. FAB. Covers the original COL-147 goal.
-- **State 2 (watching):** `.watching` Finn card + ≤7-day trial scope + "Upcoming bills" mini-row. No gradient wash, no spend hero.
-- **State 3 (urgent):** `.nervous` Finn + single hero urgent card. Other content receded.
+- **State 2 (watching):** ~~`.watching` Finn card~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: HomeView flagship card)** + ≤7-day trial scope + "Upcoming bills" mini-row. No gradient wash, no spend hero.
+- **State 3 (urgent):** ~~`.nervous` Finn~~ **REMAPPED → Concerned mood (only on "Charges in 1 day" surfaces per Brand Foundation §3 allowed exception)** + single hero urgent card. Other content receded.
 
 State is derived from `(activeTrials, upcomingBillsWithin48h)` and applied at the top of `HomeView`.
 
 ### 4. Finn Plan 04 — MascotKit package [stub — high-value full plan candidate]
 
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> The 7-state enum is **REMAPPED to 3 states (Neutral / Concerned / Sleeping)**. `PawPrintConfetti` is **REMOVED** (confetti banned). Per-state emotional-beat loops are REMOVED — Brand Foundation §3 says "States are swapped, not morphed. No animated transitions between states." The `PawPrintTrail` and the `.color()` rules require human review (see flag below).
+
 **New package:** `Packages/MascotKit/`.
 
 Deliverables:
-- `FoxState` 7-case enum (`.sleeping`, `.sitting`, `.watching`, `.nervous`, `.hunting`, `.celebrating`, `.proud`).
+- ~~`FoxState` 7-case enum (`.sleeping`, `.sitting`, `.watching`, `.nervous`, `.hunting`, `.celebrating`, `.proud`).~~ **REMAPPED:** `FoxState` 3-case enum (`.neutral`, `.concerned`, `.sleeping`).
+  - `.sitting` → **`.neutral`**
+  - `.proud`, `.celebrating`, `.curious`, `.watching` → **REMOVED**
+  - `.nervous`, `.hunting` → **FLAGGED-FOR-REVIEW** (see callout below)
 - `FoxView(state:)` — SwiftUI wrapper, asset catalog inside the package, `PhaseAnimator` spring tuning (response 0.35, damping 0.7).
-- Per-state emotional-beat loops (watch-tap, celebrating-jump, hunting-tail-flick) via `TimelineView`. Start/stop with state activation.
-- `PawPrintConfetti(trigger:)` — SwiftUI `Canvas`-based particle system. 20–30 paw prints, Vulpine/cream/soft-blue, physics-simulated falling.
-- `PawPrintTrail(count:)` — static walking trail view used in onboarding, trials empty, settings footer.
-- **Reduce Motion gating:** all motion primitives check `@Environment(\.accessibilityReduceMotion)`. Pose swaps stay, loops strip, confetti → static paw print.
+- ~~Per-state emotional-beat loops (watch-tap, celebrating-jump, hunting-tail-flick) via `TimelineView`. Start/stop with state activation.~~ **REMOVED (Brand Foundation 2026-04-29: states swap, not morph; no animated transitions between states).**
+- ~~`PawPrintConfetti(trigger:)` — SwiftUI `Canvas`-based particle system. 20–30 paw prints, Vulpine/cream/soft-blue, physics-simulated falling.~~ **REMOVED (Brand Foundation 2026-04-29: confetti is banned).**
+- `PawPrintTrail(count:)` — static walking trail view used in onboarding, trials empty, settings footer. **FLAGGED-FOR-REVIEW** (see callout below).
+- **Reduce Motion gating:** all motion primitives check `@Environment(\.accessibilityReduceMotion)`. Pose swaps stay, loops strip, ~~confetti → static paw print~~ **(confetti row REMOVED per above)**.
 - Package tests target: **3**.
+
+> [!question] Flagged for human review
+> 1. `.nervous` and `.hunting` — Brand Foundation §3 enumerates only `.proud`/`.celebrating`/`.curious`/`.watching` for removal and `.sitting` for remap. `.nervous` looks like a candidate for `.concerned`, and `.hunting` looks like REMOVED, but the task constraint says don't introduce new design decisions. Cole to confirm.
+> 2. `PawPrintTrail` (static, decorative, not particle/confetti) — Brand Foundation bans "decorative motion that doesn't serve user comprehension" but a static trail isn't motion. Allowed surfaces (onboarding, settings footer, empty states) match — but is a paw-trail compatible with "Quiet"? Cole to confirm.
 
 Placeholder raster assets allowed at first (current `fox-sitting.pdf` + `fox-sleeping.pdf` from COL-146). Final vector assets land in sub-plan 15 (icon + illustration).
 
@@ -149,9 +165,15 @@ Deliverables:
 - Pure function in/out. No UI, no SwiftData dep.
 - Package tests target: **8** (OCR-to-text, heuristic candidate, FM candidate mock, low-confidence, no-catch, error-in-OCR, empty image, routing by tier).
 
-**App-target view:** `Subly/Hunt/HuntSheet.swift`. Full-screen sheet. Entry cards + paste fallback + manual fallback. Pounce → paw-print progress → success/low-conf/no-catch paths. Section 3.6 is the screen spec. Section 2 "the hunt" micro-interaction is the motion spec.
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> HuntSheet is a **flagship interaction** but not an allowed fox surface — it's a data-dense, money-touching capture flow. **All fox presence inside HuntSheet is REMOVED**, including the "pounce" framing and "the hunt" micro-interaction motion spec. The sheet itself remains; the fox inside it does not.
 
-**FAB routing:** existing `AddEntryRouterSheet` adds a third option "Hunt a trial" above Trial/Subscription. Trials empty state also wires to HuntSheet directly.
+**App-target view:** `Subly/Hunt/HuntSheet.swift`. Full-screen sheet. Entry cards + paste fallback + manual fallback. ~~Pounce → paw-print progress → success/low-conf/no-catch paths.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: HuntSheet is a data-dense capture flow; fox not allowed inside it).** Section 3.6 is the screen spec. ~~Section 2 "the hunt" micro-interaction is the motion spec.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29).**
+
+> [!question] Flagged for human review
+> "Paw-print progress" indicator is decorative and not a fox visual per se — but it lives inside a banned surface (HuntSheet), so it's removed by surface-banning. Sheet still needs *a* progress indicator — Cole to spec a neutral one.
+
+**FAB routing:** existing `AddEntryRouterSheet` adds a third option ~~"Hunt a trial"~~ **FLAGGED-FOR-REVIEW: copy update — "Hunt a trial" leans on the fox/character framing the Brand Foundation pulls back from. Suggest neutral copy like "Capture from screenshot" — Cole to confirm.** above Trial/Subscription. Trials empty state also wires to HuntSheet directly.
 
 ### 7. Finn Plan 07 — IntelligenceCore + 4 features [stub — high-value full plan candidate]
 
@@ -212,34 +234,40 @@ Pure logic returns `[CalendarDay]` with `{ date, events: [BillEvent], urgency: .
 
 Reached from Home "Upcoming bills" row OR Subscriptions header calendar icon.
 
-### 10. Finn Plan 10 — SavingsView + kill celebration [stub]
+### 10. Finn Plan 10 — SavingsView + ~~kill celebration~~ cancel confirmation [stub]
+
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §1 + §3
+> "Kill celebration" framing → **"cancel confirmation"** framing. Confetti, `.proud`, `.celebrating`, and any celebratory motion are **REMOVED** (Brand Foundation §1: "Confetti or celebration animations on cancel" is explicitly ruled out). SavingsView itself is data-dense and money-adjacent — **fox is REMOVED from this view per Brand Foundation §3 banned surfaces**.
 
 **New view:** `Subly/Savings/SavingsView.swift`.
 
 - Top: massive "$247 caught" numeric-roll transition. Vulpine orange.
-- Finn `.proud` (or `.celebrating` if < $100).
+- ~~Finn `.proud` (or `.celebrating` if < $100).~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: SavingsView is data-dense and money-adjacent; `.proud`/`.celebrating` removed per mood-state remap).**
 - Last 5 catches as `SurfaceCard` list.
 - "See all catches" → history view (simple list).
 
-**Kill celebration wire-up (from Section 2):**
+~~**Kill celebration wire-up (from Section 2):**~~ **REMAPPED → "Cancel confirmation wire-up":**
 - Integrated into `CancelFlowSheet` success path + `TrialDetailSheet` "Mark as cancelled" path + HuntSheet post-catch-when-already-ending path.
-- Uses `MascotKit.PawPrintConfetti(trigger:)` + `.celebrating` Finn + numeric-roll on savings total + haptic `.markCanceled`.
-- Reduce Motion: confetti → static paw print, numeric roll → crossfade.
+- ~~Uses `MascotKit.PawPrintConfetti(trigger:)` + `.celebrating` Finn + numeric-roll on savings total + haptic `.markCanceled`.~~ **REMOVED (Brand Foundation 2026-04-29: confetti banned; `.celebrating` mood removed; cancel is a money-moving destructive action — banned fox surface).** Replacement: numeric-roll on savings total + haptic `.markCanceled` only. No fox, no confetti.
+- ~~Reduce Motion: confetti → static paw print, numeric roll → crossfade.~~ **REMAPPED:** Reduce Motion: numeric roll → crossfade. (Confetti row REMOVED per above.)
 
 Savings total derivation: sum of `(amount × billingCycle.monthlyMultiplier)` across all `Trial` rows where `status == .cancelled` (trials) OR user-flagged "I stopped using this" from sub cancel.
 
 ### 11. Finn Plan 11 — Onboarding rewrite [stub]
 
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> Onboarding is an **allowed fox surface** (one appearance per screen, max). Poses are REMAPPED to the 3 allowed moods. Step 2's `.hunting` and Step 3's `.watching` are FLAGGED-FOR-REVIEW. `.celebrating` (Step 4) is REMOVED (mood not in v1). Step 4's "3s `.watching` Finn pointing at the FAB" lands on HomeView's flagship area and is REMOVED (banned surface). Paw-print trail on step 4 is FLAGGED (decorative, not banned outright).
+
 Modify `Subly/OnboardingView.swift`. Same 4 steps, new copy + Finn poses per Section 3.1:
 
-| Step | Pose | Headline | Action |
+| Step | ~~Pose~~ Mood | Headline | Action |
 |---|---|---|---|
-| 1 | `.sitting` | "Never get charged for a trial you forgot." | "Meet Finn →" |
-| 2 | `.hunting` | "Screenshot any trial. Finn handles the rest." | "How it works →" |
-| 3 | `.watching` | "You'll hear from him before you're charged." | "Sounds good →" |
-| 4 | `.celebrating` | "You're in control now." + Finn Pro teaser line | "Start hunting →" |
+| 1 | ~~`.sitting`~~ → **`.neutral`** | "Never get charged for a trial you forgot." | "Meet Finn →" |
+| 2 | ~~`.hunting`~~ **FLAGGED-FOR-REVIEW** (not in 3-mood set; Cole to confirm `.neutral` substitute) | "Screenshot any trial. Finn handles the rest." | "How it works →" |
+| 3 | ~~`.watching`~~ **FLAGGED-FOR-REVIEW** (not in 3-mood set; Cole to confirm `.neutral` or `.concerned` substitute) | "You'll hear from him before you're charged." | "Sounds good →" |
+| 4 | ~~`.celebrating`~~ **REMOVED (mood not in v1 per Brand Foundation §3)** — substitute `.neutral` | "You're in control now." + Finn Pro teaser line | "Start hunting →" |
 
-Step 4 lands on Home with a 3s `.watching` Finn pointing at the FAB. Paw print trail walks across bottom on step 4.
+~~Step 4 lands on Home with a 3s `.watching` Finn pointing at the FAB.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: HomeView flagship is fox-banned; on-Home active fox is not allowed).** Paw print trail walks across bottom on step 4. **FLAGGED-FOR-REVIEW** (decorative paw print on an allowed surface — Cole to confirm).
 
 No paywall in onboarding. Single line in step 4: *"Finn is free. Finn Pro is even better — more on that later."*
 
@@ -255,11 +283,14 @@ New section order:
 5. About (existing)
 
 Paw print elements:
-- 2 of 5 section dividers use a centered paw print (Intelligence + Finn Pro headers).
-- "About Finn" footer: static paw print trail → version number.
-- `.sitting` Finn in header; long-press → Pro easter egg shake + paw print.
+- 2 of 5 section dividers use a centered paw print (Intelligence + Finn Pro headers). **FLAGGED-FOR-REVIEW** (decorative paw prints in non-allowed-surface section dividers — Brand Foundation §3 doesn't address these explicitly; Cole to confirm).
+- "About Finn" footer: static paw print trail → version number. (About / Settings footer is an allowed fox surface per Brand Foundation §3; still **FLAGGED-FOR-REVIEW** — Cole to confirm decorative trail compatibility with "Quiet" adjective.)
+- ~~`.sitting` Finn in header; long-press → Pro easter egg shake + paw print.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: Settings header is not in the allowed fox-surface list — only About/Settings *footer*).** ~~`.sitting`~~ remap is moot since the surface itself is removed.
 
 ### 13. Finn Plan 13 — Subscriptions + Trials grid redesign [stub]
+
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> Active trial rows and TrialsView are **banned fox surfaces**. The `.watching` eye icon on each trial card is REMOVED. Empty states (Subscriptions empty, Trials empty) are **allowed**. "Kill it" CTA is FLAGGED-FOR-REVIEW (copy framing). Pull-to-refresh "paw-print stamp" is FLAGGED.
 
 **Subscriptions tab:**
 - Top: search bar + horizontally-scrollable filter chips (All / Active / Cancelled / Inactive).
@@ -268,23 +299,29 @@ Paw print elements:
 - Swipe actions: edit, archive, delete with per-action haptics.
 - "Last used X ago" pill per card when `lastUsedAt != nil`.
 - Calendar icon in header right → `BillingCalendarView`.
-- Empty state: `.sitting` Finn + paw-print trail to FAB + "Add your first subscription."
-- Pull-to-refresh: paw-print stamp indicator.
+- Empty state: ~~`.sitting`~~ → **`.neutral`** Finn + paw-print trail to FAB + "Add your first subscription." (Empty state is an allowed fox surface; pose remapped. Paw-print trail FLAGGED-FOR-REVIEW.)
+- Pull-to-refresh: paw-print stamp indicator. **FLAGGED-FOR-REVIEW** (decorative paw print on a data-dense surface — Cole to confirm).
 
 **Trials tab:**
-- Populated: "Ending soon" + "Later" sections, grid cards, `.watching` eye icon on each, "Kill it" primary CTA.
-- Empty: `.sleeping` Finn + paw print trail + "Hunt a trial" large centered CTA → HuntSheet.
+- Populated: "Ending soon" + "Later" sections, grid cards, ~~`.watching` eye icon on each~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: active trial rows; TrialsView in general is a banned fox surface)**, ~~"Kill it" primary CTA~~ **FLAGGED-FOR-REVIEW: copy update — "Kill it" leans on the predator/character framing the Brand Foundation pulls back from. Suggest neutral copy like "Cancel before charge" — Cole to confirm.**
+- Empty: ~~`.sleeping`~~ → **`.sleeping`** Finn (already correct mood — kept) + paw print trail + ~~"Hunt a trial"~~ **FLAGGED-FOR-REVIEW: copy update (matches FAB router copy flag in sub-plan 6) — Cole to confirm neutral phrasing** large centered CTA → HuntSheet. (Empty state is allowed; paw-print trail FLAGGED-FOR-REVIEW.)
 
 ### 14. Finn Plan 14 — Detail sheets unified + Finn's-take pill [stub]
+
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
+> Detail sheets are **data-dense surfaces** — banned for fox visuals. The "Finn's-take pill" is FLAGGED-FOR-REVIEW: if it's a copy-only pill (text only, no fox visual), it's allowed; if the pill includes a fox icon/avatar, the icon is REMOVED. "Kill celebration" reframed to "cancel confirmation" per sub-plan 10.
 
 Modify `Subly/Sheets.swift`:
 
 - `TrialDetailSheet` (exists) + new `SubscriptionDetailSheet` sharing the same top-level structure: hero row (logo + name + next charge) → grouped fields `SurfaceCard` → Finn's-take pill → primary/secondary actions.
-- Finn's-take pill pulls from `IntelligenceCore`. Free tier: rule-based. Pro tier: FM-generated.
-- Primary: "Cancel this" (subs → CancelFlowSheet) / "Mark as cancelled" (trials → kill celebration).
+- Finn's-take pill pulls from `IntelligenceCore`. Free tier: rule-based. Pro tier: FM-generated. **FLAGGED-FOR-REVIEW** (copy-only pill is allowed; fox visual inside the pill would be on a banned surface and would need to be REMOVED — Cole to confirm pill composition).
+- Primary: "Cancel this" (subs → CancelFlowSheet) / "Mark as cancelled" (trials → ~~kill celebration~~ **cancel confirmation** per sub-plan 10).
 - Secondary: "Edit" (GhostButton).
 
 ### 15. Finn Plan 15 — App icon + launch screen [stub — blocked on illustrator]
+
+> [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3 + §4
+> "Duolingo-line" reference is **REMOVED** — Duolingo is an explicitly banned reference per Brand Foundation §4 ("character fun, not craft fun"). App icon is an allowed fox surface. Style mandates: vector only, head-and-bust silhouette default, single signature feature, readable at 32×32, Phosphor-compatible weight, single tonal palette.
 
 Blocks on Cole's illustrator decision (Section 8 open item #1).
 
@@ -292,7 +329,7 @@ Scope:
 - App icon (all required iOS sizes, dark+tinted variants).
 - Launch screen (`LaunchScreen.storyboard` or SwiftUI replacement).
 - Replace placeholder raster fox assets with final vector art catalog imports.
-- Both icon + launch reflect Duolingo-line + Vulpine + Finn's sitting pose.
+- ~~Both icon + launch reflect Duolingo-line + Vulpine + Finn's sitting pose.~~ **REMAPPED:** Both icon + launch reflect [[Finn Brand Foundation]] §3 fox style (vector head-and-bust, Phosphor-compatible weight, single tonal palette, **`.neutral` mood** — `.sitting` remapped) + Vulpine palette. Duolingo reference REMOVED (banned reference per Brand Foundation §4).
 
 ### 16. Finn Plan 16 — App Store submission prep [stub]
 

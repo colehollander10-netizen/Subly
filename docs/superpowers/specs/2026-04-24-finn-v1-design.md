@@ -1,15 +1,16 @@
 # Finn v1 — Launch Design
 
-**Date:** 2026-04-24
+**Reconciled 2026-04-29 against [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) (`docs/superpowers/specs/2026-04-29-finn-brand-foundation-design.md`).** Sections covering art direction, fox moods, fox placements (HuntSheet/Calendar), cancel celebration, and copy tone have been updated to match the brand layer. Color tokens (vulpine + warm charcoal) are unchanged.
+
 **Status:** Approved for implementation planning
-**Epic:** TBD (new Linear epic to be cut after spec review)
-**Supersedes context from:** `2026-04-23-subscription-pivot-design.md` (P1–P10 of subscription pivot remain valid; this spec layers on top)
+**Supersedes context from:** Finn § subscription-pivot (P1–P10 remain valid; this spec layers on top)
+**Paired docs:** Finn (canonical project state) · [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) (brand layer above this spec) · Finn Content Strategy (positioning) · `~/Developer/Subly/.tasks/backlog.md` (live ticket tracking — Linear "Finn" project archived 2026-04-27)
 
 ---
 
 ## The Pitch
 
-**Track every subscription. Kill every free trial. Completely private and on-device.**
+**Finn is a subscription and free-trial tracker that takes the stress out of recurring spending — and makes the act of managing it genuinely satisfying.**
 
 This spec defines the shape of Finn at App Store v1 — not v1.1, not a post-launch polish pass. The decision anchoring everything in this document: **Cole would rather take the time to launch something genuinely great than ship a thin v1 and iterate in public.** Scope in this spec reflects that.
 
@@ -21,15 +22,15 @@ Pulled forward from the brainstorming conversation so anyone reading this doc ha
 
 ### Brand
 
-- **Finn is a hunt partner, not a mascot.** You and Finn hunt trials together. Copy, motion, and personality across the app reinforce the partnership metaphor.
-- **Art direction:** Duolingo-style. Thick uniform line weight, primitive shapes (circles, arcs, capsules), flat fills only. **No gradients, no fur texture, no shadows, no AI-mascot feel.** Vulpine orange `#F97316` body, cream belly/inner ears/tail tip, warm charcoal `#1A1614` outline.
-- **Celebration tone:** playful, snappy, fun. Not violent, not aggressive. "The kill" language in internal notes refers to the satisfying win of canceling a trial — the *feeling* is a game-win, not combat.
-- **Paw prints are a secondary motif** — confetti on celebration, subtle dividers in Settings, an "About Finn" trail, an undocumented long-press easter egg, a pull-to-refresh stamp.
+- **Brand layer is canonical.** [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) defines the brand sentence, three adjectives (Quiet · Tactile · Warm), fox rules, and reference lane. This spec inherits those constraints; do not relitigate them here.
+- **Art direction:** vector only. No raster, no 3D, no Pixar shading. Single tonal palette per appearance: vulpine orange `#F97316` for fur, cream `#FAF4E8` for inner ear / muzzle / tail tip, warm charcoal `#1A1614` for outline. No gradients, no highlights, no rim lights, no fur texture, no shadows. Phosphor-compatible weight — clean strokes, even visual weight, readable at 32×32. Head-and-bust silhouette is the default; full-body allowed only in onboarding hero moments.
+- **Tone:** warm but clinical-leaning. Voice is the *app's*, not the fox's. The fox does not speak. No celebration loops, no confetti, no speech bubbles, no jokey microcopy. "Satisfying" means craft fun (haptics, springs, weight in transitions, numbers that count) — not character fun.
+- **Fox role:** enhancer, not protagonist. If a screen still works without the fox, the fox is doing its job. Three moods only: **Neutral · Concerned · Sleeping**.
 
 ### Product
 
 - **Subscriptions = primary surface.** More of them, always present. The "calm control panel" living room.
-- **Trials = episodic surface.** They surge forward when active (Home hero, urgency, Finn's attention) and quiet when not.
+- **Trials = episodic surface.** They surge forward when active (Home hero, urgency) and quiet when not.
 - **Screenshot-based vision parsing is the flagship ingestion path.** Gmail amputated. Manual form is a fallback, not the hero.
 - **Red alert calendar for upcoming bills ships in v1** (pulled forward from v1.1 deferred list).
 - **Savings tally ("$X caught") ships in v1** (pulled forward — makes the core promise visible).
@@ -46,7 +47,7 @@ All four intelligence features ship in v1 with a **hybrid substrate**: heuristic
 ### Monetization
 
 - **Free tier:** 10 subs + 3 trials. Full feature access at those caps. Heuristic-tier intelligence for all 4 features.
-- **Finn Pro:** $2.99/mo, $24.99/yr, $59 founding lifetime. Unlimited entries + FM-enhanced intelligence + FM-enhanced screenshot hunt + paw-print easter eggs + exclusive Finn states/accessories (see Section 2).
+- **Finn Pro:** $2.99/mo, $24.99/yr, $59 founding lifetime. Unlimited entries + FM-enhanced intelligence + FM-enhanced screenshot hunt + exclusive Pro delighters (see Section 2).
 - **Paywall strategy:** NEVER in onboarding. Contextually surfaced after real usage (entry #11, 3rd HuntSheet open, day 3+). Single "Finn Pro — more on that later" line in onboarding step 4. Settings Finn Pro section from day 1 for self-service discovery.
 
 ### Tech / Privacy
@@ -78,11 +79,12 @@ All four intelligence features ship in v1 with a **hybrid substrate**: heuristic
 
 Finn's emotional state machine, asset loader, and animation primitives.
 
-- Exposes `FoxState` (7-case enum — see Section 2), `FoxView(state:)`, `PawPrintConfetti(trigger:)`, `PawPrintTrail()`, and motion primitives (`PhaseAnimator` wrappers with tuned spring defaults).
+- Exposes `FoxState` (3-case enum — see Section 2), `FoxView(state:)`, and motion primitives (`PhaseAnimator` wrappers with tuned spring defaults).
 - Pure SwiftUI. No Lottie v1.
 - **Dependency direction:** depends on nothing above it (no app-target types, no other Finn packages). Consumed by the app target only.
-- Owns all mascot-related timing, haptic-coupling, and Reduce Motion gating.
+- Owns all mascot-related timing and Reduce Motion gating.
 - Asset catalog lives *inside the package* so the package is self-contained and future-extractable.
+- No confetti API. No paw-print system. The fox is the brand object; ornamental flourishes are explicitly out of scope per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md).
 
 #### `VisionCapture`
 
@@ -159,8 +161,8 @@ Add new enum `SourceHint`: `.screenshot`, `.storekit`, `.manual`, `.suggested`.
 
 #### `NotificationEngine`
 
-- `NotificationCopy` helper gets new "nervous Finn" variants — subject/body templates that match Finn's watch-tapping state (*"Finn's tapping his watch — Netflix charges you tomorrow."*).
-- Copy is plain text only. No rich push attachments in v1.
+- `NotificationCopy` helper gets new "concerned" copy variants — calm, factual subject/body templates that match the *Concerned* fox surface (e.g. *"Netflix charges you tomorrow."*).
+- Copy is plain text only. No rich push attachments in v1. No fox dialogue — the words come from the app, not the fox.
 - Actor model unchanged.
 
 #### `TrialParsingCore`
@@ -183,7 +185,7 @@ New lightweight module `Entitlements` (lives in app target — does not warrant 
 ### App-target surface changes
 
 - New view: `BillingCalendarView` — full-screen sheet, reached from Home "Upcoming bills" row or Subscriptions header.
-- New view: `HuntSheet` — full-screen sheet, reached from FAB → "Hunt a trial" or Trials empty state.
+- New view: `HuntSheet` — full-screen sheet, reached from FAB → "Capture a trial" or Trials empty state.
 - New view: `SavingsView` — full-screen sheet, reached from Home "$X caught" pill or Settings savings pill.
 - `ContentView` — Home rebuild (Section 3.2), Trials empty-state rebuild (Section 3.4).
 - `SettingsView` — Intelligence section + Finn Pro section added (Section 3.9).
@@ -195,79 +197,85 @@ New lightweight module `Entitlements` (lives in app target — does not warrant 
 
 ## 2. Finn Mascot System
 
-Finn's system is the single largest "feels premium" lever in the product and the largest art-direction deliverable in v1.
+Finn's system is the single largest "feels warm" lever in the product. It is governed by [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) § 3 (Fox Rules). Re-read those rules before changing anything in this section.
 
 ### Art brief
 
-- **Line language:** uniform-weight strokes, same thickness across body, face, accessories. No tapering, no calligraphic lines.
-- **Shape language:** primitives only — perfect circles, arcs, capsules, straight segments. Body = capsule. Head = circle. Ears = arcs. Tail = thick curve.
-- **Color:** flat fills only. Body `#F97316`, belly/inner ears/tail tip cream `#FAF4E8`, outline `#1A1614`. No gradients, highlights, rim lights, ambient occlusion, fur texture, shadows.
-- **Eyes:** solid dots or arcs keyed to emotion. No whites-of-eyes unless `.nervous`. No anime sparkles.
-- **Accessories** (3 in v1): watch, hunter's cap, celebratory flag. Same line weight, same flat fills. Composed as overlay layers where practical so poses can recompose without redrawing the base.
+- **Vector only.** Clean strokes, even visual weight, Phosphor-compatible. Readable at 32×32 — if the silhouette doesn't read at that size, simplify.
+- **Head-and-bust silhouette** as the default. Full-body allowed only in onboarding hero moments.
+- **One signature feature** (curling tail or ear notch) chosen during design week, used everywhere.
+- **Single tonal palette per appearance:** vulpine orange `#F97316` for fur, cream `#FAF4E8` for inner ear / muzzle / tail tip, warm charcoal `#1A1614` for outline. No gradients, highlights, rim lights, ambient occlusion, fur texture, or shadows.
+- **No accessories in v1.** Hats, watches, flags, props — all out of scope. The brand layer locks the fox to three moods, no character fun, no protagonist behavior. Accessories revisit in v2 only if the brand layer permits.
 
 ### Deliverable format
 
 - **Vector (SVG + PDF)** imported to Xcode asset catalog as **Single Scale** with **Preserve Vector Data** enabled.
-- One asset per pose. Accessories as separate overlay layers where practical.
-- Placeholder raster assets (`fox-sitting`, `fox-sleeping`) are replaced in v1. No raster assets ship to the App Store.
+- One asset per mood (3 total).
+- Placeholder raster assets are replaced in v1. No raster assets ship to the App Store.
 
 ### Artist decision
 
-**Launch-blocking, TBD.** Options Cole is weighing: (a) self-illustrate from this brief, (b) hire an illustrator with this brief, (c) placeholder vectors → hire before submission. Decision does not block spec acceptance but must resolve before App Store submission. Recommend option (b) — the polish level in this brief matches paid illustrator work, not afternoon-Cole work.
+**Launch-blocking, TBD.** Options Cole is weighing: (a) self-illustrate from this brief, (b) hire an illustrator with this brief, (c) placeholder vectors → hire before submission. Decision does not block spec acceptance but must resolve before App Store submission.
 
-### `FoxState` — 7 emotional states
+### `FoxState` — three moods
 
-| State | Trigger | Pose | Accessory | Surface |
-|---|---|---|---|---|
-| `.sleeping` | No active trials, no bills within 7 days | Curled, eyes closed | — | Home empty, Trials empty |
-| `.sitting` | Idle default | Upright, ears relaxed | — | Settings header, Onboarding intro |
-| `.watching` | Trials active, no urgency | Alert, ears perked, eyes forward | — | Home (trials exist, quiet state) |
-| `.nervous` | Bill in <48h OR trial charging in <24h | Tense, tapping watch | Watch | Home urgency, Calendar red-alert headers |
-| `.hunting` | HuntSheet active | Crouched, tail low, focused | Cap | HuntSheet only |
-| `.celebrating` | Trial killed / sub canceled | Arms up, happy-arc eyes | Flag | Cancel-assist success, savings roll |
-| `.proud` | Cumulative savings > $100 | Hero pose, chest out | Flag tucked | Savings screen, Settings savings pill |
+| State | Trigger | Pose | Allowed surfaces |
+|---|---|---|---|
+| `.neutral` | Default — onboarding intro, About / Settings header, app icon | Calm, alert, slight smile | Onboarding, Settings header, About footer, app icon |
+| `.concerned` | Bill in <48h OR trial charging in <24h ("Charges in 1 day" surfaces only) | Ears forward, brow slightly raised — *not* alarmed | Home urgent state (Section 3.2 State 3), urgent push notification iconography |
+| `.sleeping` | "Nothing ending soon" empty states | Curled, eyes closed | Home quiet state, Trials empty state, "you're all set" surfaces |
+
+States are **swapped, not morphed**. No animated transitions between states. The fox is replaced, not metamorphosed.
+
+### Banned surfaces (per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md))
+
+The fox does **not** appear in any of:
+
+- HomeView's flagship card or any active trial row.
+- TrialsView populated state (the management surface — fox would distract from the list).
+- SubscriptionsView populated state, subscription detail, edit form, search results.
+- BillingCalendarView (data-dense surface).
+- HuntSheet — entry, capture progress, success, low-confidence, or no-catch states. The hunt is a neutral-UI flow.
+- SavingsView (the "$X caught" screen leans on the number; the fox would reduce, not enhance, that signal).
+- Any button, pill, input field, loading or progress indicator.
+- Tab bar.
+- Anywhere money is moved or a destructive action is confirmed.
+
+### Allowed surfaces (per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md))
+
+The fox appears, at most once per screen, in:
+
+- **Onboarding** — one appearance per screen, max.
+- **Empty states** — Home quiet (no trials, no imminent bills), Trials empty, Subscriptions empty.
+- **"Charges in 1 day" surfaces** — Home urgent state, the only place the fox appears inside an active screen, in `.concerned` mood.
+- **App icon and About / Settings footer** — identity, not interaction.
 
 ### Motion rules
 
-- All state transitions use `PhaseAnimator` with a tuned spring (response ~0.35, damping ~0.7). Discrete pose snap with slight overshoot bounce.
-- Emotional beats (nervous watch-tap, celebrating jump, hunting tail-flick) are short repeating loops (1.5–2.5s) via `TimelineView`. Loops start with state activation, stop with deactivation. No always-on battery-burners.
-- **Reduce Motion respected:** state changes become instant pose swaps, confetti becomes a single static flag, nervous watch-tap becomes a still pose with watch visible. Functionality preserved, motion stripped. Accessibility audit in P10.
+- State transitions are discrete swaps. No morphing pose-to-pose animation.
+- Entry/exit on a screen uses a tuned spring (response ~0.35, damping ~0.7) — slide and settle, no bounce loops.
+- No always-on idle loops (no watch-tapping, no tail-flicking, no breathing). The fox is still when on screen.
+- **Reduce Motion respected:** entry/exit becomes a fade. State swaps remain instant. Functionality preserved.
 
-### "The hunt" flagship interaction
+### Cancel-success moment ("craft fun, not character fun")
 
-See Section 3.6 for full screen-level spec. Motion choreography:
+When a trial is marked cancelled or a sub is canceled via cancel-assist, the success moment is:
 
-1. Sheet opens → Finn enters in `.hunting` pose from off-screen-right, 0.4s slide + settle bounce.
-2. User picks screenshot → screenshot shrinks to preview at top-left of sheet.
-3. Finn does a **pounce** phase: crouch deeper (0.3s) → leap off-screen-top (0.3s).
-4. VisionCapture runs. On-screen progress indicator is a row of paw prints stamping left-to-right (one every 300ms, max 3 visible). Paw prints use `MascotKit.PawPrintTrail`.
-5. **Success path:** Finn returns from off-screen-bottom in `.celebrating` pose with the extracted card materializing to his right. Caption: *"Caught one — [Service] trial ends [Date]."* Haptic `.save`. Two buttons: "Looks right ✓" (saves + triggers "the kill" celebration short-form) | "Edit" (opens pre-filled manual form).
-6. **Low-confidence path:** Finn returns in `.sitting` with a head-tilt animation. Caption: *"I think I got it — check the details."* Same two buttons, "Edit" pre-highlighted.
-7. **No-catch path:** Finn returns in `.sitting`. Caption: *"Nothing to catch here. Want to add it manually?"* Single button.
+1. The current sheet (if any) dismisses with the standard 0.25s spring.
+2. Haptic `.notificationSuccess` fires.
+3. The cumulative "$X caught" amount on the destination surface (Home pill or Savings hero) animates from old value to new with `.contentTransition(.numericText())`.
+4. A brief vulpine-tinted state shift (~600ms) on the relevant pill or surface tint, then returns to neutral.
+5. Under Reduce Motion: numeric roll becomes a crossfade; tint shift omitted.
 
-### "The kill" celebration
+There is no fox pop-in, no confetti, no celebration loop, no paw prints. The satisfaction is the haptic, the count, and the quiet color beat.
 
-Fires on cancel-assist success OR trial marked as cancelled from TrialDetailSheet OR the "Looks right ✓" path after a caught trial that was already ending.
+### Voice
 
-1. Sheet (if any) dismisses up-and-away, 0.25s.
-2. Finn pops in from the bottom of the current view in `.celebrating` pose, 0.3s spring.
-3. **Paw print confetti burst** — `MascotKit.PawPrintConfetti` with ~20-30 paw prints. Vulpine + cream + soft blue accent, physics-simulated falling via SwiftUI `Canvas` + simple particle system. No third-party lib.
-4. "Caught $X" amount rolls from last cumulative value to new value. Numeric roll (`ContentTransition.numericText()`), not fade.
-5. Haptic `.markCanceled` (strong).
-6. Finn holds pose 1.2s, then spring-bounces back to idle (previous state).
-7. Under Reduce Motion: confetti replaced with a single static paw print, Finn does pose swap only, numeric roll replaced with crossfade.
+The fox does not speak. No speech bubbles, no captioned dialogue from the fox. Microcopy near the fox can be warm, but the words come from the *app*, not the *fox*. No jokey microcopy, no streaks, no badges.
 
-### Paw print system
+### Pro delighters
 
-Shared motif used across confetti + delighters.
-
-- **Confetti:** primary moment, fires on celebration.
-- **Settings section dividers:** 2 of N section dividers use a centered paw print instead of `HairlineDivider`. Do not apply to all — overuse kills the detail.
-- **"About Finn" footer:** static trail of 4-5 paw prints walking across the bottom of Settings, leading into the app version number.
-- **Onboarding step 4 finale:** paw prints walk across the bottom as the user lands on Home for the first time.
-- **Trials empty state:** paw print trail leading off-screen into "Finn's resting" copy.
-- **Pull-to-refresh on Subscriptions:** refresh indicator is a paw print that stamps down.
-- **Long-press Finn in Settings header (easter egg):** Finn shakes, leaves a paw print on screen that fades after 2s. Undocumented. Pro tier only — this is one of the "warm" Pro delighters.
+Pro-tier delighters are *behavioral* (FM-enhanced intelligence, FM-enhanced hunt accuracy, unlimited entries) — not visual. There are no Pro-only fox states, no Pro-only easter eggs, no hidden character interactions in v1.
 
 ---
 
@@ -279,14 +287,14 @@ Every shipped surface is audited against the UI/UX doctrine: grid layouts, one c
 
 Currently explains what the app does. After rewrite: sells the result of *being in control*.
 
-| Step | Finn pose | Headline | Subcopy | Action |
+| Step | Finn mood | Headline | Subcopy | Action |
 |---|---|---|---|---|
-| 1 | `.sitting` | "Never get charged for a trial you forgot." | "Finn catches them before they charge you." | "Meet Finn →" |
-| 2 | `.hunting` (peeking from behind a screenshot frame graphic) | "Screenshot any trial. Finn handles the rest." | "No email. No bank. Nothing leaves your phone." | "How it works →" |
-| 3 | `.watching` | "You'll hear from him before you're charged." | "Smart reminders, on your clock." | "Sounds good →" |
-| 4 | `.celebrating` | "You're in control now." | "Let's catch your first one." + small line: *"Finn is free. Finn Pro is even better — more on that later."* | "Start hunting →" |
+| 1 | `.neutral` | "Never get charged for a trial you forgot." | "Finn helps you catch them before they charge you." | "Meet Finn →" |
+| 2 | `.neutral` | "Screenshot any trial. Finn handles the rest." | "No email. No bank. Nothing leaves your phone." | "How it works →" |
+| 3 | `.neutral` | "You'll hear from him before you're charged." | "Smart reminders, on your clock." | "Sounds good →" |
+| 4 | `.neutral` | "You're in control now." | "Let's add your first one." + small line: *"Finn is free. Finn Pro is even better — more on that later."* | "Get started →" |
 
-- Step 4 lands on Home with an inline nudge to the FAB (`.watching` Finn pointing at the FAB for 3s, then settles). First-add celebration (Section 2 "kill") fires on the user's first real save. This is the "hook" moment, not a paywall.
+- Step 4 lands on Home. The first-add success moment (Section 2 cancel-success / craft-fun rules) fires on the user's first real save: haptic, numeric roll on the savings pill if applicable, brief vulpine tint. No fox pop-in.
 - **One clear action per screen** ✓ — only the forward button is active.
 
 ### 3.2 Home (adaptive by state)
@@ -301,16 +309,17 @@ Home is not a dashboard. Home is **"what does Finn want you to know right now."*
 - **One clear action:** FAB (add something).
 
 **State 2 — watching (trials exist, no urgency):**
-- `.watching` Finn in a compact card at the top, with a single line: *"Finn's watching [N] trials."*
+- **No fox.** The flagship card is a banned surface per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md).
+- Plain header: *"Tracking [N] trials."* — app voice, not fox voice.
 - Below: ≤7-day trial scope as `SurfaceCard`s (max 3, with "See all" link to Trials tab if more).
 - Below: "Upcoming bills" mini-row — next 3 bills in 30 days as tappable pills → BillingCalendarView.
 - FAB present.
 - **One clear action:** tap the most-urgent trial card.
 
 **State 3 — urgent (trial charging <24h OR bill <48h):**
-- `.nervous` Finn at the top, watch-tap animation live.
+- `.concerned` Finn at the top — *the only place inside an active screen the fox appears.* Static; no idle loop.
 - Single hero card for the urgent item. Large.
-- "Handle it" CTA in Vulpine orange.
+- "Take action" CTA in Vulpine orange. Surface-specific labels override where clearer (e.g. "Open cancel guide" for a sub, "Cancel this trial" for a trial).
 - All other content pushed below, visually receded.
 - FAB present but muted.
 - **One clear action:** handle the urgent item.
@@ -324,7 +333,7 @@ Real-time-spent surface. Calm, complete, scannable.
 - **Top:** search bar + horizontally-scrollable filter chips (All / Active / Cancelled / Inactive).
 - **Body:** grid layout, 2 columns on phone, `LazyVGrid`. Each card shows: logo + name + next bill date (largest text) + billing cycle chip + monthly-normalized amount.
 - **Sort header:** tap cycles "next date / amount / alphabetical." Default = next date ascending.
-- **Empty state:** Finn `.sitting` + paw-print trail to FAB + "Add your first subscription." One clear action: tap FAB.
+- **Empty state:** Finn `.neutral` + headline "Add your first subscription." One clear action: tap FAB.
 - **Card interactions:**
   - Tap → `SubscriptionDetailSheet`
   - Swipe left → quick actions (edit, archive, delete) each with haptic
@@ -340,15 +349,15 @@ Matches "trials fade when they aren't happening" instinct.
 **Populated state:**
 - Two sections: *"Ending soon"* (next 7 days, urgency-tinted) and *"Later"*.
 - Same grid-card treatment as Subscriptions.
-- Small `.watching` Finn eye icon on each card signaling "Finn is tracking this."
-- Prominent "Kill it" action on each card (primary visual CTA, Vulpine orange Capsule).
-- **One clear action:** tap "Kill it" on the most-urgent card.
+- **No fox on cards.** Active trial rows are a banned surface per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md).
+- Prominent "Cancel trial" action on each card (primary visual CTA, Vulpine orange Capsule).
+- **One clear action:** tap "Cancel trial" on the most-urgent card.
 
 **Empty state:**
-- Full-surface empty: Finn `.sleeping`, paw-print trail leading off-screen.
-- "No trials to hunt. Finn's resting."
-- Large centered button: "Hunt a trial" → `HuntSheet`.
-- **One clear action:** "Hunt a trial."
+- Full-surface empty: Finn `.sleeping`, centered.
+- "Nothing ending soon."
+- Large centered button: "Capture a trial" → `HuntSheet`.
+- **One clear action:** "Capture a trial."
 
 **Free tier cap:** at 3 trials, adding the 4th triggers the same Pro upsell.
 
@@ -366,28 +375,35 @@ Red alert calendar. Month grid. Reached from Home "Upcoming bills" row or Subscr
 - **Today's cell:** Vulpine outline. Pulse animation once on view open, then still.
 - **Red-alert day glow:** subtle red drop-shadow glow on the dot. Respected by Reduce Motion.
 - **Month nav:** horizontal swipe between months. Header: month/year + "Today" button (right-aligned).
-- **Finn in the header:** `.nervous` if the visible month has any red-alert days; `.sitting` otherwise.
+- **No fox in the header.** The calendar is data-dense; per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) the fox stays out. Urgency is communicated through the dot-tint system, not the mascot.
 - **One clear action:** tap a day.
 
 ### 3.6 HuntSheet (flagship interaction)
 
-Full-screen sheet. Reached from FAB → "Hunt a trial" OR Trials empty-state CTA.
+Full-screen sheet. Reached from FAB → "Capture a trial" OR Trials empty-state CTA.
+
+> **No fox on this surface.** HuntSheet is the screenshot-import flow — entry, capture progress, success, low-confidence, and no-catch states all run as neutral UI. The fox is banned from data-input surfaces per [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md); this is one of them. Replacing the previous fox-led choreography is a significant change from earlier drafts of this spec — see the reconciliation note at the top.
 
 **Entry:**
-- Finn enters in `.hunting` pose from off-screen-right, 0.4s slide + settle bounce.
 - Two large tappable cards, stacked vertically, 50/50 viewport split:
-  - **"Take a screenshot"** — camera. Flat-line Duolingo-style camera icon. Paw-print watermark behind.
-  - **"Pick from library"** — photo picker. Flat-line stack-of-photos icon. Paw-print watermark behind.
+  - **"Take a screenshot"** — camera. Phosphor camera icon.
+  - **"Pick from library"** — photo picker. Phosphor stack-of-photos icon.
 - Below, muted: link "Have text? Paste instead" → small paste field.
 - Below that, smaller: link "Add manually" → existing manual form sheet. Still accessible, not hidden, not primary.
 
-**Screenshot chosen → capture flow** (see Section 2 motion choreography for full sequence): pounce → paw-print progress row → success | low-confidence | no-catch paths.
+**Screenshot chosen → capture flow:**
+
+1. Selected screenshot shrinks to a preview tile at the top of the sheet.
+2. A thin determinate progress bar (Phosphor-compatible weight, vulpine fill on a warm-charcoal track) advances under the preview while `VisionCapture` runs. No mascot, no paw prints, no particle work.
+3. **Success path:** progress bar completes; the extracted card materializes below the preview. Caption: *"Found a match — [Service] trial ends [Date]."* Haptic `.notificationSuccess`. Two buttons: "Looks right" (saves; fires the cancel-success craft-fun moment from Section 2) | "Edit" (opens pre-filled manual form).
+4. **Low-confidence path:** progress bar completes with a subdued tint (warm charcoal, not vulpine). Caption: *"I think I got it — check the details."* Same two buttons, "Edit" pre-highlighted.
+5. **No-catch path:** progress bar completes, then collapses. Caption: *"Couldn't find a trial in this image. Add it manually?"* Single button → manual form.
 
 **Pro upsell placement:**
 - Shown at most once per session.
-- Never mid-hunt.
+- Never mid-capture.
 - Non-intrusive dismissible banner at the bottom of the entry screen: *"Finn Pro catches more on Apple Intelligence phones."* → paywall sheet.
-- Free-tier users' hunt path is fully functional. Pro path is better, not gate-kept-core.
+- Free-tier users' capture path is fully functional. Pro path is better, not gate-kept-core.
 
 ### 3.7 Trial/Subscription Detail Sheet (unified)
 
@@ -395,26 +411,26 @@ Full-screen sheet. Reached from FAB → "Hunt a trial" OR Trials empty-state CTA
 
 - **Top:** large logo + service name + "Next charge [Date] • $X" hero row.
 - **Grouped fields** in a `SurfaceCard`: amount, billing cycle, chargeDate, notes, notificationOffset.
-- **"Finn's take" pill** under the fields — one line, subtle. Examples:
+- **"Finn's take" pill** under the fields — one line, subtle. App voice (not fox dialogue). Examples:
   - Free: *"You've had this for 3 months."* | *"Not used in 28 days — consider canceling?"*
-  - Pro: *"You haven't opened Netflix in 41 days. Want me to remind you before it renews?"* (generated by FM)
-- **Primary action:** "Cancel this" (subs → cancel-assist) or "Mark as cancelled" (trials → kill celebration). Vulpine orange Capsule.
+  - Pro: *"You haven't opened Netflix in 41 days. Want a reminder before it renews?"* (generated by FM)
+- **Primary action:** "Cancel this" (subs → cancel-assist) or "Mark as cancelled" (trials → cancel-success craft-fun moment from Section 2). Vulpine orange Capsule.
 - **Secondary action:** "Edit" (muted GhostButton).
 - **One clear action:** the primary Vulpine button always wins hierarchically.
 
 ### 3.8 Cancel-assist flow (Section 2 integration)
 
-Shipped in P5 (COL-145). v1 extends it with the kill celebration (Section 2).
+Shipped in P5 (COL-145). v1 extends it with the cancel-success craft-fun moment (Section 2).
 
 - Curated guides unchanged, 15 services + web fallback.
-- On "I canceled it": sheet dismisses → kill celebration fires (Section 2 choreography) → user lands on Home (or wherever they came from).
+- On "I canceled it": sheet dismisses → cancel-success moment fires (Section 2: haptic, numeric roll, brief vulpine tint shift) → user lands on Home (or wherever they came from). No fox, no confetti.
 - Audit against doctrine: ✓ full-screen = one action, ✓ guides = visual hierarchy, ✓ "I canceled it" is THE button.
 
-### 3.9 Settings (COL-139 follow-through + paw prints)
+### 3.9 Settings (COL-139 follow-through)
 
 Structural cleanup + intelligence + Finn Pro sections added.
 
-- **Header:** Finn `.sitting` (long-press → Pro easter egg shake + paw print).
+- **Header:** Finn `.neutral`. Static, no easter eggs, no long-press interactions. Identity, not interaction.
 - **"$X caught" savings pill** prominent at top of header. Tap → `SavingsView`.
 - **Sections** (in order):
   - **Notifications** — existing toggles. Copy audit (COL-139).
@@ -422,16 +438,16 @@ Structural cleanup + intelligence + Finn Pro sections added.
   - **Finn Pro** — from day 1. Free users see a "Manage" button that opens the paywall sheet with features + price. Pro users see "You're a Pro. Manage subscription." → opens App Store subscription management.
   - **Data** — export, delete all, preview-data toggle.
   - **About** — version, credits, privacy policy link, terms link.
-- **Paw print dividers:** 2 of the above 5 section headers get a centered paw print divider (proposal: Intelligence + Finn Pro, because those are the "Finn-personality" sections).
-- **"About Finn" footer:** static trail of paw prints leading into version number.
+- **Section dividers:** standard `HairlineDivider` everywhere. No paw-print dividers, no decorative section markers — that was character fun and the brand layer rules it out.
+- **About footer:** quiet text-only credit line + version number. No paw-print trail.
 
 ### 3.10 SavingsView (new)
 
 "$X caught" proof-of-promise screen. The screenshotted-to-social moment.
 
-- **Top:** massive number — "$247 caught." Vulpine orange. `ContentTransition.numericText()` for live updates.
-- **Subtitle:** "since you started hunting with Finn"
-- **Finn `.proud`** center-left. Flag tucked if savings > $100, otherwise `.celebrating`.
+- **Top:** massive number — "$247 caught." Vulpine orange. `.contentTransition(.numericText())` for live updates.
+- **Subtitle:** "since you started using Finn"
+- **No fox on this surface.** SavingsView leans on the number — a hero amount is the entire point, and the brand layer keeps the fox out of money-display surfaces. The vulpine color and the count animation carry the warmth.
 - **Last 5 catches** list below — service + amount + date, small `SurfaceCard`s.
 - **"See all catches"** link → full history view (simple list, not spec'd deeply).
 - **One clear action:** "See all catches" OR close.
@@ -445,12 +461,12 @@ Per-feature behavior for the 4 v1 intelligence features. Each has a heuristic pa
 ### 4.1 Smart reminders
 
 **Free path (heuristic):**
-- Track when user opens cancel-assist relative to `chargeDate` for killed trials (rolling 10-event window in `UserDefaults`, no SwiftData needed).
+- Track when user opens cancel-assist relative to `chargeDate` for cancelled trials (rolling 10-event window in `UserDefaults`, no SwiftData needed).
 - If median cancel-lead-time < 24h, shift next trial's notification offset from 3d/1d/day-of → 1d/day-of/morning-of.
 - If median > 5d, keep default or widen to 5d/2d/day-of.
 
 **Pro path (FM):**
-- FM session receives `{userHistory: [(merchant, leadTime, killed: Bool)]}` and returns a recommended offset schedule per trial, with a "why" string shown in the TrialDetailSheet Finn's-take pill.
+- FM session receives `{userHistory: [(merchant, leadTime, cancelled: Bool)]}` and returns a recommended offset schedule per trial, with a "why" string shown in the TrialDetailSheet Finn's-take pill.
 
 ### 4.2 Usage detection
 
@@ -488,7 +504,7 @@ Per-feature behavior for the 4 v1 intelligence features. Each has a heuristic pa
 
 End-to-end for the flagship interaction so the skeleton is concrete:
 
-**User taps FAB → "Hunt a trial" → picks screenshot:**
+**User taps FAB → "Capture a trial" → picks screenshot:**
 
 1. `HuntSheet` captures `UIImage` from `PhotosUI` or `UIImagePickerController`.
 2. Calls `VisionCapture.extract(image:tier:)`.
@@ -498,9 +514,9 @@ End-to-end for the flagship interaction so the skeleton is concrete:
    - Pro + AI: `IntelligenceCore.vision.enhance(rawText, heuristicResult:)` → enriched `CandidateEntry`.
 5. Returns `CandidateEntry` with confidence.
 6. `HuntSheet` receives candidate → shows success/low-confidence/no-catch path.
-7. On "Looks right ✓": app target creates a `Trial` in SwiftData with `sourceHint = .screenshot`, entryType from candidate, chargeDate, amount, merchant.
+7. On "Looks right": app target creates a `Trial` in SwiftData with `sourceHint = .screenshot`, entryType from candidate, chargeDate, amount, merchant.
 8. `TrialAlertCoordinator.replanAll()` fires.
-9. Kill celebration (if applicable) triggers (Section 2).
+9. Cancel-success craft-fun moment (if applicable) triggers (Section 2).
 
 **User opens Subscriptions tab (quiet morning):**
 
@@ -514,7 +530,7 @@ End-to-end for the flagship interaction so the skeleton is concrete:
 1. Sheet opens cancel-assist (reuses P5 CancelFlowSheet).
 2. User taps "I canceled it" → writes `Trial.status = .cancelled`, stamps `cancelledAt = Date()` (also fixes the P10 audit finding in `Trial.swift:61`).
 3. `modelContext.save()` + `TrialAlertCoordinator.replanAll()`.
-4. Kill celebration fires (Section 2).
+4. Cancel-success craft-fun moment fires (Section 2).
 5. Savings accumulator increments.
 
 ---
@@ -535,28 +551,28 @@ End-to-end for the flagship interaction so the skeleton is concrete:
 
 - `SubscriptionStore`: 7 existing + ~4 new tests for `sourceHint`, `PredictiveCandidate`, `lastUsedAt`. Target: **12**.
 - `TrialEngine`: 3 existing + 4 new tests for SmartReminders-informed offsets. Target: **7**.
-- `NotificationEngine`: 11 existing + 3 new tests for nervous-Finn copy variants. Target: **14**.
+- `NotificationEngine`: 11 existing + 3 new tests for concerned-tone copy variants. Target: **14**.
 - `TrialParsingCore`: 10 existing, unchanged. Target: **10**.
 - `VisionCapture`: new — 8 tests. OCR-to-text success, heuristic-path candidate generation, FM-path candidate generation (mocked), low-confidence path, no-catch path. Target: **8**.
 - `IntelligenceCore`: new — 12 tests. Smart reminders rolling window, usage-detection threshold, predictive-ID rule matching, FM fallback routing (mocked). Target: **12**.
 - `BillingCalendar`: new — 6 tests. Month computation, urgency classification, edge cases (leap year, DST). Target: **6**.
-- `MascotKit`: limited — 3 tests. State resolution from app state, Reduce Motion passthrough, confetti lifecycle. Target: **3**.
+- `MascotKit`: limited — 2 tests. State resolution from app state, Reduce Motion passthrough. Target: **2**.
 
-**Total package tests target: 72** (current: 31).
+**Total package tests target: 71** (current: 31).
 
 ### Integration / UI tests
 
 - Add Trial end-to-end (manual form): 1 test.
-- Hunt a trial (screenshot mock): 1 test.
-- Kill a trial → savings increment: 1 test.
+- Capture a trial (screenshot mock): 1 test.
+- Cancel a trial → savings increment: 1 test.
 - Pro paywall surfaces at entry #11: 1 test.
 - Pro paywall surfaces at 3rd HuntSheet open: 1 test.
 
 ### Manual QA checklist (before App Store submission)
 
-- Every Finn state appears in at least one screen under real conditions.
+- Every Finn mood appears in at least one screen under real conditions.
 - Reduce Motion strips every animation correctly; functionality preserved.
-- VoiceOver reads every surface in logical order; Finn states are announced.
+- VoiceOver reads every surface in logical order; Finn moods are announced.
 - Dynamic Type at XXL doesn't break any grid.
 - Free → Pro transition updates entitlements within one session without restart.
 - FM unavailable on a non-AI device: entire Pro path still functions via heuristics.
@@ -570,7 +586,7 @@ These items do NOT block spec acceptance, but must resolve before App Store subm
 
 1. **Finn final vector illustrator decision.** Cole to decide between self-illustration, hired illustrator, or placeholder-then-hire.
 2. **Finn Pro paywall sheet design.** Copy + layout not fully specified in this doc. Ships in implementation phase; needs its own mini-design iteration.
-3. **App icon + launch screen.** Still default. Duolingo-art-direction applies here too.
+3. **App icon + launch screen.** Still default. Brand-foundation art direction applies here too.
 4. **App Store assets.** Screenshots, preview video, keywords, description. Positioning doc gives raw material.
 5. **README.md + legal/privacy.html.** Still describe pre-amputation Gmail product. Rewrite.
 6. **Rename Subly → Finn (~45 min mechanical).** BundleIdentifier, Info.plist, wordmark, CLAUDE.md, vault, repo.
@@ -592,7 +608,8 @@ These do NOT ship in v1:
 - Share extension target.
 - Share-to-Finn flow (deferred; manual paste stays the free-tier text path).
 - Category tagging, theme presets.
-- Fox outfits system, milestone unlocks.
+- Fox outfits / accessories system, milestone unlocks, additional fox moods.
+- Confetti, paw-print motifs, character-fun easter eggs, hidden long-press interactions.
 - Social leaderboards, "friends are catching" features.
 - Spend-over-time charts, category breakdowns, monthly hero total. **These are explicit anti-patterns.**
 - Lottie or third-party animation libraries.

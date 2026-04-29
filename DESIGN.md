@@ -1,37 +1,58 @@
-# Finn Design System (v2 — lavender era; v1 Launch spec supersedes parts of this)
+# Finn Design System (v1 — vulpine palette, locked 2026-04-29)
+
+> Brand-level constraints live in `docs/superpowers/specs/2026-04-29-finn-brand-foundation-design.md`. This doc is the design-system layer — colors, type, components, spacing, motion. Re-read the brand foundation before changing anything here.
+
+## Relationship to Brand Foundation
+
+The Brand Foundation governs **voice, fox rules, reference lane, and the three adjectives (Quiet · Tactile · Warm)**. This document governs **tokens, components, spacing, and motion**. They are layered: brand sits above design system. If they conflict, the Brand Foundation wins — re-open it and reconcile this doc, not the other way around.
 
 ## Visual Direction
 
-Subly is a **premium, calm financial utility** with a **dark liquid-glass aesthetic**. The goal is a single-purpose app that feels as polished and intentional as the ones users open every day without thinking — iMessage, Reminders, Sofa, Copilot Money, Flighty. Restrained, adult, opinionated, and built around one job: know before your trial charges you.
+Finn is a **subscription and free-trial tracker that takes the stress out of recurring spending — and makes the act of managing it genuinely satisfying.** The interface is **Quiet · Tactile · Warm**: low chroma on a warm-charcoal base, a single vulpine accent, springs and haptics on every meaningful interaction, and a friendly tone that earns the fox its keep.
+
+Reference lane: **Things 3 (hard)** for pixel rhythm, hierarchy, and discipline; **Sofa (soft)** only for empty-state warmth and onboarding tone.
 
 ### Core principles
 
-- **Dark charcoal base, lavender accent.** Not Copilot navy. Not Rocket Money loud. Our own thing.
+- **One accent, used sparingly.** Vulpine orange is the brand. Urgency owns its own ramp.
 - **Liquid glass as a significant theme, not everywhere.** Cards and surfaces use LG. Chrome, text, and interactive affordances do not.
 - **Restraint over decoration.** Every pixel earns its place. No ornamental badges, no fake progress, no chartjunk.
 - **Numbers are heroes.** The next charge amount is the most important pixel on the screen.
 - **Haptics everywhere.** Taps, threshold crossings, sheet presents, section transitions. Perplexity-level ubiquity.
-- **Two sharpened screens.** Home = what's about to charge you (<7 days). Trials = the full list.
+
+---
+
+## Fox
+
+Five lines. Full rules in the Brand Foundation (`docs/superpowers/specs/2026-04-29-finn-brand-foundation-design.md`).
+
+- **Three allowed surfaces:** onboarding, empty states, and "Charges in 1 day" urgent nudges. Plus app icon and About/Settings footer for identity.
+- **Three moods:** Neutral / Concerned / Sleeping. Swap states, never morph.
+- **Vector only.** No raster, no 3D, no Pixar shading.
+- **Head-and-bust silhouette is default.** Full body allowed only in onboarding hero moments.
+- **The fox does not speak.** No speech bubbles, no captioned dialogue. Microcopy near the fox comes from the *app*, not the *fox*.
+
+Banned everywhere else: HomeView flagship, TrialsView, data-dense surfaces, buttons, pills, inputs, loading indicators, tab bar.
 
 ---
 
 ## Color System (`FinnTheme` in `GlassComponents.swift`)
 
-All values are dark-mode-only. There is no light variant.
+All values are dark-mode-only on a **warm charcoal** base. There is no light variant.
 
-| Token | Value (approx) | Usage |
-|-------|----------------|-------|
-| `background` | `#0E0F12` (deep charcoal, slight cool shift) | App background |
-| `backgroundElevated` | `#14161A` | Sheet backgrounds, elevated contexts |
+| Token | Value | Usage |
+|-------|-------|-------|
+| `background` | `#1A1614` (warm charcoal) | App background |
+| `backgroundElevated` | `#221E1B` (warmer elevated) | Sheet backgrounds, elevated contexts |
 | `glassFill` | `white @ 4%` over background | Card fill (combined with `.ultraThinMaterial`) |
 | `glassBorder` | `white @ 12%` | Card stroke (1pt) |
 | `glassHighlight` | `white @ 18%` | Top-edge inner glow on cards |
-| `primaryText` | `#F5F5F7` (near-white) | Headlines, hero numbers, active labels |
-| `secondaryText` | `#A6A8B5` (desaturated lavender-grey) | Body copy, card subtitles |
-| `tertiaryText` | `#6E7080` | Metadata, UPPERCASE section labels |
+| `primaryText` | `#FBF7F2` (warm cream) | Headlines, hero numbers, active labels |
+| `secondaryText` | `#B8AFA7` (warm desaturated grey) | Body copy, card subtitles |
+| `tertiaryText` | `#827A72` (warm metadata) | Metadata, UPPERCASE section labels |
 | `divider` | `white @ 8%` | Hairlines, row separators |
-| `accent` | `#B8A4FF` (soft lavender) | Subly signature — used sparingly |
-| `accentSoft` | `#B8A4FF @ 14%` | Accent fills, badge backgrounds |
+| `accent` | `#F97316` (vulpine orange) | Finn signature — used sparingly |
+| `accentSoft` | `#F97316 @ 14%` | Accent fills, badge backgrounds |
 | `urgencyCalm` | `#8FA3BE` (cool neutral) | 8+ days |
 | `urgencyWarning` | `#F5B366` (amber) | 4–7 days |
 | `urgencyCritical` | `#FF7A6B` (warm red) | 1–3 days |
@@ -43,7 +64,7 @@ All values are dark-mode-only. There is no light variant.
 - 4–7 days → `urgencyWarning`
 - 8+ days → `urgencyCalm`
 
-**Accent usage rule:** Lavender is the brand — use it for the wordmark, the primary CTA fill, and one signature UI affordance per screen (the hero card's inner highlight, a selected tab indicator, etc.). **Never** use lavender for urgency states. Urgency owns its own color ramp.
+**Accent usage rule:** **Vulpine is the brand** — use it for the wordmark, the primary CTA fill, and one signature UI affordance per screen (the hero card's inner highlight, a selected tab indicator, etc.). **Never** use vulpine for urgency states. Urgency owns its own color ramp. Amber (`urgencyWarning`) and vulpine sit close on the hue wheel — keep them separated by role: vulpine = brand, amber = 4–7 day urgency. Never use them adjacent on the same surface.
 
 **Never** introduce colors outside this token set. If you need a new semantic, add it here first.
 
@@ -55,7 +76,7 @@ All type is system — **SF Pro Rounded** for display/numbers, **SF Pro Text** f
 
 | Role | Font | Size | Weight | Notes |
 |------|------|------|--------|-------|
-| Wordmark ("Subly") | SF Pro Rounded | 30 | `.heavy` | Header only |
+| Wordmark ("Finn") | SF Pro Rounded | 30 | `.heavy` | Header only |
 | Screen title | SF Pro Rounded | 28 | `.bold` | E.g. "Trials" on TrialsView |
 | Hero number | SF Pro Rounded | 56 | `.bold` | `.monospacedDigit()`, `minimumScaleFactor: 0.72` |
 | Service name (flagship) | SF Pro Rounded | 22 | `.semibold` | |
@@ -112,7 +133,7 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 
 **Where liquid glass is not used:**
 - Plain text rows inside a card (content, not surface)
-- Buttons (flat lavender fill for primary, ghost for secondary)
+- Buttons (flat vulpine fill for primary, ghost for secondary)
 - Pills (simple tinted capsule, no material)
 - Icons / dividers
 
@@ -127,11 +148,11 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 - `CompactTrialRow` — row inside a `SurfaceCard` (logo, name, date, urgency value). Rows are divided by `HairlineDivider`, not their own cards.
 
 ### Buttons
-- `PrimaryButton` — lavender fill, **dark text** (`FinnTheme.background`), 16pt radius. Main CTA. Label uses the dark charcoal token, NOT near-white — lavender-on-white fails WCAG AA (2.05:1); lavender-on-dark-charcoal passes at ~10.7:1.
-- `GhostButton` — transparent fill, 1pt lavender border, lavender text. Lavender-on-charcoal ~7.9:1 passes AA for 14pt.
+- `PrimaryButton` — **vulpine fill**, **warm-charcoal label** (`FinnTheme.background`), 16pt radius. Main CTA. Label uses the warm-charcoal token, NOT cream — vulpine-on-cream fails WCAG AA; **vulpine `#F97316` on warm charcoal `#1A1614` passes AA at ~6.6:1** (verified against the actual hex values; comfortably above the 4.5:1 normal-text threshold and the 3:1 large-text threshold).
+- `GhostButton` — transparent fill, 1pt vulpine border, vulpine label text. Vulpine-on-warm-charcoal at ~6.6:1 passes AA for normal and large text.
 - All buttons: `.frame(minHeight: 44)` to satisfy the 44pt touch-target minimum.
-- `HeaderIconButton` — 40pt glass circle, icon inside. (40pt < 44pt is acceptable per HIG when icon button is paired with a larger tap area via `.contentShape(Rectangle())` or enlarged via padding; verify in ticket 4.)
-- `PrimaryAddButton` — FAB, bottom-right, 62pt diameter, glass surface with lavender icon tint.
+- `HeaderIconButton` — 40pt glass circle, icon inside. (40pt < 44pt is acceptable per HIG when the icon button is paired with a larger tap area via `.contentShape(Rectangle())` or enlarged via padding; verify in ticket 4.)
+- `PrimaryAddButton` — FAB, bottom-right, 62pt diameter, glass surface with vulpine icon tint.
 
 ### Typography helpers
 - `SectionLabel` — UPPERCASE section header. Replaces `TerminalSectionLabel`. Optional trailing count in monospaced digit.
@@ -139,11 +160,12 @@ All cards route through `GlassCard`. `FlagshipCard` and `SurfaceCard` become thi
 - `HairlineDivider` — 1pt divider line at `FinnTheme.divider`.
 
 ### Icons
+- **Phosphor everywhere** in app-owned UI via `Ph.<name>.<weight>.color(...)` — never `.foregroundStyle()`, never `.resizable()`. Exception: SwiftUI `.tabItem` slot uses SF Symbols (the slot doesn't honor custom views).
 - `ServiceIcon` — brand logo with fallback monogram. Always use this. Sizes: `72` (flagship), `40` (standard), `32` (compact row).
-- `ServiceIcon` background is dark, not light — logos are rendered over `glassFill` on dark, not over white.
+- `ServiceIcon` background is dark, not light — logos render over `glassFill` on warm charcoal, not over white.
 
 ### States
-- `EmptyStateBlock` — empty state. No decorative illustration. Single sentence + one CTA.
+- `EmptyStateBlock` — empty state. The fox is allowed here (Sleeping mood for "nothing ending soon", Neutral for first-run). Single sentence + one CTA. No decorative illustration beyond the fox.
 - `BreathingModifier` — subtle pulse for urgent elements (3 days or less). Apply via `.breathing(days <= 3)`.
 
 ### Removed from previous system
@@ -234,11 +256,11 @@ When `accessibilityReduceMotion` is true:
 
 ### HomeView — "What's about to charge you"
 
-Scope: trials ending in **≤7 days**. If nothing is ending soon, show a calm empty state directing user to Trials.
+Scope: trials ending in **≤7 days**. If nothing is ending soon, show a calm empty state directing user to Trials. The fox (Sleeping mood) is allowed in this empty state only.
 
 ```
 Header
-  └─ [Subly wordmark (lavender)]        [gear icon]
+  └─ [Finn wordmark (vulpine)]        [gear icon]
   └─ small date stamp underneath wordmark
 
 FlagshipCard (next ending trial)
@@ -259,11 +281,11 @@ SurfaceCard
 FAB (bottom-right, outside scroll): PrimaryAddButton
 ```
 
-Removed from previous: demoBanner, statusLine. Demo data is gone entirely (see COL-105 onboarding).
+If the flagship trial charges in **1 day**, a small Concerned-mood fox is permitted near the urgency line — the only place the fox appears inside an active screen. Removed from previous: demoBanner, statusLine. Demo data is gone entirely (see COL-105 onboarding).
 
 ### TrialsView — "The full list"
 
-Scope: all active trials, grouped.
+Scope: all active trials, grouped. **Fox is banned on this surface** — TrialsView is the management surface and the fox would distract from the list.
 
 ```
 Header
@@ -285,7 +307,7 @@ Rows are **tappable** to open the trial detail sheet. Rows on HomeView are **not
 
 ### SettingsView — "Preferences"
 
-Scope: notification offset, manual add access, data export/delete. All Gmail/email/connected-account UI is removed.
+Scope: notification offset, manual add access, data export/delete. All Gmail/email/connected-account UI is removed. Neutral-mood fox allowed in the About footer only — identity, not interaction.
 
 ```
 Header
@@ -308,13 +330,14 @@ SurfaceCard
   └─ Version
   └─ HairlineDivider
   └─ Privacy policy link
+  └─ Small Neutral-mood fox in footer
 ```
 
 ---
 
 ## Tab Bar
 
-Native-feel bottom tab bar, 3 tabs: **Home** / **Trials** / **Settings**. Selected tab icon + label tint: `FinnTheme.accent` (lavender). Unselected: `FinnTheme.tertiaryText`. Tab bar background: glass material.
+Native-feel bottom tab bar, 3 tabs: **Home** / **Trials** / **Settings**. Selected tab icon + label tint: `FinnTheme.accent` (vulpine). Unselected: `FinnTheme.tertiaryText`. Tab bar background: glass material. Tab bar uses SF Symbols (SwiftUI `.tabItem` exception); everywhere else is Phosphor. **No fox in the tab bar.**
 
 Do not replace this with a top pill selector. The bottom tab bar is part of what makes the app feel native.
 
@@ -323,39 +346,28 @@ Do not replace this with a top pill selector. The bottom tab bar is part of what
 ## Do's and Don'ts
 
 **Do:**
-- Use `ScreenFrame` as the root wrapper — it provides the dark background.
+- Use `ScreenFrame` as the root wrapper — it provides the warm-charcoal background.
 - Use `GlassCard` for any surface; `FlagshipCard` / `SurfaceCard` as composed helpers.
 - Use `ServiceIcon` for all brand logos.
 - Apply `urgencyColor(daysLeft:)` for any urgency-based color.
 - Use `.medium` weight as the body default; never `.regular`.
 - Wire `Haptics.play(_:)` on every meaningful interaction.
 - Keep the hero number the largest pixel on the screen (56pt, monospaced).
+- Use Phosphor icons in app-owned UI; SF Symbols only inside `.tabItem`.
 
 **Don't:**
 - Use warm/paper colors or light backgrounds — wrong aesthetic direction.
 - Hardcode colors outside `FinnTheme`.
-- Use lavender for urgency — lavender is brand only.
+- Use vulpine for urgency — vulpine is brand only.
 - Put each trial in its own card. Group rows into one `SurfaceCard`.
 - Add decorative UI that doesn't carry information.
-- Add confetti, illustrations, or celebrations. Subly is calm.
+- Add confetti, illustrations, or celebrations. Finn is calm.
 - Show more than one `FlagshipCard` per screen.
 - Use SF Pro Text for numbers. Numbers are always SF Pro Rounded.
+- Use the fox outside its three allowed surfaces (onboarding, empty states, "Charges in 1 day" nudges) plus app icon and About footer.
 
 ---
 
-## Migration Checklist (from warm-paper DESIGN.md)
+## Reconciliation completed 2026-04-29
 
-- [ ] Replace `FinnTheme` values with dark palette
-- [ ] Replace `AppBackground` — solid `FinnTheme.background`, no gradients, no blur blobs
-- [ ] Add `GlassCard` primitive; make `FlagshipCard`/`SurfaceCard` wrap it
-- [ ] Change `ServiceIcon` background to glass-over-dark
-- [ ] Rename `TerminalSectionLabel` → `SectionLabel`
-- [ ] Replace `TerminalButtonStyle` / `SecondaryTerminalButtonStyle` with `PrimaryButton` / `GhostButton`
-- [ ] Update all hero numbers to `SF Pro Rounded` `.bold` 56pt
-- [ ] Wire haptics map per table above
-- [ ] Kill `DemoContent` from live surfaces (gated behind a dev-only flag, not `showDemoData` in production)
-- [ ] Strip demoBanner + statusLine from HomeView
-- [ ] Collapse row-cards into grouped `SurfaceCard` with `HairlineDivider`
-- [ ] Remove all connected-account/Gmail/email UI from SettingsView
-
-Each checklist item is a self-contained Cursor ticket. Do not bundle.
+This file was reconciled against the locked Brand Foundation on 2026-04-29. The previous lavender palette (`#B8A4FF` accent on `#0E0F12` cool charcoal) is superseded by the vulpine palette (`#F97316` accent on `#1A1614` warm charcoal). Warm-text tokens (`primaryText`, `secondaryText`, `tertiaryText`) were re-toned to match the warmer base. Urgency ramp, motion choreography, haptics map, layout rules, liquid glass recipe, and screen anatomy survived unchanged — they were brand-foundation-compatible from the start. Going forward, this doc is the design-system layer; the Brand Foundation is the authority above it.
