@@ -8,24 +8,6 @@ Source of truth: this file + `~/Obsidian/Active/Finn/Finn.md`. Linear is archive
 
 ---
 
-## FINN-005: Manual trial entry — share sheet + OCR
-**Status:** backlog
-**Why:** Replaces Gmail OAuth path entirely. Trial capture without CASA, no 100-user ceiling. Trials are event-driven — user signs up → wants to log it now.
-
-### Acceptance
-- [ ] Share Sheet extension accepts plain-text / HTML payloads from Mail (FINN-009 may consolidate)
-- [ ] OCR fallback for screenshot input
-- [ ] Foundation Models parser deferred per vault — TrialParsingCore rules already hit `.medium`+ on all fixtures
-- [ ] Pre-filled Add Trial sheet opens with extracted fields editable
-
-### Notes
-- Linear (archived): COL-118 (was Urgent)
-- Paste-from-clipboard flow shipped in PR #46: Add Trial now routes pasted text through `TrialParsingCore`, ignores low-confidence parses, and avoids filling `Unknown`.
-- TrialParsingCore already exists (parser + 4-gate rules + 10 tests). FM deferred to v1.1 per `Finn.md`.
-- **Consolidates** the old COL-101 share sheet ticket (see FINN-009 — folded in here).
-
----
-
 ## FINN-006: Launch pricing + founding waitlist offer
 **Status:** backlog
 **Why:** Pricing has to match product psychology — Finn helps avoid unwanted charges, so it cannot feel like an ironic extra bill. Needs to feel obviously smaller than the surprise charge it prevents.
