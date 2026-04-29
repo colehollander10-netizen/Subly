@@ -3,7 +3,7 @@ import SwiftData
 @testable import SubscriptionStore
 
 final class TrialFetchTests: XCTestCase {
-    func testCancellingFreeTrialDoesNotStampCancelledAtYet() {
+    func testCancellingFreeTrialStampsCancelledAtWhenMissing() {
         let trial = Trial(
             serviceName: "Spotify",
             chargeDate: Date().addingTimeInterval(86400 * 7),
@@ -15,9 +15,24 @@ final class TrialFetchTests: XCTestCase {
         trial.status = .cancelled
 
         XCTAssertEqual(trial.status, .cancelled)
-        XCTExpectFailure("Cancelling a trial does not currently stamp cancelledAt.") {
-            XCTAssertNotNil(trial.cancelledAt)
-        }
+        XCTAssertNotNil(trial.cancelledAt)
+    }
+
+    func testCancellingFreeTrialPreservesExistingCancelledAt() {
+        let cancelledAt = Date().addingTimeInterval(-86400)
+        let trial = Trial(
+            serviceName: "Spotify",
+            chargeDate: Date().addingTimeInterval(86400 * 7),
+            chargeAmount: 9.99,
+            entryType: .freeTrial,
+            status: .active,
+            cancelledAt: cancelledAt
+        )
+
+        trial.status = .cancelled
+
+        XCTAssertEqual(trial.status, .cancelled)
+        XCTAssertEqual(trial.cancelledAt, cancelledAt)
     }
 
     func testEntryTypeFlipMovesTrialBetweenTrialAndSubscriptionFetches() throws {

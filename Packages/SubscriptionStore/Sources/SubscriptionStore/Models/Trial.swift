@@ -61,7 +61,12 @@ public final class Trial {
 
     public var status: EntryStatus {
         get { EntryStatus(rawValue: statusRaw) ?? .active }
-        set { statusRaw = newValue.rawValue }
+        set {
+            statusRaw = newValue.rawValue
+            if newValue == .cancelled, cancelledAt == nil {
+                cancelledAt = Date()
+            }
+        }
     }
 
     public var billingCycle: BillingCycle? {
