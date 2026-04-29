@@ -4,6 +4,60 @@ Append-only. Newest at top. Each entry: what shipped, when, and the outcome that
 
 ---
 
+## FINN-015: Stamp cancelledAt when a trial is cancelled
+**Status:** done
+**Started:** 2026-04-29
+**Completed:** 2026-04-29
+**Why:** Cancellation history and future savings/accounting features need a reliable timestamp when a trial is cancelled.
+
+### What shipped
+- Merged PR #45 (`codex/finn-015-cancelled-at`).
+- `Trial.status = .cancelled` now stamps `cancelledAt` when it was previously nil.
+- Explicit existing `cancelledAt` timestamps are preserved.
+- Converted the prior `SubscriptionStore` expected-failure coverage into normal passing assertions.
+
+---
+
+## FINN-014: Confirm no Google blocker for launch + decide on backend
+**Status:** done
+**Started:** 2026-04-29
+**Completed:** 2026-04-29
+**Why:** Manual-only capture removed the Gmail/Google review dependency; the public privacy story needed to match.
+
+### What shipped
+- Confirmed v1 has no Gmail, Google API, bank-link, or app backend dependency for trial/subscription data.
+- Merged PR #47 (`codex/finn-privacy-docs-manual-only`) updating README and `legal/privacy.html` to manual-only, local-only data handling.
+- Any waitlist/pricing backend decision remains scoped to FINN-006, not core app data.
+
+---
+
+## FINN-005A: Paste flow uses TrialParsingCore
+**Status:** done
+**Started:** 2026-04-29
+**Completed:** 2026-04-29
+**Why:** The parser package existed but Add Trial still used a local one-off paste extractor.
+
+### What shipped
+- Merged PR #46 (`codex/finn-005-parser-paste-flow`).
+- Add Trial paste-to-prefill now routes through `TrialParser.classifyText(..., source: .pastedText)`.
+- Low-confidence parses fill nothing; `"Unknown"` is not written into the service field.
+- Remaining FINN-005 work is share sheet text/HTML capture and screenshot OCR.
+
+---
+
+## FINN-011A: Lock notification planning to 9:00 local
+**Status:** done
+**Started:** 2026-04-29
+**Completed:** 2026-04-29
+**Why:** Notification timing was documented in engine comments but not locked by tests.
+
+### What shipped
+- Merged PR #48 (`codex/finn-011-notification-time-tests`).
+- `TrialEngine` tests now verify trial and subscription planned alerts fire at 9:00 in the supplied local calendar.
+- Manual on-device delivery testing still belongs to the real-device bug walk before v1.
+
+---
+
 ## FINN-004: P10 — Integration + adversarial review + final QA
 **Status:** done
 **Started:** 2026-04-29

@@ -8,19 +8,19 @@ Source of truth: this file + `~/Obsidian/Active/Finn/Finn.md`. Linear is archive
 
 ---
 
-## FINN-005: Manual trial entry — share sheet + paste + OCR + Foundation Models parser
+## FINN-005: Manual trial entry — share sheet + OCR
 **Status:** backlog
 **Why:** Replaces Gmail OAuth path entirely. Trial capture without CASA, no 100-user ceiling. Trials are event-driven — user signs up → wants to log it now.
 
 ### Acceptance
 - [ ] Share Sheet extension accepts plain-text / HTML payloads from Mail (FINN-009 may consolidate)
-- [ ] Paste-from-clipboard flow on Add Trial screen
 - [ ] OCR fallback for screenshot input
 - [ ] Foundation Models parser deferred per vault — TrialParsingCore rules already hit `.medium`+ on all fixtures
 - [ ] Pre-filled Add Trial sheet opens with extracted fields editable
 
 ### Notes
 - Linear (archived): COL-118 (was Urgent)
+- Paste-from-clipboard flow shipped in PR #46: Add Trial now routes pasted text through `TrialParsingCore`, ignores low-confidence parses, and avoids filling `Unknown`.
 - TrialParsingCore already exists (parser + 4-gate rules + 10 tests). FM deferred to v1.1 per `Finn.md`.
 - **Consolidates** the old COL-101 share sheet ticket (see FINN-009 — folded in here).
 
@@ -148,31 +148,3 @@ Source of truth: this file + `~/Obsidian/Active/Finn/Finn.md`. Linear is archive
 - **Drop candidate** — likely fully covered by current Settings + FINN-009
 
 ---
-
-## FINN-014: Confirm no Google blocker for launch + decide on backend
-**Status:** backlog
-**Why:** Originally a backend exploration ticket. Post-manual-only pivot, this is mostly to confirm no Google review gate. Manual entry kills the Gmail dependency entirely.
-
-### Acceptance
-- [ ] Confirm: nothing on Google's side blocks v1 launch (should be trivial — no Gmail = no review)
-- [ ] Decision documented: backend yes/no for v1
-- [ ] If backend needed for waitlist/pricing, Supabase project created
-
-### Notes
-- Linear (archived): COL-113 (No priority)
-- **Drop candidate** post-confirmation — likely a one-line yes
-
----
-
-## FINN-015: Stamp cancelledAt when a trial is cancelled
-**Status:** backlog
-**Why:** The test suite currently carries an expected failure showing `Trial.status = .cancelled` does not stamp `cancelledAt`, which weakens cancellation history and savings/accounting features.
-
-### Acceptance
-- [ ] Setting a trial's status to `.cancelled` stamps `cancelledAt` when it was previously nil
-- [ ] Existing explicit `cancelledAt` timestamps are preserved
-- [ ] SubscriptionStore expected-failure test is converted into a normal passing assertion
-
-### Notes
-- Found during FINN-004 QA on 2026-04-29.
-- Current evidence: `SubscriptionStore` test `testCancellingFreeTrialDoesNotStampCancelledAtYet` passes only under `XCTExpectFailure`.
