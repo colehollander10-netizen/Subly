@@ -32,9 +32,25 @@ final class AppRouter {
     /// observe `pendingRoute`.
     var pendingCancelTrialID: UUID?
     var pendingRoute: PendingNotificationRoute?
+    var pendingSharedTrialText: String?
+
+    func handle(url: URL) -> Bool {
+        guard url.scheme == "finn" else { return false }
+        guard url.host == "shared-trial" else { return false }
+
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        guard let text = components?.queryItems?.first(where: { $0.name == "text" })?.value,
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+
+        pendingSharedTrialText = text
+        return true
+    }
 }
 
 struct ContentView: View {
+    @Environment(AppRouter.self) private var appRouter
     let notificationEngine: NotificationEngine
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @Query private var existingTrials: [Trial]
@@ -60,6 +76,11 @@ struct ContentView: View {
             // (from the prior Gmail build, or who added trials before
             // tapping "Open Finn" in onboarding) shouldn't be re-onboarded.
             if !hasCompletedOnboarding && !existingTrials.isEmpty {
+                hasCompletedOnboarding = true
+            }
+        }
+        .onChange(of: appRouter.pendingSharedTrialText) { _, newValue in
+            if newValue != nil {
                 hasCompletedOnboarding = true
             }
         }

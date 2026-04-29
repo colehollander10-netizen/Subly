@@ -125,6 +125,7 @@ struct TrialParserTests {
         #expect(classification.confidence == .high)
         #expect(classification.chargeAmount == Decimal(string: "15.49"))
         #expect(classification.trialLengthDays == 30)
+        #expect(dateComponents(for: classification.trialEndDate) == DateComponents(year: 2026, month: 5, day: 22))
     }
 
     @Test
@@ -140,6 +141,7 @@ struct TrialParserTests {
         #expect(classification.confidence == .high)
         #expect(classification.chargeAmount == Decimal(string: "10"))
         #expect(classification.trialLengthDays == 14)
+        #expect(dateComponents(for: classification.trialEndDate) == DateComponents(year: 2026, month: 5, day: 6))
     }
 
     @Test
@@ -161,6 +163,13 @@ struct TrialParserTests {
             )
             return classification.confidence != .low
         }.count
+    }
+
+    private func dateComponents(for date: Date?) -> DateComponents? {
+        guard let date else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = Calendar.current.timeZone
+        return calendar.dateComponents([.year, .month, .day], from: date)
     }
 }
 

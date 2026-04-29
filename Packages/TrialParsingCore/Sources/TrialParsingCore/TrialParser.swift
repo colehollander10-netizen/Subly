@@ -546,13 +546,13 @@ private func extractExplicitDate(body: String) -> Date? {
     let dateKeywords = ["trial", "ends", "charge", "renew", "billing", "next payment", "starting"]
     let lines = body.components(separatedBy: .newlines)
     for line in lines where dateKeywords.contains(where: { line.lowercased().contains($0) }) {
+        if let parsed = parseDateSnippet(in: line) {
+            return parsed
+        }
         let range = NSRange(line.startIndex..., in: line)
         if let match = detector.matches(in: line, options: [], range: range).first,
            let date = match.date {
             return date
-        }
-        if let parsed = parseDateSnippet(in: line) {
-            return parsed
         }
     }
     return nil
@@ -585,7 +585,7 @@ private func parseDateSnippet(in line: String) -> Date? {
         let snippet = String(line[snippetRange])
         for formatter in formatters {
             if let date = formatter.date(from: snippet) {
-                return date
+                return normalizedDateOnly(date)
             }
         }
     }
@@ -596,9 +596,22 @@ private func parseDateSnippet(in line: String) -> Date? {
 private func makeDateFormatter(_ format: String) -> DateFormatter {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    formatter.timeZone = Calendar.current.timeZone
     formatter.dateFormat = format
     return formatter
+}
+
+private func normalizedDateOnly(_ date: Date) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = Calendar.current.timeZone
+    let components = calendar.dateComponents([.year, .month, .day], from: date)
+    return calendar.date(from: DateComponents(
+        timeZone: calendar.timeZone,
+        year: components.year,
+        month: components.month,
+        day: components.day,
+        hour: 12
+    )) ?? date
 }
 
 private func extractRelativeDuration(body: String, base: Date) -> Date? {

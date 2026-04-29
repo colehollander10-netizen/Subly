@@ -18,6 +18,7 @@
 		51CB5A55E27A1FF1F77183AF /* ImportableSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */; };
 		560CE291FA5CB2A1A41F37E1 /* CancelAssistSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */; };
 		564CB94AD248FE9096A06153 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83008B962C3682D08736BF7F /* Assets.xcassets */; };
+		6FA9AC3264A878361C4CD3FB /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F85D4393B43D5522374392 /* ShareViewController.swift */; };
 		71525E35AE35A8FE5C071D07 /* CancelGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3313827943DC2A298F2E59 /* CancelGuide.swift */; };
 		76A3E9669897B476B881DC53 /* TrialParsingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 329F2AA144A016AD33BEF1C2 /* TrialParsingCore */; };
 		79BF6A0E4F36913A5B1448A9 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 02113626A5476AD311064925 /* PhosphorSwift */; };
@@ -29,6 +30,7 @@
 		A7E383506C26B342317C4644 /* AddSubscriptionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */; };
 		AF652EFE85CE4F710BC6631E /* CatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69DD04C2382FCB31BA95915F /* CatalogService.swift */; };
 		B42398F2AB7820ACC23C4ADF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC817B909A0E79AA12666CC /* HomeView.swift */; };
+		B555A2C59955A1D222AB57A4 /* FinnShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 6F947542A728AC0D4520446D /* FinnShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B783B0AC355335604401EC9B /* SubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048969444CC82A881219AB65 /* SubscriptionsView.swift */; };
 		BAA612EB5F52805874BC7B36 /* TrialEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 8997EAEBC73EFB0F1D6454DC /* TrialEngine */; };
 		BE333D2FDD049DAE053EE1A3 /* PrimaryAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */; };
@@ -46,6 +48,30 @@
 		EC2C926E4491286107536EC5 /* CancelGuideStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0E181F5ED8B6C16AB66F35 /* CancelGuideStore.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		37FC00847F5DB1C1F823DF83 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C31C23BD58A7ED4DF259FD25 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0EBFECEBD531611A8320F7C1;
+			remoteInfo = FinnShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9936C98D00863082995E202B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B555A2C59955A1D222AB57A4 /* FinnShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		014D90B895BE78821E85C8D0 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		048969444CC82A881219AB65 /* SubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionsView.swift; sourceTree = "<group>"; };
@@ -59,6 +85,7 @@
 		670AE84AFA8605A143D923C5 /* ImportableSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportableSubscription.swift; sourceTree = "<group>"; };
 		69DD04C2382FCB31BA95915F /* CatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogService.swift; sourceTree = "<group>"; };
 		6C77C1E43FB47E9DFEC23B36 /* PrimaryAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryAddButton.swift; sourceTree = "<group>"; };
+		6F947542A728AC0D4520446D /* FinnShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FinnShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		72669D27DD5FF4259740BAAF /* ServiceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceNameField.swift; sourceTree = "<group>"; };
 		75D96ADC482B5408CEB15AB4 /* CancelAssistSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelAssistSheet.swift; sourceTree = "<group>"; };
 		7D3313827943DC2A298F2E59 /* CancelGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelGuide.swift; sourceTree = "<group>"; };
@@ -66,6 +93,7 @@
 		819F53991CA40A8A9D096FAD /* MascotKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MascotKit; path = Packages/MascotKit; sourceTree = SOURCE_ROOT; };
 		83008B962C3682D08736BF7F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		845A1AFB35613B0BBCA5AA27 /* LogoService */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogoService; path = Packages/LogoService; sourceTree = SOURCE_ROOT; };
+		87BE2EC5C43AAC2D96997E60 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		88724751DD683D8021D2B1A5 /* SubscriptionStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SubscriptionStore; path = Packages/SubscriptionStore; sourceTree = SOURCE_ROOT; };
 		8E28F7FBA1F29D7CB6E29A1D /* AmountField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountField.swift; sourceTree = "<group>"; };
 		8E2EEFE2F95FF2D62042F4EE /* StoreKitImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitImport.swift; sourceTree = "<group>"; };
@@ -81,6 +109,7 @@
 		D1F9F92E36A7C6D95521F73A /* CancelGuides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CancelGuides.json; sourceTree = "<group>"; };
 		D209A72C5AA04D39E813619C /* ServicesCatalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ServicesCatalog.json; sourceTree = "<group>"; };
 		D5E254EFE7F2F548B2C95E00 /* TrialParsingCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialParsingCore; path = Packages/TrialParsingCore; sourceTree = SOURCE_ROOT; };
+		F1F85D4393B43D5522374392 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		F4190BCC05AEE42E895FA79F /* TrialEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TrialEngine; path = Packages/TrialEngine; sourceTree = SOURCE_ROOT; };
 		F7763D2F20F8A74F06811BE0 /* AddSubscriptionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSubscriptionSheet.swift; sourceTree = "<group>"; };
 		FA91B5213420B1387EF10798 /* NotificationEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NotificationEngine; path = Packages/NotificationEngine; sourceTree = SOURCE_ROOT; };
@@ -108,6 +137,7 @@
 		4C0B164B7A75DD4A9A40C1B6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				6F947542A728AC0D4520446D /* FinnShareExtension.appex */,
 				B1042D755D5117EE14B9CA3D /* Subly.app */,
 			);
 			name = Products;
@@ -137,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				B5734A41E0D149EE60763C79 /* Packages */,
+				CBB1990A3C7A92EAAF90DF28 /* ShareExtension */,
 				E60BE3B5234F4EF499AF0CB7 /* Subly */,
 				4C0B164B7A75DD4A9A40C1B6 /* Products */,
 			);
@@ -171,6 +202,15 @@
 				69DD04C2382FCB31BA95915F /* CatalogService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		CBB1990A3C7A92EAAF90DF28 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				87BE2EC5C43AAC2D96997E60 /* Info.plist */,
+				F1F85D4393B43D5522374392 /* ShareViewController.swift */,
+			);
+			path = ShareExtension;
 			sourceTree = "<group>";
 		};
 		DDF01BFF1E5404E77F59E55D /* Import */ = {
@@ -231,10 +271,12 @@
 				F9D69CFB32D5B0CC49553AC0 /* Sources */,
 				42167084FFF17860C12BF75D /* Resources */,
 				AEA0C8DF559BCF9F6E0E14D3 /* Frameworks */,
+				9936C98D00863082995E202B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				EDEEA36B63461AB2978AC081 /* PBXTargetDependency */,
 			);
 			name = Subly;
 			packageProductDependencies = (
@@ -249,6 +291,23 @@
 			productName = Subly;
 			productReference = B1042D755D5117EE14B9CA3D /* Subly.app */;
 			productType = "com.apple.product-type.application";
+		};
+		0EBFECEBD531611A8320F7C1 /* FinnShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C4ECE149ABE7DA60782E32A /* Build configuration list for PBXNativeTarget "FinnShareExtension" */;
+			buildPhases = (
+				11F25AD40F808CC6CA38EF48 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FinnShareExtension;
+			packageProductDependencies = (
+			);
+			productName = FinnShareExtension;
+			productReference = 6F947542A728AC0D4520446D /* FinnShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -284,6 +343,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				0EBFECEBD531611A8320F7C1 /* FinnShareExtension */,
 				0E5F3A6E0CB4817D871DE8C2 /* Subly */,
 			);
 		};
@@ -303,6 +363,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		11F25AD40F808CC6CA38EF48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6FA9AC3264A878361C4CD3FB /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F9D69CFB32D5B0CC49553AC0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -338,6 +406,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EDEEA36B63461AB2978AC081 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0EBFECEBD531611A8320F7C1 /* FinnShareExtension */;
+			targetProxy = 37FC00847F5DB1C1F823DF83 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1F60FEF4B5810FFB65CF7C66 /* Release */ = {
@@ -386,7 +462,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_CFBundleDisplayName = Finn;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -473,7 +549,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_CFBundleDisplayName = Finn;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -509,9 +585,52 @@
 			};
 			name = Release;
 		};
+		B73B980F97EE48EF864A4776 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.colehollander.subly.ShareExtension;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		ECC73225BFEF755A369B20FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.colehollander.subly.ShareExtension;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0C4ECE149ABE7DA60782E32A /* Build configuration list for PBXNativeTarget "FinnShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECC73225BFEF755A369B20FA /* Debug */,
+				B73B980F97EE48EF864A4776 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		1D43EA570A8D48BC54C3FE63 /* Build configuration list for PBXProject "Subly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
