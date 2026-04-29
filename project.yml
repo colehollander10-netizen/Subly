@@ -8,7 +8,7 @@ settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.colehollander.subly
     INFOPLIST_KEY_CFBundleDisplayName: Finn
-    GENERATE_INFOPLIST_FILE: YES
+    GENERATE_INFOPLIST_FILE: NO
     INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
     INFOPLIST_KEY_UILaunchScreen_Generation: YES
     INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
@@ -63,5 +63,30 @@ targets:
       - package: LogoService
       - package: MascotKit
       - package: PhosphorSwift
+      - target: FinnShareExtension
+        embed: true
     info:
       path: Subly/Info.plist
+      properties:
+        CFBundleDisplayName: Finn
+        CFBundleURLTypes:
+          - CFBundleURLName: com.colehollander.subly
+            CFBundleURLSchemes:
+              - finn
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations: {}
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+  FinnShareExtension:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: ShareExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.colehollander.subly.ShareExtension
+        INFOPLIST_FILE: ShareExtension/Info.plist
+        SWIFT_VERSION: "5.0"

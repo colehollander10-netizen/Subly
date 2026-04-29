@@ -14,6 +14,7 @@ struct TrialDetailSheet: View {
     let onSaveExisting: ((Trial) -> Void)?
     let onCreateNew: ((Trial) -> Void)?
     let notificationEngine: NotificationEngine?
+    private let initialSharedText: String?
 
     private enum Preset: Int, CaseIterable, Identifiable {
         case sevenDays = 7
@@ -39,11 +40,13 @@ struct TrialDetailSheet: View {
     @State private var chargeAmountText: String
     @State private var pasteFilledFields: [String] = []
     @State private var pasteShowsSuccess: Bool = false
+    @State private var didApplyInitialSharedText = false
     @State private var pasteResetTask: Task<Void, Never>? = nil
     @State private var showingCancelAssist = false
 
     init(
         trial: Trial? = nil,
+        initialSharedText: String? = nil,
         onSaveExisting: ((Trial) -> Void)? = nil,
         onCreateNew: ((Trial) -> Void)? = nil,
         notificationEngine: NotificationEngine? = nil
@@ -52,6 +55,7 @@ struct TrialDetailSheet: View {
         self.onSaveExisting = onSaveExisting
         self.onCreateNew = onCreateNew
         self.notificationEngine = notificationEngine
+        self.initialSharedText = initialSharedText
         _serviceName = State(initialValue: trial?.serviceName ?? "")
         let resolvedEndDate = trial?.chargeDate ?? Calendar.current.date(byAdding: .day, value: 14, to: Date()) ?? Date()
         _trialEndDate = State(initialValue: resolvedEndDate)
@@ -147,6 +151,7 @@ struct TrialDetailSheet: View {
             }
         }
         .onAppear {
+            applyInitialSharedTextIfNeeded()
             if trial == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     focused = true
@@ -318,7 +323,18 @@ struct TrialDetailSheet: View {
         guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
             return
         }
-        let extracted = PastedTrialExtractor.extract(from: raw)
+        applySharedText(raw)
+    }
+
+    private func applyInitialSharedTextIfNeeded() {
+        guard !didApplyInitialSharedText else { return }
+        didApplyInitialSharedText = true
+        guard let initialSharedText, trial == nil else { return }
+        applySharedText(initialSharedText)
+    }
+
+    private func applySharedText(_ text: String) {
+        let extracted = PastedTrialExtractor.extract(from: text)
         var filled: [String] = []
         if let name = extracted.serviceName, serviceName.isEmpty {
             serviceName = name

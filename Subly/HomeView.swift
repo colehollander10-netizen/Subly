@@ -23,6 +23,7 @@ struct HomeView: View {
     @State private var showingAddTrial = false
     @State private var showingAddSubscription = false
     @State private var pendingAddChoice: AddEntryRouterSheet.Choice?
+    @State private var pendingSharedTrialText: String?
 
     private var upcomingSoon: [Trial] {
         activeTrials.filter { daysUntil($0.chargeDate) <= 7 }
@@ -60,7 +61,10 @@ struct HomeView: View {
             AddEntryRouterSheet(onSelect: { pendingAddChoice = $0 })
         }
         .sheet(isPresented: $showingAddTrial) {
-            TrialDetailSheet(onCreateNew: { _ in })
+            TrialDetailSheet(
+                initialSharedText: pendingSharedTrialText,
+                onCreateNew: { _ in }
+            )
         }
         .sheet(isPresented: $showingAddSubscription) {
             AddSubscriptionSheet()
@@ -74,6 +78,7 @@ struct HomeView: View {
             guard let pendingAddChoice else { return }
             switch pendingAddChoice {
             case .trial:
+                pendingSharedTrialText = nil
                 showingAddTrial = true
             case .subscription:
                 showingAddSubscription = true
@@ -92,12 +97,16 @@ struct HomeView: View {
         }
         .onAppear {
             resolvePendingNotificationRoute()
+            resolvePendingSharedTrial()
         }
         .onChange(of: appRouter.pendingCancelTrialID) { _, _ in
             resolvePendingNotificationRoute()
         }
         .onChange(of: activeTrials.count) { _, _ in
             resolvePendingNotificationRoute()
+        }
+        .onChange(of: appRouter.pendingSharedTrialText) { _, _ in
+            resolvePendingSharedTrial()
         }
     }
 
@@ -283,6 +292,13 @@ struct HomeView: View {
         selectedTrial = trial
         appRouter.pendingCancelTrialID = nil
         if case .trial = appRouter.pendingRoute { appRouter.pendingRoute = nil }
+    }
+
+    private func resolvePendingSharedTrial() {
+        guard let text = appRouter.pendingSharedTrialText else { return }
+        pendingSharedTrialText = text
+        showingAddTrial = true
+        appRouter.pendingSharedTrialText = nil
     }
 }
 

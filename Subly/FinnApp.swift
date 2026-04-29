@@ -113,6 +113,9 @@ struct FinnApp: App {
                         await autoImportService.sync(context: Self.modelContainer.mainContext)
                     }
                 }
+                .onOpenURL { url in
+                    _ = appRouter.handle(url: url)
+                }
         }
     }
 }
