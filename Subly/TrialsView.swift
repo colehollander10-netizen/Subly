@@ -182,7 +182,7 @@ private struct TrialListRow: View {
                     .monospacedDigit()
                     .foregroundStyle(FinnTheme.primaryText)
                 AccentPill(
-                    text: days <= 0 ? "TODAY" : "\(days)D",
+                    text: trialCountdownBadgeText(days: days),
                     color: FinnTheme.urgencyColor(daysLeft: days)
                 )
             }

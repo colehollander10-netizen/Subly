@@ -181,3 +181,9 @@ func daysUntil(_ date: Date, from now: Date = Date()) -> Int {
     let d2 = calendar.startOfDay(for: date)
     return calendar.dateComponents([.day], from: d1, to: d2).day ?? 0
 }
+
+func trialCountdownBadgeText(days: Int, includeLeft: Bool = false) -> String {
+    if days < 0 { return "PAST DUE" }
+    if days == 0 { return "TODAY" }
+    return includeLeft ? "\(days)D LEFT" : "\(days)D"
+}

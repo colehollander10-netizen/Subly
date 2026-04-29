@@ -129,7 +129,7 @@ struct HomeView: View {
     private func heroSection(for trial: Trial) -> some View {
         let days = daysUntil(trial.chargeDate)
         VStack(alignment: .leading, spacing: 14) {
-            SectionLabel(title: "Next ending trial", trailing: "\(days)D")
+            SectionLabel(title: "Next ending trial", trailing: trialCountdownBadgeText(days: days))
 
             Button {
                 Haptics.play(.rowTap)
@@ -163,7 +163,7 @@ struct HomeView: View {
                             Spacer()
 
                             AccentPill(
-                                text: days <= 0 ? "TODAY" : "\(max(days, 0))D LEFT",
+                                text: trialCountdownBadgeText(days: days, includeLeft: true),
                                 color: FinnTheme.urgencyColor(daysLeft: days)
                             )
                             .breathing(days <= 3)
@@ -271,7 +271,8 @@ struct HomeView: View {
     }
 
     private func daysLabel(_ days: Int) -> String {
-        if days <= 0 { return "Charges today" }
+        if days < 0 { return "Charge date passed" }
+        if days == 0 { return "Charges today" }
         if days == 1 { return "Charges in 1 day" }
         return "Charges in \(days) days"
     }
@@ -302,7 +303,7 @@ private struct CompactTrialRow: View {
                     .foregroundStyle(FinnTheme.tertiaryText)
             }
             Spacer()
-            Text(days <= 0 ? "TODAY" : "\(days)D")
+            Text(trialCountdownBadgeText(days: days))
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .tracking(0.8)
