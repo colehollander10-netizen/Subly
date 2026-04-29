@@ -4,6 +4,7 @@ Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Fi
 
 ## Right now
 
+- **Brand foundation:** [[Finn Brand Foundation]] (`docs/superpowers/specs/2026-04-29-finn-brand-foundation-design.md`) — sentence, three adjectives, fox rules, reference lane. **Read this before any visual or voice decision.** When this conflicts with DESIGN.md or the v1 Launch Design, Brand Foundation wins.
 - **Active spec:** [[Finn v1 Launch Design]] (`docs/superpowers/specs/2026-04-24-finn-v1-design.md`) — full v1 launch spec.
 - **Active plan:** [[Finn v1 Implementation Plan]] (`docs/superpowers/plans/2026-04-24-finn-v1-implementation.md`) — 16 sub-plans, sub-plan 01 (rename) fully written.
 - **Prior epic done:** COL-140 subscription pivot (P1–P9 merged; P10 audit fixes are sub-plan 02). COL-120 v2 design complete.
@@ -12,7 +13,8 @@ Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Fi
 ## Hard rules
 
 - **Phosphor icons only** in app-owned UI. Zero `Image(systemName:)`. Use `Ph.<name>.<weight>.color(...)` — not `.foregroundStyle()`, not `.resizable()`. Exception: SwiftUI `.tabItem` slot — SF Symbols only (SwiftUI doesn't honor custom views there).
-- **`FinnTheme.*` tokens only** — no hardcoded colors, no `.regular` font weight. Vulpine palette locked.
+- **`FinnTheme.*` tokens only** — no hardcoded colors, no `.regular` font weight. Vulpine palette locked (ratified by [[Finn Brand Foundation]] 2026-04-29).
+- **Fox surfaces are gated.** Fox may appear only on: onboarding, empty states, "Charges in 1 day" surfaces, app icon, About/Settings footer. Banned: HomeView flagship card, active trial rows, TrialsView, data-dense surfaces, buttons/pills/inputs, loading indicators, tab bar, money-moving contexts. Three moods only: Neutral / Concerned / Sleeping. See [[Finn Brand Foundation]] §3.
 - **`PrimaryButton` contrast:** Vulpine orange fill + `FinnTheme.background` (warm charcoal) label. Never white. Reason: WCAG.
 - **No `VersionedSchema` migration plan exists** and it's deliberate — a prior session backed out. Don't rebuild it. Lightweight `@Attribute(originalName:)` migrations only.
 - **PR per ticket.** Never push directly to `main`. Never merge to `main` locally.
