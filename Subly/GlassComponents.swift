@@ -4,25 +4,21 @@ import SubscriptionStore
 import SwiftUI
 
 enum FinnTheme {
-    // Vulpine palette (2026-04-23). Warm charcoal base + Phosphor-orange accent
-    // tied to the fox mascot. Higher contrast text than the prior cool lavender
-    // palette — primaryText is pure white, secondaryText is a warm tan that
-    // actually reads on the warm charcoal background.
-    static let background = Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255)         // #1A1614 warm charcoal
-    static let backgroundElevated = Color(red: 37 / 255, green: 32 / 255, blue: 25 / 255) // #252019
-    static let glassFill = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255).opacity(0.04)
-    static let glassBorder = Color(red: 58 / 255, green: 47 / 255, blue: 38 / 255).opacity(0.85) // #3A2F26 warm stroke
-    static let glassHighlight = Color.white.opacity(0.18)
-    static let primaryText = Color.white
-    static let secondaryText = Color(red: 199 / 255, green: 187 / 255, blue: 176 / 255)   // #C7BBB0 warm light tan
-    static let tertiaryText = Color(red: 134 / 255, green: 115 / 255, blue: 106 / 255)    // #86736A Vulpine Neutral
-    static let divider = Color(red: 46 / 255, green: 38 / 255, blue: 32 / 255)            // #2E2620 warm dark divider
-    static let accent = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255)           // #F97316 Vulpine Primary
-    static let accentSoft = Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255).opacity(0.18) // #D97706 deeper amber, soft
-    static let urgencyCalm = Color(red: 0 / 255, green: 162 / 255, blue: 244 / 255)       // #00A2F4 Vulpine Tertiary (sky blue = safe)
-    static let urgencyWarning = Color(red: 172 / 255, green: 101 / 255, blue: 61 / 255)   // #AC653D Vulpine Secondary (cinnamon = warning)
-    static let urgencyCritical = Color(red: 255 / 255, green: 176 / 255, blue: 77 / 255)  // #FFB04D brighter golden-orange (alarm — distinct from brand accent)
-    static let urgencyDayOf = Color(red: 255 / 255, green: 209 / 255, blue: 102 / 255)    // #FFD166 brightest gold (TODAY)
+    static let background = Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255) // #1A1614
+    static let backgroundElevated = Color(red: 34 / 255, green: 30 / 255, blue: 27 / 255) // #221E1B
+    static let glassFill = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.04)
+    static let glassBorder = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.12)
+    static let glassHighlight = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.18)
+    static let primaryText = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255) // #FBF7F2
+    static let secondaryText = Color(red: 184 / 255, green: 175 / 255, blue: 167 / 255) // #B8AFA7
+    static let tertiaryText = Color(red: 130 / 255, green: 122 / 255, blue: 114 / 255) // #827A72
+    static let divider = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.08)
+    static let accent = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255) // #F97316
+    static let accentSoft = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255).opacity(0.14)
+    static let urgencyCalm = Color(red: 143 / 255, green: 163 / 255, blue: 190 / 255) // #8FA3BE
+    static let urgencyWarning = Color(red: 245 / 255, green: 179 / 255, blue: 102 / 255) // #F5B366
+    static let urgencyCritical = Color(red: 255 / 255, green: 122 / 255, blue: 107 / 255) // #FF7A6B
+    static let urgencyDayOf = Color(red: 255 / 255, green: 90 / 255, blue: 74 / 255) // #FF5A4A
 
     static func urgencyColor(daysLeft: Int) -> Color {
         if daysLeft <= 0 { return urgencyDayOf }
@@ -115,38 +111,6 @@ struct GhostButton: ButtonStyle {
                     .stroke(FinnTheme.accent, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.82 : 1)
-    }
-}
-
-struct HeaderIconButton: View {
-    let systemImage: String
-    let accessibilityLabel: String
-    var isBusy: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(FinnTheme.backgroundElevated)
-                    .overlay(Circle().fill(FinnTheme.glassFill))
-                    .overlay(Circle().stroke(FinnTheme.glassBorder, lineWidth: 1))
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(FinnTheme.primaryText)
-                } else {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(FinnTheme.primaryText)
-                }
-            }
-            .frame(width: 40, height: 40)
-            .padding(2)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PressableRowStyle())
-        .accessibilityLabel(accessibilityLabel)
     }
 }
 
@@ -552,41 +516,5 @@ enum AppSecrets {
         }
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
-    }
-}
-
-struct EmptyStateBlock: View {
-    let title: String
-    let message: String
-    let actionTitle: String?
-    let action: (() -> Void)?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(FinnTheme.accentSoft)
-                    .frame(width: 56, height: 56)
-                Image(systemName: "sparkle")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(FinnTheme.accent)
-            }
-            Text(title)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(FinnTheme.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(message)
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundStyle(FinnTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            if let actionTitle, let action {
-                Button(actionTitle, action: action)
-                    .buttonStyle(GhostButton())
-                    .padding(.top, 4)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
-        .padding(.vertical, 12)
     }
 }

@@ -1,4 +1,3 @@
-import MascotKit
 import PhosphorSwift
 import SubscriptionStore
 import SwiftUI
@@ -74,7 +73,12 @@ struct ImportConfirmationSheet: View {
 
     private var header: some View {
         VStack(alignment: .center, spacing: 8) {
-            foxPlaceholder
+            Ph.appleLogo.fill
+                .color(FinnTheme.tertiaryText)
+                .frame(width: 40, height: 40)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .accessibilityHidden(true)
             Text("Import from Apple")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(FinnTheme.primaryText)
@@ -85,14 +89,6 @@ struct ImportConfirmationSheet: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
         }
-    }
-
-    private var foxPlaceholder: some View {
-        FoxView(state: .celebrating, size: 72)
-            .frame(width: 72, height: 72)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-            .accessibilityHidden(true)
     }
 
     private var emptyState: some View {
