@@ -1,6 +1,7 @@
 import NotificationEngine
 import PhosphorSwift
 import SubscriptionStore
+import TrialParsingCore
 import SwiftData
 import SwiftUI
 import UIKit
@@ -317,7 +318,7 @@ struct TrialDetailSheet: View {
         guard let raw = UIPasteboard.general.string, !raw.isEmpty else {
             return
         }
-        let extracted = ManualTrialExtractor.extract(from: raw)
+        let extracted = PastedTrialExtractor.extract(from: raw)
         var filled: [String] = []
         if let name = extracted.serviceName, serviceName.isEmpty {
             serviceName = name
@@ -347,7 +348,7 @@ struct TrialDetailSheet: View {
     }
 }
 
-enum ManualTrialExtractor {
+enum PastedTrialExtractor {
     struct Result {
         let serviceName: String?
         let trialEndDate: Date?
@@ -355,50 +356,21 @@ enum ManualTrialExtractor {
     }
 
     static func extract(from text: String) -> Result {
-        Result(
-            serviceName: extractServiceName(from: text),
-            trialEndDate: extractDate(from: text),
-            chargeAmount: extractAmount(from: text)
+        let classification = TrialParser.classifyText(text, source: .pastedText)
+        guard classification.confidence != .low else {
+            return Result(serviceName: nil, trialEndDate: nil, chargeAmount: nil)
+        }
+
+        return Result(
+            serviceName: normalizedServiceName(classification.serviceName),
+            trialEndDate: classification.trialEndDate,
+            chargeAmount: classification.chargeAmount.map { NSDecimalNumber(decimal: $0).stringValue }
         )
     }
 
-    private static func extractServiceName(from text: String) -> String? {
-        let lines = text.components(separatedBy: .newlines)
-        for line in lines {
-            let lower = line.lowercased()
-            guard lower.hasPrefix("from:") || lower.hasPrefix("from ") else { continue }
-            let rest = String(line.dropFirst(5))
-            if let lt = rest.firstIndex(of: "<") {
-                let display = rest[..<lt].trimmingCharacters(in: .whitespacesAndNewlines)
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-                if !display.isEmpty { return display }
-            }
-            if let at = rest.lastIndex(of: "@") {
-                let domain = rest[rest.index(after: at)...]
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "> \t\n\r"))
-                let parts = domain.split(separator: ".")
-                if parts.count >= 2 { return String(parts[parts.count - 2]).capitalized }
-            }
-        }
-        return nil
-    }
-
-    private static func extractDate(from text: String) -> Date? {
-        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) else { return nil }
-        let range = NSRange(text.startIndex..., in: text)
-        let future = Date().addingTimeInterval(60 * 60 * 6)
-        for match in detector.matches(in: text, options: [], range: range) {
-            if let date = match.date, date >= future { return date }
-        }
-        return nil
-    }
-
-    private static func extractAmount(from text: String) -> String? {
-        let pattern = #"\$\s?(\d{1,4}(?:\.\d{2})?)"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
-        let range = NSRange(text.startIndex..., in: text)
-        guard let match = regex.matches(in: text, options: [], range: range).first,
-              let valueRange = Range(match.range(at: 1), in: text) else { return nil }
-        return String(text[valueRange])
+    private static func normalizedServiceName(_ name: String) -> String? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != "Unknown" else { return nil }
+        return trimmed
     }
 }
