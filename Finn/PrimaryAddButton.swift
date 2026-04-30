@@ -55,7 +55,7 @@ private struct PrimaryAddButtonStyle: ButtonStyle {
         configuration.label
             .opacity(configuration.isPressed ? 0.82 : 1)
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.22, dampingFraction: 0.78), value: configuration.isPressed)
+            .animation(FinnMotion.press, value: configuration.isPressed)
     }
 }
 

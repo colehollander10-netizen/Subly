@@ -4,25 +4,21 @@ import SubscriptionStore
 import SwiftUI
 
 enum FinnTheme {
-    // Vulpine palette (2026-04-23). Warm charcoal base + Phosphor-orange accent
-    // tied to the fox mascot. Higher contrast text than the prior cool lavender
-    // palette — primaryText is pure white, secondaryText is a warm tan that
-    // actually reads on the warm charcoal background.
-    static let background = Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255)         // #1A1614 warm charcoal
-    static let backgroundElevated = Color(red: 37 / 255, green: 32 / 255, blue: 25 / 255) // #252019
-    static let glassFill = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255).opacity(0.04)
-    static let glassBorder = Color(red: 58 / 255, green: 47 / 255, blue: 38 / 255).opacity(0.85) // #3A2F26 warm stroke
-    static let glassHighlight = Color.white.opacity(0.18)
-    static let primaryText = Color.white
-    static let secondaryText = Color(red: 199 / 255, green: 187 / 255, blue: 176 / 255)   // #C7BBB0 warm light tan
-    static let tertiaryText = Color(red: 134 / 255, green: 115 / 255, blue: 106 / 255)    // #86736A Vulpine Neutral
-    static let divider = Color(red: 46 / 255, green: 38 / 255, blue: 32 / 255)            // #2E2620 warm dark divider
-    static let accent = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255)           // #F97316 Vulpine Primary
-    static let accentSoft = Color(red: 217 / 255, green: 119 / 255, blue: 6 / 255).opacity(0.18) // #D97706 deeper amber, soft
-    static let urgencyCalm = Color(red: 0 / 255, green: 162 / 255, blue: 244 / 255)       // #00A2F4 Vulpine Tertiary (sky blue = safe)
-    static let urgencyWarning = Color(red: 172 / 255, green: 101 / 255, blue: 61 / 255)   // #AC653D Vulpine Secondary (cinnamon = warning)
-    static let urgencyCritical = Color(red: 255 / 255, green: 176 / 255, blue: 77 / 255)  // #FFB04D brighter golden-orange (alarm — distinct from brand accent)
-    static let urgencyDayOf = Color(red: 255 / 255, green: 209 / 255, blue: 102 / 255)    // #FFD166 brightest gold (TODAY)
+    static let background = Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255) // #1A1614
+    static let backgroundElevated = Color(red: 34 / 255, green: 30 / 255, blue: 27 / 255) // #221E1B
+    static let glassFill = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.04)
+    static let glassBorder = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.12)
+    static let glassHighlight = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.18)
+    static let primaryText = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255) // #FBF7F2
+    static let secondaryText = Color(red: 184 / 255, green: 175 / 255, blue: 167 / 255) // #B8AFA7
+    static let tertiaryText = Color(red: 130 / 255, green: 122 / 255, blue: 114 / 255) // #827A72
+    static let divider = Color(red: 251 / 255, green: 247 / 255, blue: 242 / 255).opacity(0.08)
+    static let accent = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255) // #F97316
+    static let accentSoft = Color(red: 249 / 255, green: 115 / 255, blue: 22 / 255).opacity(0.14)
+    static let urgencyCalm = Color(red: 143 / 255, green: 163 / 255, blue: 190 / 255) // #8FA3BE
+    static let urgencyWarning = Color(red: 245 / 255, green: 179 / 255, blue: 102 / 255) // #F5B366
+    static let urgencyCritical = Color(red: 255 / 255, green: 122 / 255, blue: 107 / 255) // #FF7A6B
+    static let urgencyDayOf = Color(red: 255 / 255, green: 90 / 255, blue: 74 / 255) // #FF5A4A
 
     static func urgencyColor(daysLeft: Int) -> Color {
         if daysLeft <= 0 { return urgencyDayOf }
@@ -30,6 +26,14 @@ enum FinnTheme {
         if daysLeft <= 7 { return urgencyWarning }
         return urgencyCalm
     }
+}
+
+enum FinnMotion {
+    static let standard = Animation.spring(response: 0.32, dampingFraction: 0.86)
+    static let press = Animation.spring(response: 0.22, dampingFraction: 0.82)
+    static let sheet = Animation.spring(response: 0.36, dampingFraction: 0.84)
+    static let quick = Animation.easeInOut(duration: 0.15)
+    static let colorShift = Animation.easeInOut(duration: 0.40)
 }
 
 struct AppBackground: View {
@@ -84,25 +88,32 @@ struct HairlineDivider: View {
 }
 
 struct PrimaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(FinnTheme.background)
+            .foregroundStyle(FinnTheme.background.opacity(isEnabled ? 1 : 0.62))
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
                 Capsule(style: .continuous)
-                    .fill(FinnTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
+                    .fill(FinnTheme.accent.opacity(isEnabled ? (configuration.isPressed ? 0.82 : 1) : 0.36))
             )
+            .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+            .animation(FinnMotion.quick, value: isEnabled)
     }
 }
 
 struct GhostButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(FinnTheme.accent)
+            .foregroundStyle(FinnTheme.accent.opacity(isEnabled ? 1 : 0.42))
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -112,41 +123,12 @@ struct GhostButton: ButtonStyle {
             )
             .overlay(
                 Capsule(style: .continuous)
-                    .stroke(FinnTheme.accent, lineWidth: 1)
+                    .stroke(FinnTheme.accent.opacity(isEnabled ? 1 : 0.32), lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.82 : 1)
-    }
-}
-
-struct HeaderIconButton: View {
-    let systemImage: String
-    let accessibilityLabel: String
-    var isBusy: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(FinnTheme.backgroundElevated)
-                    .overlay(Circle().fill(FinnTheme.glassFill))
-                    .overlay(Circle().stroke(FinnTheme.glassBorder, lineWidth: 1))
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(FinnTheme.primaryText)
-                } else {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(FinnTheme.primaryText)
-                }
-            }
-            .frame(width: 40, height: 40)
-            .padding(2)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PressableRowStyle())
-        .accessibilityLabel(accessibilityLabel)
+            .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+            .animation(FinnMotion.quick, value: isEnabled)
     }
 }
 
@@ -325,19 +307,55 @@ struct PressableRowStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
             .opacity(configuration.isPressed ? 0.92 : 1.0)
-            .animation(.spring(response: 0.22, dampingFraction: 0.82), value: configuration.isPressed)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+    }
+}
+
+struct StagedAppearModifier: ViewModifier {
+    let index: Int
+    let offset: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var visible = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(visible ? 1 : 0)
+            .offset(y: visible || reduceMotion ? 0 : offset)
+            .onAppear {
+                guard !visible else { return }
+                if reduceMotion {
+                    visible = true
+                } else {
+                    withAnimation(FinnMotion.standard.delay(Double(index) * 0.06)) {
+                        visible = true
+                    }
+                }
+            }
     }
 }
 
 struct BreathingModifier: ViewModifier {
     let active: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: CGFloat = 1.0
 
     func body(content: Content) -> some View {
         content
             .scaleEffect(phase)
             .onAppear {
-                guard active else { return }
+                guard active, !reduceMotion else {
+                    phase = 1.0
+                    return
+                }
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    phase = 1.03
+                }
+            }
+            .onChange(of: active) { _, isActive in
+                guard isActive, !reduceMotion else {
+                    withAnimation(FinnMotion.quick) { phase = 1.0 }
+                    return
+                }
                 withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
                     phase = 1.03
                 }
@@ -346,6 +364,10 @@ struct BreathingModifier: ViewModifier {
 }
 
 extension View {
+    func stagedAppear(_ index: Int, offset: CGFloat = 18) -> some View {
+        modifier(StagedAppearModifier(index: index, offset: offset))
+    }
+
     func breathing(_ active: Bool) -> some View {
         modifier(BreathingModifier(active: active))
     }
@@ -552,41 +574,5 @@ enum AppSecrets {
         }
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
-    }
-}
-
-struct EmptyStateBlock: View {
-    let title: String
-    let message: String
-    let actionTitle: String?
-    let action: (() -> Void)?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(FinnTheme.accentSoft)
-                    .frame(width: 56, height: 56)
-                Image(systemName: "sparkle")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(FinnTheme.accent)
-            }
-            Text(title)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(FinnTheme.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(message)
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundStyle(FinnTheme.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            if let actionTitle, let action {
-                Button(actionTitle, action: action)
-                    .buttonStyle(GhostButton())
-                    .padding(.top, 4)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
-        .padding(.vertical, 12)
     }
 }

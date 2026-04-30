@@ -20,6 +20,8 @@ struct AddSubscriptionSheet: View {
     @State private var chargeAmountText: String = ""
     @State private var searchQuery: String = ""
     @State private var hasPickedFromCatalog = false
+    @State private var isSaving = false
+    @State private var saveErrorMessage: String?
     @FocusState private var searchFocused: Bool
 
     init(onSave: @escaping (Trial) -> Void = { _ in }) {
@@ -61,11 +63,26 @@ struct AddSubscriptionSheet: View {
                             Button {
                                 save()
                             } label: {
-                                Text("Save").frame(maxWidth: .infinity)
+                                HStack(spacing: 8) {
+                                    if isSaving {
+                                        ProgressView()
+                                            .tint(FinnTheme.background)
+                                    }
+                                    Text(isSaving ? "Saving" : "Save")
+                                }
+                                .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PrimaryButton())
-                            .disabled(!canSave)
+                            .disabled(!canSave || isSaving)
                             .padding(.top, 4)
+
+                            if let saveErrorMessage {
+                                Text(saveErrorMessage)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(FinnTheme.urgencyCritical)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -267,7 +284,11 @@ struct AddSubscriptionSheet: View {
 
     private func save() {
         let trimmed = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !isSaving else { return }
+        guard !trimmed.isEmpty else { return }
         guard let amount = parsedAmount else { return }
+        isSaving = true
+        saveErrorMessage = nil
         let entry = Trial(
             serviceName: trimmed,
             senderDomain: senderDomain,
@@ -282,8 +303,11 @@ struct AddSubscriptionSheet: View {
         do {
             try modelContext.save()
         } catch {
+            modelContext.delete(entry)
             addSubscriptionLog.error("Subscription save failed: \(String(describing: error), privacy: .public)")
-            // Keep the sheet open so the user doesn't silently lose the entry.
+            saveErrorMessage = "Could not save. Try again."
+            isSaving = false
+            Haptics.play(.validationFail)
             return
         }
         Haptics.play(.save)
@@ -298,7 +322,9 @@ struct AddSubscriptionSheet: View {
         }
 
         onSave(entry)
-        dismiss()
+        withAnimation(FinnMotion.sheet) {
+            dismiss()
+        }
     }
 }
 

@@ -1,8 +1,11 @@
 import NotificationEngine
+import OSLog
 import PhosphorSwift
 import SubscriptionStore
 import SwiftData
 import SwiftUI
+
+private let cancelAssistLog = Logger(subsystem: "com.subly.Subly", category: "cancel-assist")
 
 struct CancelAssistSheet: View {
     let trial: Trial
@@ -11,6 +14,9 @@ struct CancelAssistSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
+
+    @State private var errorMessage: String?
+    @State private var isCompleting = false
 
     private var guide: CancelGuide? { CancelGuideStore.guide(for: trial.serviceName) }
 
@@ -72,15 +78,30 @@ struct CancelAssistSheet: View {
                             Button {
                                 handleCanceled()
                             } label: {
-                                Text("I canceled it")
+                                HStack(spacing: 8) {
+                                    if isCompleting {
+                                        ProgressView()
+                                            .tint(FinnTheme.background)
+                                    }
+                                    Text(isCompleting ? "Saving" : "I canceled it")
+                                }
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PrimaryButton())
+                            .disabled(isCompleting)
 
                             Button("I'll do it later") {
                                 dismiss()
                             }
                             .buttonStyle(GhostButton())
+
+                            if let errorMessage {
+                                Text(errorMessage)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(FinnTheme.urgencyCritical)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
                         }
                         .padding(.bottom, 24)
                     }
@@ -116,20 +137,46 @@ struct CancelAssistSheet: View {
     }
 
     private func handleCanceled() {
+        guard !isCompleting else { return }
+        isCompleting = true
+        errorMessage = nil
         let trialID = trial.id
-        trial.status = .cancelled
-        trial.cancelledAt = Date()
         let descriptor = FetchDescriptor<TrialAlert>(
             predicate: #Predicate { $0.trialID == trialID && !$0.delivered }
         )
-        let pendingAlerts = (try? modelContext.fetch(descriptor)) ?? []
+        let pendingAlerts: [TrialAlert]
+        do {
+            pendingAlerts = try modelContext.fetch(descriptor)
+        } catch {
+            cancelAssistLog.error("Cancel completion alert fetch failed: \(String(describing: error), privacy: .public)")
+            errorMessage = "Could not update reminders. Try again."
+            isCompleting = false
+            Haptics.play(.validationFail)
+            return
+        }
+        let previousStatus = trial.status
+        let previousCancelledAt = trial.cancelledAt
+        trial.status = .cancelled
+        trial.cancelledAt = Date()
         let pendingIDs = pendingAlerts.map { $0.id.uuidString }
         for alert in pendingAlerts { modelContext.delete(alert) }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            trial.status = previousStatus
+            trial.cancelledAt = previousCancelledAt
+            cancelAssistLog.error("Cancel completion save failed: \(String(describing: error), privacy: .public)")
+            errorMessage = "Could not mark this as canceled. Try again."
+            isCompleting = false
+            Haptics.play(.validationFail)
+            return
+        }
         Task {
             await notificationEngine.removePending(ids: pendingIDs)
         }
         Haptics.play(.markCanceled)
-        dismiss()
+        withAnimation(FinnMotion.sheet) {
+            dismiss()
+        }
     }
 }

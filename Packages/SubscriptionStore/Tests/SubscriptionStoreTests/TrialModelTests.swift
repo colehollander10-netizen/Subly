@@ -76,6 +76,66 @@ final class TrialModelTests: XCTestCase {
     }
 
     @MainActor
+    func testUpsertAppleSubscriptionRefreshesNameAndBillingCycleOnExistingRow() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        _ = try Trial.upsertAppleSubscription(
+            originalTransactionID: "orig-789",
+            serviceName: "Old Name",
+            chargeDate: Date().addingTimeInterval(86400 * 30),
+            chargeAmount: 9.99,
+            billingCycle: .monthly,
+            in: context
+        )
+
+        let secondResult = try Trial.upsertAppleSubscription(
+            originalTransactionID: "orig-789",
+            serviceName: "Renamed Service",
+            chargeDate: Date().addingTimeInterval(86400 * 365),
+            chargeAmount: 99.99,
+            billingCycle: .yearly,
+            in: context
+        )
+        XCTAssertFalse(secondResult.inserted)
+
+        let trials = try context.fetch(FetchDescriptor<Trial>())
+        XCTAssertEqual(trials.count, 1)
+        XCTAssertEqual(trials[0].serviceName, "Renamed Service")
+        XCTAssertEqual(trials[0].billingCycle, .yearly)
+        XCTAssertEqual(trials[0].chargeAmount, 99.99)
+        XCTAssertEqual(trials[0].entryType, .subscription)
+    }
+
+    @MainActor
+    func testUpsertAppleSubscriptionEmptyServiceNameDoesNotOverwriteExisting() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        _ = try Trial.upsertAppleSubscription(
+            originalTransactionID: "orig-empty",
+            serviceName: "Curated Name",
+            chargeDate: Date().addingTimeInterval(86400 * 30),
+            chargeAmount: 4.99,
+            billingCycle: .monthly,
+            in: context
+        )
+
+        _ = try Trial.upsertAppleSubscription(
+            originalTransactionID: "orig-empty",
+            serviceName: "",
+            chargeDate: Date().addingTimeInterval(86400 * 60),
+            chargeAmount: 4.99,
+            billingCycle: .monthly,
+            in: context
+        )
+
+        let trials = try context.fetch(FetchDescriptor<Trial>())
+        XCTAssertEqual(trials.count, 1)
+        XCTAssertEqual(trials[0].serviceName, "Curated Name")
+    }
+
+    @MainActor
     func testUpsertAppleSubscriptionWithDifferentOriginalIDsInsertsTwoRows() throws {
         let container = try makeContainer()
         let context = container.mainContext

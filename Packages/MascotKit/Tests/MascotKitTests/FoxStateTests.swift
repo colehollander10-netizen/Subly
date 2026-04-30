@@ -17,26 +17,17 @@ struct FoxStateTests {
         }
     }
 
-    @Test("only nervous + hunting have emotional beat loops")
-    func onlyExpectedStatesHaveBeats() {
+    @Test("v1 moods do not have emotional beat loops")
+    func v1MoodsAreStatic() {
         for state in FoxState.allCases {
-            switch state {
-            case .nervous, .hunting:
-                #expect(state.hasEmotionalBeat == true)
-            default:
-                #expect(state.hasEmotionalBeat == false)
-            }
+            #expect(state.hasEmotionalBeat == false)
         }
     }
 
     @Test("FoxState raw values remain stable (no silent renames)")
     func rawValuesStable() {
         #expect(FoxState.sleeping.rawValue == "sleeping")
-        #expect(FoxState.sitting.rawValue == "sitting")
-        #expect(FoxState.watching.rawValue == "watching")
-        #expect(FoxState.nervous.rawValue == "nervous")
-        #expect(FoxState.hunting.rawValue == "hunting")
-        #expect(FoxState.celebrating.rawValue == "celebrating")
-        #expect(FoxState.proud.rawValue == "proud")
+        #expect(FoxState.neutral.rawValue == "neutral")
+        #expect(FoxState.concerned.rawValue == "concerned")
     }
 }

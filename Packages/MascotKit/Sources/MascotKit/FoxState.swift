@@ -1,34 +1,19 @@
 import Foundation
 
-/// Finn's 7 emotional states. See `docs/superpowers/specs/2026-04-24-finn-v1-design.md`
-/// § Section 2 for the full mapping of app-state → fox-state.
-///
-/// `assetName` is the catalog entry MascotKit expects to find. During v1,
-/// several states alias to the two placeholder assets that already shipped
-/// (`fox-sitting`, `fox-sleeping`) — final vector art for each state lands
-/// in sub-plan 15 (app-icon + illustration).
+/// Finn's three allowed v1 moods. The brand foundation owns this list.
 public enum FoxState: String, CaseIterable, Equatable, Sendable {
-    /// Curled, eyes closed. Home/Trials empty states.
+    /// Curled, eyes closed. Empty states and all-set surfaces.
     case sleeping
-    /// Upright, calm. Settings header + onboarding intro (default pose).
-    case sitting
-    /// Alert, ears perked. Home when trials exist but no urgency.
-    case watching
-    /// Tense, tapping watch. Home urgency + calendar red-alert headers.
-    case nervous
-    /// Crouched, tail low, focused. HuntSheet only.
-    case hunting
-    /// Arms up, happy-arc eyes. Cancel success + post-kill celebration.
-    case celebrating
-    /// Hero pose. Savings screen when cumulative savings > $100.
-    case proud
+    /// Upright, calm, slight smile. Onboarding, app icon, About footer.
+    case neutral
+    /// Ears forward, brow slightly raised. Only for charges in 1 day.
+    case concerned
 
-    /// Asset catalog identifier for the current pose. Placeholder mapping —
-    /// final art in sub-plan 15 will provide one asset per state.
+    /// Asset catalog identifier for the current pose.
     public var assetName: String {
         switch self {
         case .sleeping: return "fox-sleeping"
-        case .sitting, .watching, .nervous, .hunting, .celebrating, .proud:
+        case .neutral, .concerned:
             return "fox-sitting"
         }
     }
@@ -37,21 +22,14 @@ public enum FoxState: String, CaseIterable, Equatable, Sendable {
     public var accessibilityLabel: String {
         switch self {
         case .sleeping: return "Finn is sleeping"
-        case .sitting: return "Finn is sitting"
-        case .watching: return "Finn is watching"
-        case .nervous: return "Finn is nervous — a bill is close"
-        case .hunting: return "Finn is hunting"
-        case .celebrating: return "Finn is celebrating"
-        case .proud: return "Finn is proud"
+        case .neutral: return "Finn is calm"
+        case .concerned: return "Finn is concerned about a charge"
         }
     }
 
-    /// Whether this state has a continuous emotional-beat animation loop.
-    /// Reduce Motion always disables loops regardless.
+    /// V1 fox moods are static. Motion belongs to entry/exit transitions,
+    /// not character loops.
     public var hasEmotionalBeat: Bool {
-        switch self {
-        case .nervous, .hunting: return true
-        case .sleeping, .sitting, .watching, .celebrating, .proud: return false
-        }
+        false
     }
 }

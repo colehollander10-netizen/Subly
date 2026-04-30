@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Finn's on-screen presence. One `FoxView` per placement — the view is
+/// Finn's on-screen presence. One `FoxView` per placement. The view is
 /// cheap and can be composed anywhere a mascot appears. Motion is keyed to
 /// `FoxState` and respects `accessibilityReduceMotion`.
 public struct FoxView: View {
@@ -34,83 +34,34 @@ public struct FoxView: View {
     }
 }
 
-/// Applies the per-state spring entry + optional emotional-beat loop. Kept
-/// in one modifier so tuning happens in one place (design doc § Motion Rules).
+/// Applies the entry spring in one place so tuning stays consistent.
 private struct FoxMotion: ViewModifier {
     let state: FoxState
     let reduceMotion: Bool
 
     @State private var entered = false
-    @State private var beatPhase: Int = 0
-    @State private var beatTask: Task<Void, Never>?
 
     func body(content: Content) -> some View {
         content
             .scaleEffect(entered ? 1.0 : 0.92)
             .opacity(entered ? 1.0 : 0.0)
-            .offset(y: beatOffset)
-            .rotationEffect(.degrees(beatRotation))
             .onAppear { onStateBecomeActive() }
             .onChange(of: state) { _, _ in onStateBecomeActive() }
-            .onDisappear { beatTask?.cancel() }
-    }
-
-    private var beatOffset: CGFloat {
-        switch (state, beatPhase) {
-        case (.hunting, 1): return -2
-        case (.hunting, 2): return 1
-        default: return 0
-        }
-    }
-
-    private var beatRotation: Double {
-        switch (state, beatPhase) {
-        case (.nervous, 1): return -2
-        case (.nervous, 2): return 2
-        default: return 0
-        }
     }
 
     private func onStateBecomeActive() {
-        beatTask?.cancel()
-        // Spring-bounce pose entry. Snap-with-overshoot feel per spec.
         if reduceMotion {
             entered = true
         } else {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
                 entered = true
-            }
-        }
-
-        guard !reduceMotion, state.hasEmotionalBeat else {
-            beatPhase = 0
-            return
-        }
-
-        // Kick off the emotional-beat loop. `TimelineView` is too heavy for
-        // the tiny offsets we need here — a cancellable loop Task is lighter
-        // and stops automatically on state change or disappear.
-        beatTask = Task {
-            while !Task.isCancelled {
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.5)) { beatPhase = 1 }
-                }
-                try? await Task.sleep(nanoseconds: 500_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.5)) { beatPhase = 2 }
-                }
-                try? await Task.sleep(nanoseconds: 500_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.5)) { beatPhase = 0 }
-                }
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
             }
         }
     }
 }
 
 /// Shown when the asset catalog doesn't include a match for `state`. This
-/// is the v1 pre-illustrator fallback — a flat capsule body + circle head
+/// is the v1 pre-illustrator fallback: a flat capsule body + circle head
 /// in the Vulpine palette so the layout still composes.
 private struct PlaceholderFox: View {
     let state: FoxState
@@ -174,6 +125,6 @@ private struct PlaceholderFox: View {
         }
     }
     .padding()
-    .background(Color.black)
+    .background(Color(red: 26 / 255, green: 22 / 255, blue: 20 / 255))
     .preferredColorScheme(.dark)
 }

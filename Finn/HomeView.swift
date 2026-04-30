@@ -40,6 +40,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
+                        .stagedAppear(0, offset: 10)
                     mainContent
                 }
                 .padding(.horizontal, 20)
@@ -126,11 +127,14 @@ struct HomeView: View {
     private var mainContent: some View {
         if let nextTrial {
             heroSection(for: nextTrial)
+                .stagedAppear(1)
             if !upcomingAfterHero.isEmpty {
                 comingUpSection
+                    .stagedAppear(2)
             }
         } else {
             emptyState
+                .stagedAppear(1)
         }
     }
 
@@ -175,6 +179,8 @@ struct HomeView: View {
                                 text: trialCountdownBadgeText(days: days, includeLeft: true),
                                 color: FinnTheme.urgencyColor(daysLeft: days)
                             )
+                            .contentTransition(.numericText())
+                            .animation(FinnMotion.colorShift, value: days)
                             .breathing(days <= 3)
                         }
 
@@ -187,10 +193,13 @@ struct HomeView: View {
                                 .foregroundStyle(FinnTheme.primaryText)
                                 .minimumScaleFactor(0.72)
                                 .lineLimit(1)
+                                .contentTransition(.numericText())
                             Text(daysLabel(days))
                                 .font(.system(size: 15, weight: .medium, design: .default))
                                 .monospacedDigit()
                                 .foregroundStyle(FinnTheme.urgencyColor(daysLeft: days))
+                                .contentTransition(.numericText())
+                                .animation(FinnMotion.colorShift, value: days)
                         }
 
                         nextAlertRow(for: trial)
@@ -227,6 +236,7 @@ struct HomeView: View {
                 }
             }
         }
+        .animation(FinnMotion.standard, value: activeTrials.count)
     }
 
     private var emptyState: some View {

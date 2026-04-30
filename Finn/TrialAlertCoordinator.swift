@@ -1,8 +1,11 @@
 import Foundation
 import NotificationEngine
+import OSLog
 import SubscriptionStore
 import SwiftData
 import TrialEngine
+
+private let trialAlertCoordinatorLog = Logger(subsystem: "com.subly.Subly", category: "trial-alert-coordinator")
 
 /// Plans and schedules local trial-end notifications for every active
 /// (non-dismissed, future-ending) `Trial`. Call `replanAll()` on app launch
@@ -66,7 +69,12 @@ actor TrialAlertCoordinator {
             }
         }
 
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            trialAlertCoordinatorLog.error("Alert replan save failed: \(String(describing: error), privacy: .public)")
+            return
+        }
 
         await scheduleNotifications(
             context: context,
@@ -80,7 +88,13 @@ actor TrialAlertCoordinator {
 
     private func fetchSchedulableTrials(context: ModelContext, now: Date) -> [Trial] {
         let descriptor = FetchDescriptor<Trial>()
-        let all = (try? context.fetch(descriptor)) ?? []
+        let all: [Trial]
+        do {
+            all = try context.fetch(descriptor)
+        } catch {
+            trialAlertCoordinatorLog.error("Schedulable trial fetch failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
         return all.filter {
             !$0.userDismissed && $0.status == .active && $0.chargeDate > now
         }
@@ -88,7 +102,13 @@ actor TrialAlertCoordinator {
 
     private func fetchTrialMap(context: ModelContext) -> [UUID: Trial] {
         let descriptor = FetchDescriptor<Trial>()
-        let trials = (try? context.fetch(descriptor)) ?? []
+        let trials: [Trial]
+        do {
+            trials = try context.fetch(descriptor)
+        } catch {
+            trialAlertCoordinatorLog.error("Trial map fetch failed: \(String(describing: error), privacy: .public)")
+            return [:]
+        }
         return Dictionary(uniqueKeysWithValues: trials.map { ($0.id, $0) })
     }
 
@@ -98,7 +118,13 @@ actor TrialAlertCoordinator {
                 $0.trialID == trialID && !$0.delivered
             }
         )
-        let existing = (try? context.fetch(descriptor)) ?? []
+        let existing: [TrialAlert]
+        do {
+            existing = try context.fetch(descriptor)
+        } catch {
+            trialAlertCoordinatorLog.error("Existing alert fetch failed: \(String(describing: error), privacy: .public)")
+            return
+        }
         for alert in existing {
             if replansOnScan(alert.alertType) {
                 context.delete(alert)
@@ -115,7 +141,13 @@ actor TrialAlertCoordinator {
         let descriptor = FetchDescriptor<TrialAlert>(
             predicate: #Predicate { !$0.delivered }
         )
-        let alerts = (try? context.fetch(descriptor)) ?? []
+        let alerts: [TrialAlert]
+        do {
+            alerts = try context.fetch(descriptor)
+        } catch {
+            trialAlertCoordinatorLog.error("Undelivered alert prune fetch failed: \(String(describing: error), privacy: .public)")
+            return
+        }
 
         for alert in alerts {
             guard let trial = trialMap[alert.trialID] else {
@@ -143,7 +175,13 @@ actor TrialAlertCoordinator {
         let descriptor = FetchDescriptor<TrialAlert>(
             predicate: #Predicate { !$0.delivered }
         )
-        let pending = (try? context.fetch(descriptor)) ?? []
+        let pending: [TrialAlert]
+        do {
+            pending = try context.fetch(descriptor)
+        } catch {
+            trialAlertCoordinatorLog.error("Pending alert schedule fetch failed: \(String(describing: error), privacy: .public)")
+            return
+        }
 
         let scheduled: [ScheduledAlert] = pending.compactMap { alert in
             guard let trial = trialMap[alert.trialID] else { return nil }

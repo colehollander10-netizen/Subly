@@ -54,17 +54,22 @@ struct SubscriptionsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 28) {
                     header
+                        .stagedAppear(0, offset: 10)
                     if subscriptions.isEmpty {
                         emptyState
+                            .stagedAppear(1)
                     } else {
                         if !chargingThisWeek.isEmpty {
                             section(title: "Charging this week", items: chargingThisWeek)
+                                .stagedAppear(1)
                         }
                         if !thisMonth.isEmpty {
                             section(title: "This month", items: thisMonth)
+                                .stagedAppear(2)
                         }
                         if !later.isEmpty {
                             section(title: "Later", items: later)
+                                .stagedAppear(3)
                         }
                     }
                 }
@@ -117,6 +122,7 @@ struct SubscriptionsView: View {
                 .font(.system(size: 12, weight: .medium))
                 .monospacedDigit()
                 .foregroundStyle(FinnTheme.tertiaryText)
+                .contentTransition(.numericText())
         }
     }
 
@@ -210,6 +216,9 @@ private struct SubscriptionDetailSheet: View {
     @State private var chargeDate: Date
     @State private var billingCycle: BillingCycle
     @State private var chargeAmountText: String
+    @State private var saveErrorMessage: String?
+    @State private var isSaving = false
+    @State private var isDeleting = false
 
     init(trial: Trial) {
         self.trial = trial
@@ -254,15 +263,36 @@ private struct SubscriptionDetailSheet: View {
                         Button {
                             save()
                         } label: {
-                            Text("Save").frame(maxWidth: .infinity)
+                            HStack(spacing: 8) {
+                                if isSaving {
+                                    ProgressView()
+                                        .tint(FinnTheme.background)
+                                }
+                                Text(isSaving ? "Saving" : "Save")
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButton())
-                        .disabled(!canSave)
+                        .disabled(!canSave || isSaving || isDeleting)
+
+                        if let saveErrorMessage {
+                            Text(saveErrorMessage)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FinnTheme.urgencyCritical)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
 
                         Button {
                             delete()
                         } label: {
-                            Text("Delete")
+                            HStack(spacing: 8) {
+                                if isDeleting {
+                                    ProgressView()
+                                        .tint(FinnTheme.urgencyCritical)
+                                }
+                                Text(isDeleting ? "Deleting" : "Delete")
+                            }
                                 .font(.system(size: 14, weight: .semibold))
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
@@ -271,6 +301,7 @@ private struct SubscriptionDetailSheet: View {
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(FinnTheme.urgencyCritical, lineWidth: 1)
                         )
+                        .disabled(isSaving || isDeleting)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 12)
@@ -308,7 +339,13 @@ private struct SubscriptionDetailSheet: View {
 
     private func save() {
         let trimmed = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let amount = parsedAmount else { return }
+        guard !trimmed.isEmpty, let amount = parsedAmount, !isSaving else { return }
+        isSaving = true
+        saveErrorMessage = nil
+        let previousName = trial.serviceName
+        let previousDate = trial.chargeDate
+        let previousCycle = trial.billingCycle
+        let previousAmount = trial.chargeAmount
         trial.serviceName = trimmed
         trial.chargeDate = chargeDate
         trial.billingCycle = billingCycle
@@ -316,25 +353,42 @@ private struct SubscriptionDetailSheet: View {
         do {
             try modelContext.save()
         } catch {
+            trial.serviceName = previousName
+            trial.chargeDate = previousDate
+            trial.billingCycle = previousCycle
+            trial.chargeAmount = previousAmount
             subscriptionsViewLog.error("Subscription edit save failed: \(String(describing: error), privacy: .public)")
+            saveErrorMessage = "Could not save. Try again."
+            isSaving = false
+            Haptics.play(.validationFail)
             return
         }
         Haptics.play(.save)
         replanAlerts()
-        dismiss()
+        withAnimation(FinnMotion.sheet) {
+            dismiss()
+        }
     }
 
     private func delete() {
+        guard !isDeleting else { return }
+        isDeleting = true
+        saveErrorMessage = nil
         modelContext.delete(trial)
         do {
             try modelContext.save()
         } catch {
             subscriptionsViewLog.error("Subscription delete save failed: \(String(describing: error), privacy: .public)")
+            saveErrorMessage = "Could not delete. Try again."
+            isDeleting = false
+            Haptics.play(.validationFail)
             return
         }
         Haptics.play(.destructiveConfirm)
         replanAlerts()
-        dismiss()
+        withAnimation(FinnMotion.sheet) {
+            dismiss()
+        }
     }
 
     private func replanAlerts() {
@@ -348,4 +402,3 @@ private struct SubscriptionDetailSheet: View {
         }
     }
 }
-
