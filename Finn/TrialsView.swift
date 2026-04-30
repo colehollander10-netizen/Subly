@@ -26,8 +26,10 @@ struct TrialsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 28) {
                     header
+                        .stagedAppear(0, offset: 10)
                     if trials.isEmpty {
                         emptyState
+                            .stagedAppear(1)
                     } else {
                         if !endingSoon.isEmpty {
                             VStack(alignment: .leading, spacing: 12) {
@@ -51,6 +53,7 @@ struct TrialsView: View {
                                     }
                                 }
                             }
+                            .stagedAppear(1)
                         }
                         if !later.isEmpty {
                             VStack(alignment: .leading, spacing: 12) {
@@ -74,6 +77,7 @@ struct TrialsView: View {
                                     }
                                 }
                             }
+                            .stagedAppear(2)
                         }
                     }
                 }
@@ -181,10 +185,13 @@ private struct TrialListRow: View {
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(FinnTheme.primaryText)
+                    .contentTransition(.numericText())
                 AccentPill(
                     text: trialCountdownBadgeText(days: days),
                     color: FinnTheme.urgencyColor(daysLeft: days)
                 )
+                .contentTransition(.numericText())
+                .animation(FinnMotion.colorShift, value: days)
             }
         }
         .contentShape(Rectangle())

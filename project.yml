@@ -54,7 +54,7 @@ targets:
     platform: iOS
     deploymentTarget: "18.0"
     sources:
-      - path: Subly
+      - path: Finn
     dependencies:
       - package: TrialParsingCore
       - package: SubscriptionStore
@@ -66,7 +66,7 @@ targets:
       - target: FinnShareExtension
         embed: true
     info:
-      path: Subly/Info.plist
+      path: Finn/Info.plist
       properties:
         CFBundleDisplayName: Finn
         CFBundleURLTypes:

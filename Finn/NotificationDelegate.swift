@@ -1,7 +1,10 @@
 import Foundation
+import OSLog
 import SubscriptionStore
 import SwiftData
 import UserNotifications
+
+private let notificationDelegateLog = Logger(subsystem: "com.subly.Subly", category: "notification-delegate")
 
 /// Receives notification tap and delivery callbacks and marks the
 /// corresponding `TrialAlert` row as delivered.
@@ -51,9 +54,20 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
                 predicate: #Predicate { $0.id == alertID }
             )
             descriptor.fetchLimit = 1
-            guard let alert = (try? context.fetch(descriptor))?.first else { return }
+            let alert: TrialAlert?
+            do {
+                alert = try context.fetch(descriptor).first
+            } catch {
+                notificationDelegateLog.error("Notification delivered alert fetch failed: \(String(describing: error), privacy: .public)")
+                return
+            }
+            guard let alert else { return }
             alert.delivered = true
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                notificationDelegateLog.error("Notification delivered save failed: \(String(describing: error), privacy: .public)")
+            }
         }
     }
 
@@ -71,16 +85,34 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
                 predicate: #Predicate { $0.id == alertID }
             )
             alertDescriptor.fetchLimit = 1
-            guard let alert = (try? context.fetch(alertDescriptor))?.first else { return }
+            let alert: TrialAlert?
+            do {
+                alert = try context.fetch(alertDescriptor).first
+            } catch {
+                notificationDelegateLog.error("Notification tap alert fetch failed: \(String(describing: error), privacy: .public)")
+                return
+            }
+            guard let alert else { return }
             alert.delivered = true
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                notificationDelegateLog.error("Notification tap save failed: \(String(describing: error), privacy: .public)")
+                return
+            }
 
             let trialID = alert.trialID
             var trialDescriptor = FetchDescriptor<Trial>(
                 predicate: #Predicate { $0.id == trialID }
             )
             trialDescriptor.fetchLimit = 1
-            let entry = (try? context.fetch(trialDescriptor))?.first
+            let entry: Trial?
+            do {
+                entry = try context.fetch(trialDescriptor).first
+            } catch {
+                notificationDelegateLog.error("Notification tap entry fetch failed: \(String(describing: error), privacy: .public)")
+                entry = nil
+            }
             let route: PendingNotificationRoute = {
                 if entry?.entryType == .subscription {
                     return .subscription(trialID)

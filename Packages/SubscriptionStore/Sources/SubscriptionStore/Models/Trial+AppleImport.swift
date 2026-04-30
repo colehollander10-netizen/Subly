@@ -19,8 +19,19 @@ public extension Trial {
         descriptor.fetchLimit = 1
 
         if let existing = try context.fetch(descriptor).first {
+            // Refresh every Apple-sourced field so changes pushed by Apple
+            // (renames, plan upgrades that flip the cadence, price increases)
+            // land on the existing row instead of stale-imported metadata
+            // sticking around forever. Fields Apple does not own
+            // (notificationOffset, senderDomain) are intentionally left
+            // untouched.
+            if !serviceName.isEmpty {
+                existing.serviceName = serviceName
+            }
             existing.chargeDate = chargeDate
             existing.chargeAmount = chargeAmount
+            existing.billingCycle = billingCycle
+            existing.entryType = .subscription
             existing.status = status
             return (existing, false)
         }

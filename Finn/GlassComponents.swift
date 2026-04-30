@@ -28,6 +28,14 @@ enum FinnTheme {
     }
 }
 
+enum FinnMotion {
+    static let standard = Animation.spring(response: 0.32, dampingFraction: 0.86)
+    static let press = Animation.spring(response: 0.22, dampingFraction: 0.82)
+    static let sheet = Animation.spring(response: 0.36, dampingFraction: 0.84)
+    static let quick = Animation.easeInOut(duration: 0.15)
+    static let colorShift = Animation.easeInOut(duration: 0.40)
+}
+
 struct AppBackground: View {
     var body: some View {
         FinnTheme.background
@@ -80,25 +88,32 @@ struct HairlineDivider: View {
 }
 
 struct PrimaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(FinnTheme.background)
+            .foregroundStyle(FinnTheme.background.opacity(isEnabled ? 1 : 0.62))
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
             .background(
                 Capsule(style: .continuous)
-                    .fill(FinnTheme.accent.opacity(configuration.isPressed ? 0.82 : 1))
+                    .fill(FinnTheme.accent.opacity(isEnabled ? (configuration.isPressed ? 0.82 : 1) : 0.36))
             )
+            .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+            .animation(FinnMotion.quick, value: isEnabled)
     }
 }
 
 struct GhostButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(FinnTheme.accent)
+            .foregroundStyle(FinnTheme.accent.opacity(isEnabled ? 1 : 0.42))
             .frame(maxWidth: .infinity, minHeight: 44)
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -108,9 +123,12 @@ struct GhostButton: ButtonStyle {
             )
             .overlay(
                 Capsule(style: .continuous)
-                    .stroke(FinnTheme.accent, lineWidth: 1)
+                    .stroke(FinnTheme.accent.opacity(isEnabled ? 1 : 0.32), lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.82 : 1)
+            .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+            .animation(FinnMotion.quick, value: isEnabled)
     }
 }
 
@@ -289,19 +307,55 @@ struct PressableRowStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.975 : 1.0)
             .opacity(configuration.isPressed ? 0.92 : 1.0)
-            .animation(.spring(response: 0.22, dampingFraction: 0.82), value: configuration.isPressed)
+            .animation(FinnMotion.press, value: configuration.isPressed)
+    }
+}
+
+struct StagedAppearModifier: ViewModifier {
+    let index: Int
+    let offset: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var visible = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(visible ? 1 : 0)
+            .offset(y: visible || reduceMotion ? 0 : offset)
+            .onAppear {
+                guard !visible else { return }
+                if reduceMotion {
+                    visible = true
+                } else {
+                    withAnimation(FinnMotion.standard.delay(Double(index) * 0.06)) {
+                        visible = true
+                    }
+                }
+            }
     }
 }
 
 struct BreathingModifier: ViewModifier {
     let active: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: CGFloat = 1.0
 
     func body(content: Content) -> some View {
         content
             .scaleEffect(phase)
             .onAppear {
-                guard active else { return }
+                guard active, !reduceMotion else {
+                    phase = 1.0
+                    return
+                }
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    phase = 1.03
+                }
+            }
+            .onChange(of: active) { _, isActive in
+                guard isActive, !reduceMotion else {
+                    withAnimation(FinnMotion.quick) { phase = 1.0 }
+                    return
+                }
                 withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
                     phase = 1.03
                 }
@@ -310,6 +364,10 @@ struct BreathingModifier: ViewModifier {
 }
 
 extension View {
+    func stagedAppear(_ index: Int, offset: CGFloat = 18) -> some View {
+        modifier(StagedAppearModifier(index: index, offset: offset))
+    }
+
     func breathing(_ active: Bool) -> some View {
         modifier(BreathingModifier(active: active))
     }

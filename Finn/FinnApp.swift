@@ -95,6 +95,7 @@ struct FinnApp: App {
             ContentView(notificationEngine: notificationEngine)
                 .modelContainer(Self.modelContainer)
                 .environment(appRouter)
+                .environment(autoImportService)
                 // Force the warm-charcoal window background so view transitions
                 // (tab switches, sheets) don't flash white→gray before content
                 // composites in. Also forces dark color scheme everywhere so

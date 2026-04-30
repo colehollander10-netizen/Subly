@@ -1,10 +1,13 @@
 import NotificationEngine
+import OSLog
 import PhosphorSwift
 import SubscriptionStore
 import TrialParsingCore
 import SwiftData
 import SwiftUI
 import UIKit
+
+private let trialDetailLog = Logger(subsystem: "com.subly.Subly", category: "trial-detail")
 
 struct TrialDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -43,6 +46,8 @@ struct TrialDetailSheet: View {
     @State private var didApplyInitialSharedText = false
     @State private var pasteResetTask: Task<Void, Never>? = nil
     @State private var showingCancelAssist = false
+    @State private var isSaving = false
+    @State private var saveErrorMessage: String?
 
     init(
         trial: Trial? = nil,
@@ -92,14 +97,28 @@ struct TrialDetailSheet: View {
                         )
                         fieldsCard
                         Button {
-                            Haptics.play(.save)
                             save()
                         } label: {
-                            Text("Save").frame(maxWidth: .infinity)
+                            HStack(spacing: 8) {
+                                if isSaving {
+                                    ProgressView()
+                                        .tint(FinnTheme.background)
+                                }
+                                Text(isSaving ? "Saving" : "Save")
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButton())
-                        .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .disabled(serviceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
                         .padding(.top, 4)
+
+                        if let saveErrorMessage {
+                            Text(saveErrorMessage)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FinnTheme.urgencyCritical)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
 
                         if let trial {
                             VStack(spacing: 16) {
@@ -275,7 +294,7 @@ struct TrialDetailSheet: View {
                             .overlay(
                                 Capsule().strokeBorder(isSelected ? Color.clear : FinnTheme.divider, lineWidth: 1)
                             )
-                            .animation(.easeInOut(duration: 0.15), value: isSelected)
+                            .animation(FinnMotion.quick, value: isSelected)
                     }
                     .buttonStyle(.plain)
                 }
@@ -285,8 +304,17 @@ struct TrialDetailSheet: View {
 
     private func save() {
         let trimmedName = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty, !isSaving else { return }
+        isSaving = true
+        saveErrorMessage = nil
         let amount = parsedAmount
         let inferredDomain = BrandDirectory.logoDomain(for: trimmedName, senderDomain: trial?.senderDomain)
+        let savedTrial: Trial
+        let previousName = trial?.serviceName
+        let previousDomain = trial?.senderDomain
+        let previousChargeDate = trial?.chargeDate
+        let previousAmount = trial?.chargeAmount
+        var insertedTrial: Trial?
         if let trial {
             trial.serviceName = trimmedName
             if (trial.senderDomain).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -294,7 +322,7 @@ struct TrialDetailSheet: View {
             }
             trial.chargeDate = trialEndDate
             trial.chargeAmount = amount
-            onSaveExisting?(trial)
+            savedTrial = trial
         } else {
             let newTrial = Trial(
                 serviceName: trimmedName,
@@ -303,9 +331,34 @@ struct TrialDetailSheet: View {
                 chargeAmount: amount
             )
             modelContext.insert(newTrial)
-            onCreateNew?(newTrial)
+            insertedTrial = newTrial
+            savedTrial = newTrial
         }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            if let trial, let previousName, let previousDomain, let previousChargeDate {
+                trial.serviceName = previousName
+                trial.senderDomain = previousDomain
+                trial.chargeDate = previousChargeDate
+                trial.chargeAmount = previousAmount
+            }
+            if let insertedTrial {
+                modelContext.delete(insertedTrial)
+            }
+            trialDetailLog.error("Trial detail save failed: \(String(describing: error), privacy: .public)")
+            saveErrorMessage = "Could not save. Try again."
+            isSaving = false
+            Haptics.play(.validationFail)
+            return
+        }
+
+        Haptics.play(.save)
+        if trial == nil {
+            onCreateNew?(savedTrial)
+        } else {
+            onSaveExisting?(savedTrial)
+        }
 
         let container = modelContext.container
         Task {
@@ -316,7 +369,9 @@ struct TrialDetailSheet: View {
             await coordinator.replanAll()
         }
 
-        dismiss()
+        withAnimation(FinnMotion.sheet) {
+            dismiss()
+        }
     }
 
     private func applyClipboard() {
@@ -350,14 +405,14 @@ struct TrialDetailSheet: View {
         }
         guard !filled.isEmpty else { return }
         pasteFilledFields = filled
-        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+        withAnimation(FinnMotion.standard) {
             pasteShowsSuccess = true
         }
         pasteResetTask?.cancel()
         pasteResetTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             guard !Task.isCancelled else { return }
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+            withAnimation(FinnMotion.standard) {
                 pasteShowsSuccess = false
             }
         }
