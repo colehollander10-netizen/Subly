@@ -1,6 +1,7 @@
 import NotificationEngine
 import OSLog
 import PhosphorSwift
+import PhotosUI
 import SubscriptionStore
 import TrialParsingCore
 import SwiftData
@@ -45,6 +46,8 @@ struct TrialDetailSheet: View {
     @State private var pasteShowsSuccess: Bool = false
     @State private var didApplyInitialSharedText = false
     @State private var pasteResetTask: Task<Void, Never>? = nil
+    @State private var ocrPickerItem: PhotosPickerItem? = nil
+    @State private var ocrIsScanning: Bool = false
     @State private var showingCancelAssist = false
     @State private var isSaving = false
     @State private var saveErrorMessage: String?
@@ -199,6 +202,8 @@ struct TrialDetailSheet: View {
                 if trial == nil {
                     pasteRow
                     HairlineDivider().padding(.leading, 54)
+                    scanScreenshotRow
+                    HairlineDivider().padding(.leading, 54)
                 }
                 serviceField
                 HairlineDivider().padding(.leading, 54)
@@ -243,6 +248,44 @@ struct TrialDetailSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var scanScreenshotRow: some View {
+        PhotosPicker(selection: $ocrPickerItem, matching: .images, photoLibrary: .shared()) {
+            HStack(spacing: 14) {
+                Group {
+                    if ocrIsScanning {
+                        ProgressView()
+                            .controlSize(.small)
+                            .tint(FinnTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    } else {
+                        Ph.image.regular
+                            .color(FinnTheme.tertiaryText)
+                            .frame(width: 22, height: 22)
+                    }
+                }
+                .frame(width: 24, height: 22, alignment: .center)
+                .padding(.top, 2)
+
+                Text(ocrIsScanning ? "Scanning…" : "Scan screenshot")
+                    .font(.system(size: 15, weight: .medium, design: .default))
+                    .foregroundStyle(FinnTheme.primaryText)
+
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(ocrIsScanning)
+        .onChange(of: ocrPickerItem) { _, newItem in
+            guard let newItem else { return }
+            Haptics.play(.primaryTap)
+            Task { await scanPickedImage(newItem) }
+        }
     }
 
     @ViewBuilder
@@ -381,6 +424,26 @@ struct TrialDetailSheet: View {
         applySharedText(raw)
     }
 
+    @MainActor
+    private func scanPickedImage(_ item: PhotosPickerItem) async {
+        ocrIsScanning = true
+        defer {
+            ocrIsScanning = false
+            ocrPickerItem = nil
+        }
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data) else {
+                return
+            }
+            let text = try await TrialOCRService.recognize(from: image)
+            guard !text.isEmpty else { return }
+            applySharedText(text, source: .screenshot)
+        } catch {
+            trialDetailLog.error("OCR scan failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
     private func applyInitialSharedTextIfNeeded() {
         guard !didApplyInitialSharedText else { return }
         didApplyInitialSharedText = true
@@ -388,8 +451,8 @@ struct TrialDetailSheet: View {
         applySharedText(initialSharedText)
     }
 
-    private func applySharedText(_ text: String) {
-        let extracted = PastedTrialExtractor.extract(from: text)
+    private func applySharedText(_ text: String, source: TrialTextSource = .pastedText) {
+        let extracted = PastedTrialExtractor.extract(from: text, source: source)
         var filled: [String] = []
         if let name = extracted.serviceName, serviceName.isEmpty {
             serviceName = name
@@ -426,8 +489,8 @@ enum PastedTrialExtractor {
         let chargeAmount: String?
     }
 
-    static func extract(from text: String) -> Result {
-        let classification = TrialParser.classifyText(text, source: .pastedText)
+    static func extract(from text: String, source: TrialTextSource = .pastedText) -> Result {
+        let classification = TrialParser.classifyText(text, source: source)
         guard classification.confidence != .low else {
             return Result(serviceName: nil, trialEndDate: nil, chargeAmount: nil)
         }

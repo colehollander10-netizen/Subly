@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		045EDA41FB51D2844DC08D1A /* TrialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0B65202EB8EA9A494887F2 /* TrialsView.swift */; };
 		1746DB7849942997E5152ED3 /* CatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7BFCBC5C29B96E10D95BCB6 /* CatalogService.swift */; };
+		1E8DB45622C9A38879ABFC9A /* TrialOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3999ACD344B6AC0AC6F978F /* TrialOCRService.swift */; };
 		29D4F42065EFD2EAFE254363 /* SubscriptionStore in Frameworks */ = {isa = PBXBuildFile; productRef = DA29BAB2E1AC05244FAD60EA /* SubscriptionStore */; };
 		2FED5C50C8EDF13BCBB8ABBD /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBFE61AA76709574974590C /* HomeView.swift */; };
 		3FEB777E36991FB45D93DEF8 /* CancelGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593956BF6AF91A002A624EDA /* CancelGuide.swift */; };
@@ -95,6 +96,7 @@
 		98707649B82025A07A5C162A /* AmountField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountField.swift; sourceTree = "<group>"; };
 		9E9F95756E07996C18E91EE9 /* AddEntryRouterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntryRouterSheet.swift; sourceTree = "<group>"; };
 		A09454B012C1F418EB57E682 /* TrialAlertCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialAlertCoordinator.swift; sourceTree = "<group>"; };
+		A3999ACD344B6AC0AC6F978F /* TrialOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOCRService.swift; sourceTree = "<group>"; };
 		A71B29197523B2411ED92DFF /* Sheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sheets.swift; sourceTree = "<group>"; };
 		A7BFCBC5C29B96E10D95BCB6 /* CatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogService.swift; sourceTree = "<group>"; };
 		A86DFC27A12C66C76D362C77 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -177,6 +179,7 @@
 			isa = PBXGroup;
 			children = (
 				A7BFCBC5C29B96E10D95BCB6 /* CatalogService.swift */,
+				A3999ACD344B6AC0AC6F978F /* TrialOCRService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -401,6 +404,7 @@
 				7535F1AE5A2644E5B49D1230 /* StoreKitImport.swift in Sources */,
 				ED04A9479DF337DFA94848EE /* SubscriptionsView.swift in Sources */,
 				83DF47C9AD797CD7021A62B4 /* TrialAlertCoordinator.swift in Sources */,
+				1E8DB45622C9A38879ABFC9A /* TrialOCRService.swift in Sources */,
 				045EDA41FB51D2844DC08D1A /* TrialsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
