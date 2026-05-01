@@ -283,6 +283,7 @@ struct TrialDetailSheet: View {
         .disabled(ocrIsScanning)
         .onChange(of: ocrPickerItem) { _, newItem in
             guard let newItem else { return }
+            ocrPickerItem = nil
             Haptics.play(.primaryTap)
             Task { await scanPickedImage(newItem) }
         }
@@ -427,10 +428,7 @@ struct TrialDetailSheet: View {
     @MainActor
     private func scanPickedImage(_ item: PhotosPickerItem) async {
         ocrIsScanning = true
-        defer {
-            ocrIsScanning = false
-            ocrPickerItem = nil
-        }
+        defer { ocrIsScanning = false }
         do {
             guard let data = try await item.loadTransferable(type: Data.self),
                   let image = UIImage(data: data) else {
