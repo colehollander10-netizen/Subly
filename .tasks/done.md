@@ -4,6 +4,24 @@ Append-only. Newest at top. Each entry: what shipped, when, and the outcome that
 
 ---
 
+## FINN-005: Manual trial entry — paste, share, OCR
+**Status:** done
+**Started:** 2026-04-22
+**Completed:** 2026-05-01
+
+### What shipped
+- PR #46 — Paste-from-clipboard on Add Trial
+- PR #50/#51 — Share extension for text/HTML, routes shared text into Add Trial via TrialParsingCore
+- PR #52 — Screenshot OCR fallback (Apple Vision, on-device, no network) feeding the same applySharedText funnel with source: .screenshot
+- Funnel architecture: paste, share, and OCR all converge on `applySharedText(_:source:)` → `PastedTrialExtractor` → `TrialParser.classifyText`. Single parsing path for all three input methods.
+- Vision config: .accurate + usesLanguageCorrection=false (protects brand names like Disney+, MUBI, HBO Max from being mangled)
+- Verified: simulator walkthrough on iPhone 17 Pro with synthetic Cursor Pro trial confirmation — service, end date, charge amount all extracted and saved correctly
+
+### Successor
+FINN-016 closes the gap on having to be inside Finn to use this — share from anywhere on iOS.
+
+---
+
 ## FINN-015: Stamp cancelledAt when a trial is cancelled
 **Status:** done
 **Started:** 2026-04-29

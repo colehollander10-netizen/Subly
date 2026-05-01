@@ -4,16 +4,19 @@ Cap: 3 tasks. If you need to start a 4th, something here moves back to backlog o
 
 ---
 
-## FINN-005: Manual trial entry — share sheet + OCR
+## FINN-016: Share From Anywhere — auto-save with trial/subscription chooser
 **Status:** active
-**PR:** #52 — screenshot OCR fallback (open)
+**Spec:** [[FINN-016 Share From Anywhere]] in vault — read first
 
-### Remaining
-- [ ] Review/merge OCR slice (PR #52)
-- [ ] Re-walk the full manual-capture flow on simulator and real device
+### Remaining (4 stacked PRs)
+- [ ] PR 1 — Extract OCR into shared `OCRCore` package (host app refactor, no behavior change)
+- [ ] PR 2 — Share extension accepts `public.image`, OCR runs in extension, two-button chooser modal
+- [ ] PR 3 — App Group entitlement + SwiftData write directly from extension
+- [ ] PR 4 — Confirmation toast in host app on next foreground
 
 ### Notes
-- Paste-from-clipboard shipped in PR #46.
-- Share extension shipped in PR #50/#51.
-- OCR slice in PR #52: `TrialOCRService` (Vision wrapper) + "Scan screenshot" row on Add Trial, routed through existing `applySharedText` funnel with `source: .screenshot`.
-- After #52 merges and walkthrough passes: close FINN-005, move FINN-006 (launch pricing) to active.
+- FINN-005 closed — paste (#46), share-text (#50/#51), OCR-from-Photos (#52) all shipped
+- This ticket closes the gap: today the user has to be in Finn to capture; FINN-016 lets them capture from anywhere on iOS without opening Finn
+- Auto-save model: user taps "Free trial" or "Subscription" in the share modal — those are the only two taps
+- Parser needs a subscription-extraction path (today only does trials) — Option A: extend `TrialParser` with subscription mode (lean), Option B: introduce `ReceiptParser` (cleaner, later)
+- Real-device testing required — share extensions can't be fully validated in sim
