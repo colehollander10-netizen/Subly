@@ -9,7 +9,7 @@ Cap: 3 tasks. If you need to start a 4th, something here moves back to backlog o
 **Spec:** [[FINN-016 Share From Anywhere]] in vault — read first
 
 ### Remaining (4 stacked PRs)
-- [ ] PR 1 — Extract OCR into shared `OCRCore` package (host app refactor, no behavior change)
+- [x] PR 1 — Extract OCR into shared `OCRCore` package (host app refactor, no behavior change)
 - [ ] PR 2 — Share extension accepts `public.image`, OCR runs in extension, two-button chooser modal
 - [ ] PR 3 — App Group entitlement + SwiftData write directly from extension
 - [ ] PR 4 — Confirmation toast in host app on next foreground

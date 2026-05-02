@@ -80,6 +80,32 @@ public struct TrialMessageClassification: Sendable, Equatable {
     }
 }
 
+public struct SubscriptionFieldExtraction: Sendable, Equatable {
+    public let serviceName: String
+    public let nextChargeDate: Date?
+    public let chargeAmount: Decimal?
+    public let billingCycle: SubscriptionBillingCycle?
+
+    public init(
+        serviceName: String,
+        nextChargeDate: Date?,
+        chargeAmount: Decimal?,
+        billingCycle: SubscriptionBillingCycle?
+    ) {
+        self.serviceName = serviceName
+        self.nextChargeDate = nextChargeDate
+        self.chargeAmount = chargeAmount
+        self.billingCycle = billingCycle
+    }
+}
+
+public enum SubscriptionBillingCycle: String, Sendable, Equatable {
+    case monthly
+    case yearly
+    case weekly
+    case custom
+}
+
 // MARK: - How the text reached us
 
 public enum TrialTextSource: Sendable {
@@ -218,6 +244,66 @@ public enum TrialParser {
             signals: signals
         )
     }
+
+    /// Lightweight extraction path for subscription receipts and renewal
+    /// screenshots. Unlike `classifyText`, this intentionally skips the
+    /// trial-signal gates so share-extension users can choose Subscription
+    /// first and let the parser pull fields from ordinary billing copy.
+    public static func extractSubscriptionFields(
+        _ text: String,
+        now: Date = Date(),
+        source: TrialTextSource = .screenshot
+    ) -> SubscriptionFieldExtraction {
+        let normalized = normalizeText(text)
+        let (subjectGuess, body) = splitSubjectAndBody(normalized, source: source)
+        let serviceName = cleanExtractedServiceName(inferSenderName(from: normalized, subject: subjectGuess))
+            ?? inferLeadingServiceName(from: body)
+            ?? "Unknown"
+        let nextChargeDate = extractTrialEndDate(body: body, sentDate: now)
+        let amount = extractAmount(body: body)
+        let billingCycle = extractSubscriptionBillingCycle(from: body.lowercased())
+
+        return SubscriptionFieldExtraction(
+            serviceName: serviceName,
+            nextChargeDate: nextChargeDate,
+            chargeAmount: amount,
+            billingCycle: billingCycle
+        )
+    }
+}
+
+private func cleanExtractedServiceName(_ name: String?) -> String? {
+    guard let name else { return nil }
+    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    let cleaned = trimmed.trimmingCharacters(in: CharacterSet(charactersIn: ".:;,- "))
+    return cleaned.isEmpty ? nil : cleaned
+}
+
+private func inferLeadingServiceName(from body: String) -> String? {
+    let ignoredPrefixes = [
+        "your ",
+        "thanks ",
+        "thank ",
+        "welcome ",
+        "receipt",
+        "invoice",
+        "payment",
+        "order",
+    ]
+    let lines = body
+        .components(separatedBy: .newlines)
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+
+    guard let first = lines.first, first.count <= 40 else { return nil }
+    let lower = first.lowercased()
+    guard !ignoredPrefixes.contains(where: lower.hasPrefix),
+          !first.contains("$"),
+          !first.contains(":"),
+          !first.contains(".") else {
+        return nil
+    }
+    return first
 }
 
 private func emptyClassification(
@@ -654,6 +740,38 @@ internal func extractAmount(body: String) -> Decimal? {
         }
     }
     return amounts.max()
+}
+
+internal func extractSubscriptionBillingCycle(from body: String) -> SubscriptionBillingCycle? {
+    let yearlyMarkers = [
+        "per year",
+        "per annum",
+        "yearly",
+        "annual",
+        "annually",
+        "/year",
+        "/yr",
+    ]
+    if yearlyMarkers.contains(where: body.contains) { return .yearly }
+
+    let weeklyMarkers = [
+        "per week",
+        "weekly",
+        "/week",
+        "/wk",
+    ]
+    if weeklyMarkers.contains(where: body.contains) { return .weekly }
+
+    let monthlyMarkers = [
+        "per month",
+        "monthly",
+        "/month",
+        "/mo",
+        "renews every month",
+    ]
+    if monthlyMarkers.contains(where: body.contains) { return .monthly }
+
+    return nil
 }
 
 // MARK: - Trial length

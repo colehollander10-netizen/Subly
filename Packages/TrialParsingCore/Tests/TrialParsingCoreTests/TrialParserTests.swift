@@ -145,6 +145,35 @@ struct TrialParserTests {
     }
 
     @Test
+    func subscriptionExtraction_netflixRenewalPullsFieldsWithoutTrialSignal() {
+        let text = """
+        Netflix
+        Your Standard plan renews on May 22, 2026.
+        You will be charged $15.49 monthly.
+        Payment method: Visa ending in 4321.
+        """
+        let fields = TrialParser.extractSubscriptionFields(text, now: referenceNow, source: .screenshot)
+        #expect(fields.serviceName == "Netflix")
+        #expect(fields.chargeAmount == Decimal(string: "15.49"))
+        #expect(fields.billingCycle == .monthly)
+        #expect(dateComponents(for: fields.nextChargeDate) == DateComponents(year: 2026, month: 5, day: 22))
+    }
+
+    @Test
+    func subscriptionExtraction_thanksForSubscribingPullsServiceName() {
+        let text = """
+        Thanks for subscribing to ChatGPT Plus.
+        Your next payment of $20.00 is due June 1, 2026.
+        Billed monthly.
+        """
+        let fields = TrialParser.extractSubscriptionFields(text, now: referenceNow, source: .screenshot)
+        #expect(fields.serviceName == "ChatGPT Plus")
+        #expect(fields.chargeAmount == Decimal(string: "20"))
+        #expect(fields.billingCycle == .monthly)
+        #expect(dateComponents(for: fields.nextChargeDate) == DateComponents(year: 2026, month: 6, day: 1))
+    }
+
+    @Test
     func emptyInput_returnsNoBody() {
         let classification = TrialParser.classifyText("", now: referenceNow, source: .pastedText)
         #expect(classification.confidence == .low)
