@@ -104,6 +104,7 @@ struct FinnApp: App {
                 .preferredColorScheme(.dark)
                 .task {
                     let context = Self.modelContainer.mainContext
+                    SharedCaptureImporter.importPendingEntries(context: context)
                     autoImportService.startTransactionUpdates(context: context)
                     await autoImportService.sync(context: context)
                 }
@@ -111,7 +112,11 @@ struct FinnApp: App {
                     guard newPhase == .active else { return }
 
                     Task {
-                        await autoImportService.sync(context: Self.modelContainer.mainContext)
+                        let context = Self.modelContainer.mainContext
+                        await MainActor.run {
+                            SharedCaptureImporter.importPendingEntries(context: context)
+                        }
+                        await autoImportService.sync(context: context)
                     }
                 }
                 .onOpenURL { url in

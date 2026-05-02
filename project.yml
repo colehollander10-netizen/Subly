@@ -57,6 +57,10 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: Finn
+      - path: Shared
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: Finn/Finn.entitlements
     dependencies:
       - package: OCRCore
       - package: TrialParsingCore
@@ -88,8 +92,12 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: ShareExtension
+      - path: Shared
+    dependencies:
+      - package: OCRCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.colehollander.subly.ShareExtension
         INFOPLIST_FILE: ShareExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ShareExtension/FinnShareExtension.entitlements
         SWIFT_VERSION: "5.0"

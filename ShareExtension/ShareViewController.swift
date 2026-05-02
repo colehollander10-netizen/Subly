@@ -1,23 +1,43 @@
+import OCRCore
 import UniformTypeIdentifiers
 import UIKit
 
 final class ShareViewController: UIViewController {
     private var didStart = false
+    private var recognizedImageText: String?
+
+    private let statusLabel = UILabel()
+    private let buttonStack = UIStackView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        let label = UILabel()
-        label.text = "Opening Finn..."
-        label.font = .preferredFont(forTextStyle: .headline)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
+        statusLabel.text = "Reading image..."
+        statusLabel.font = .preferredFont(forTextStyle: .headline)
+        statusLabel.textAlignment = .center
+        statusLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        view.addSubview(label)
+        buttonStack.axis = .vertical
+        buttonStack.spacing = 12
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+        buttonStack.isHidden = true
+
+        let trialButton = makeChoiceButton(title: "Free trial", action: #selector(saveFreeTrial))
+        let subscriptionButton = makeChoiceButton(title: "Subscription", action: #selector(saveSubscription))
+        buttonStack.addArrangedSubview(trialButton)
+        buttonStack.addArrangedSubview(subscriptionButton)
+
+        view.addSubview(statusLabel)
+        view.addSubview(buttonStack)
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            statusLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -48),
+
+            buttonStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            buttonStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            buttonStack.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 24),
         ])
     }
 
@@ -27,14 +47,42 @@ final class ShareViewController: UIViewController {
         didStart = true
 
         Task {
-            await openFinn()
+            await handleShare()
         }
     }
 
-    private func openFinn() async {
+    private func handleShare() async {
+        if let image = await sharedImage() {
+            await recognize(image)
+            return
+        }
+
+        await openFinnWithSharedText()
+    }
+
+    private func recognize(_ image: UIImage) async {
+        do {
+            let text = try await TrialOCRService.recognize(from: image)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else {
+                await finish()
+                return
+            }
+
+            await MainActor.run {
+                recognizedImageText = text
+                statusLabel.text = ""
+                buttonStack.isHidden = false
+            }
+        } catch {
+            await finish()
+        }
+    }
+
+    private func openFinnWithSharedText() async {
         guard let text = await sharedText(),
               let url = deepLinkURL(for: text) else {
-            extensionContext?.completeRequest(returningItems: nil)
+            await finish()
             return
         }
 
@@ -64,6 +112,48 @@ final class ShareViewController: UIViewController {
         }
 
         return nil
+    }
+
+    private func sharedImage() async -> UIImage? {
+        let providers = extensionContext?.inputItems
+            .compactMap { $0 as? NSExtensionItem }
+            .flatMap { $0.attachments ?? [] } ?? []
+
+        let imageTypes = [
+            UTType.image.identifier,
+            UTType.png.identifier,
+            UTType.jpeg.identifier,
+        ]
+
+        for type in imageTypes {
+            for provider in providers where provider.hasItemConformingToTypeIdentifier(type) {
+                if let image = await loadImage(from: provider, typeIdentifier: type) {
+                    return image
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func loadImage(from provider: NSItemProvider, typeIdentifier: String) async -> UIImage? {
+        await withCheckedContinuation { continuation in
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
+                let image: UIImage?
+                switch item {
+                case let uiImage as UIImage:
+                    image = uiImage
+                case let data as Data:
+                    image = UIImage(data: data)
+                case let url as URL:
+                    image = UIImage(contentsOfFile: url.path)
+                default:
+                    image = nil
+                }
+
+                continuation.resume(returning: image)
+            }
+        }
     }
 
     private func loadText(from provider: NSItemProvider, typeIdentifier: String) async -> String? {
@@ -96,5 +186,50 @@ final class ShareViewController: UIViewController {
             URLQueryItem(name: "text", value: text),
         ]
         return components.url
+    }
+
+    private func makeChoiceButton(title: String, action: Selector) -> UIButton {
+        var configuration = UIButton.Configuration.filled()
+        configuration.title = title
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = .label
+        configuration.baseForegroundColor = .systemBackground
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 18, bottom: 14, trailing: 18)
+
+        let button = UIButton(configuration: configuration, primaryAction: nil)
+        button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
+        button.addTarget(self, action: action, for: .touchUpInside)
+        return button
+    }
+
+    @objc private func saveFreeTrial() {
+        savePendingImageShare(kind: .freeTrial)
+    }
+
+    @objc private func saveSubscription() {
+        savePendingImageShare(kind: .subscription)
+    }
+
+    private func savePendingImageShare(kind: ShareEntryKind) {
+        guard let recognizedImageText else {
+            extensionContext?.completeRequest(returningItems: nil)
+            return
+        }
+
+        do {
+            try ShareHandoffStore.append(PendingShareEntry(
+                kind: kind,
+                recognizedText: recognizedImageText
+            ))
+        } catch {
+            // Keep the extension quiet; PR 4 adds host-app confirmation UI.
+        }
+
+        extensionContext?.completeRequest(returningItems: nil)
+    }
+
+    @MainActor
+    private func finish() {
+        extensionContext?.completeRequest(returningItems: nil)
     }
 }
