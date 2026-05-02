@@ -17,6 +17,8 @@ settings:
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1,2"
 packages:
+  OCRCore:
+    path: Packages/OCRCore
   TrialParsingCore:
     path: Packages/TrialParsingCore
   SubscriptionStore:
@@ -56,6 +58,7 @@ targets:
     sources:
       - path: Finn
     dependencies:
+      - package: OCRCore
       - package: TrialParsingCore
       - package: SubscriptionStore
       - package: TrialEngine

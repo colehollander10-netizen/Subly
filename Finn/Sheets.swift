@@ -1,4 +1,5 @@
 import NotificationEngine
+import OCRCore
 import OSLog
 import PhosphorSwift
 import PhotosUI
