@@ -33,6 +33,7 @@ final class AppRouter {
     var pendingCancelTrialID: UUID?
     var pendingRoute: PendingNotificationRoute?
     var pendingSharedTrialText: String?
+    var pendingShareConfirmation: ImportedShareEntry?
 
     func handle(url: URL) -> Bool {
         guard url.scheme == "finn" else { return false }
@@ -46,6 +47,23 @@ final class AppRouter {
 
         pendingSharedTrialText = text
         return true
+    }
+
+    func showShareConfirmation(for entries: [ImportedShareEntry]) {
+        guard let entry = entries.last else { return }
+        pendingShareConfirmation = entry
+    }
+
+    func openShareConfirmation(_ entry: ImportedShareEntry) {
+        pendingShareConfirmation = nil
+        switch entry.entryType {
+        case .freeTrial:
+            pendingRoute = .trial(entry.id)
+            pendingCancelTrialID = entry.id
+        case .subscription:
+            pendingRoute = .subscription(entry.id)
+            pendingCancelTrialID = nil
+        }
     }
 }
 
@@ -168,6 +186,93 @@ private struct RootTabView: View {
                 break
             }
         }
+        .overlay(alignment: .top) {
+            if let confirmation = appRouter.pendingShareConfirmation {
+                ShareImportToast(
+                    entry: confirmation,
+                    onTap: {
+                        Haptics.play(.rowTap)
+                        appRouter.openShareConfirmation(confirmation)
+                    },
+                    onDismiss: {
+                        guard appRouter.pendingShareConfirmation?.id == confirmation.id else { return }
+                        appRouter.pendingShareConfirmation = nil
+                    }
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(FinnMotion.standard, value: appRouter.pendingShareConfirmation?.id)
+    }
+}
+
+private struct ShareImportToast: View {
+    let entry: ImportedShareEntry
+    let onTap: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                Ph.checkCircle.fill
+                    .color(FinnTheme.accent)
+                    .frame(width: 24, height: 24)
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(FinnTheme.primaryText)
+                        .lineLimit(1)
+
+                    Text(detail)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(FinnTheme.secondaryText)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Ph.caretRight.bold
+                    .color(FinnTheme.tertiaryText)
+                    .frame(width: 16, height: 16)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(FinnTheme.backgroundElevated)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(FinnTheme.glassBorder, lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.24), radius: 18, x: 0, y: 10)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(title). \(detail). Tap to edit.")
+        .task(id: entry.id) {
+            try? await Task.sleep(for: .seconds(2))
+            onDismiss()
+        }
+    }
+
+    private var title: String {
+        switch entry.entryType {
+        case .freeTrial:
+            return "Saved \(entry.serviceName) trial"
+        case .subscription:
+            return "Saved \(entry.serviceName) subscription"
+        }
+    }
+
+    private var detail: String {
+        let date = entry.chargeDate.formatted(.dateTime.month(.abbreviated).day())
+        guard let amount = entry.chargeAmount else { return date }
+        return "\(date) · \(formatUSD(amount))"
     }
 }
 

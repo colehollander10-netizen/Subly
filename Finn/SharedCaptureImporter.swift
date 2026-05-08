@@ -8,18 +8,19 @@ private let shareCaptureLog = Logger(subsystem: "com.subly.Subly", category: "sh
 
 @MainActor
 enum SharedCaptureImporter {
-    static func importPendingEntries(context: ModelContext) {
+    static func importPendingEntries(context: ModelContext) -> [ImportedShareEntry] {
         let entries: [PendingShareEntry]
         do {
             entries = try ShareHandoffStore.pendingEntries()
         } catch {
             shareCaptureLog.error("Could not read pending share entries: \(String(describing: error), privacy: .public)")
-            return
+            return []
         }
 
-        guard !entries.isEmpty else { return }
+        guard !entries.isEmpty else { return [] }
 
         var inserted = 0
+        var importedEntries: [ImportedShareEntry] = []
         var processedIDs: Set<UUID> = []
         for entry in entries {
             guard let trial = makeTrial(from: entry) else {
@@ -29,19 +30,22 @@ enum SharedCaptureImporter {
             }
             context.insert(trial)
             inserted += 1
+            importedEntries.append(ImportedShareEntry(trial: trial))
             processedIDs.insert(entry.id)
         }
 
         guard inserted > 0 else {
             removeProcessedPendingEntries(processedIDs)
-            return
+            return []
         }
 
         do {
             try context.save()
             removeProcessedPendingEntries(processedIDs)
+            return importedEntries
         } catch {
             shareCaptureLog.error("Could not save pending share entries: \(String(describing: error), privacy: .public)")
+            return []
         }
     }
 
@@ -127,5 +131,21 @@ enum SharedCaptureImporter {
         } catch {
             shareCaptureLog.error("Could not clear processed share entries: \(String(describing: error), privacy: .public)")
         }
+    }
+}
+
+struct ImportedShareEntry: Equatable, Identifiable {
+    let id: UUID
+    let entryType: EntryType
+    let serviceName: String
+    let chargeDate: Date
+    let chargeAmount: Decimal?
+
+    init(trial: Trial) {
+        self.id = trial.id
+        self.entryType = trial.entryType
+        self.serviceName = trial.serviceName
+        self.chargeDate = trial.chargeDate
+        self.chargeAmount = trial.chargeAmount
     }
 }

@@ -104,7 +104,8 @@ struct FinnApp: App {
                 .preferredColorScheme(.dark)
                 .task {
                     let context = Self.modelContainer.mainContext
-                    SharedCaptureImporter.importPendingEntries(context: context)
+                    let importedEntries = SharedCaptureImporter.importPendingEntries(context: context)
+                    appRouter.showShareConfirmation(for: importedEntries)
                     autoImportService.startTransactionUpdates(context: context)
                     await autoImportService.sync(context: context)
                 }
@@ -114,7 +115,8 @@ struct FinnApp: App {
                     Task {
                         let context = Self.modelContainer.mainContext
                         await MainActor.run {
-                            SharedCaptureImporter.importPendingEntries(context: context)
+                            let importedEntries = SharedCaptureImporter.importPendingEntries(context: context)
+                            appRouter.showShareConfirmation(for: importedEntries)
                         }
                         await autoImportService.sync(context: context)
                     }
