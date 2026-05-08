@@ -7,7 +7,7 @@ import SwiftUI
 import UIKit
 import UserNotifications
 
-private let settingsLog = Logger(subsystem: "com.subly.Subly", category: "settings")
+private let settingsLog = Logger(subsystem: "com.colehollander.finn", category: "settings")
 
 @MainActor
 struct SettingsView: View {
@@ -111,7 +111,7 @@ struct SettingsView: View {
                                     HairlineDivider()
                                     Button {
                                         Haptics.play(.rowTap)
-                                        if let url = URL(string: "https://subly.app/privacy") {
+                                        if let url = URL(string: "https://finn.app/privacy") {
                                             UIApplication.shared.open(url)
                                         }
                                     } label: {
@@ -318,7 +318,7 @@ struct SettingsView: View {
             return "\(service),\(date),\(amount)"
         }.joined(separator: "\n")
         let csv = header + rows
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("subly-trials.csv")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("finn-trials.csv")
         do {
             try csv.data(using: .utf8)?.write(to: url)
         } catch {

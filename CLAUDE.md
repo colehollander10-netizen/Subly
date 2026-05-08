@@ -1,6 +1,6 @@
 # Finn — agent briefing
 
-Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Finn/Finn.md`) and in Linear. **App is renamed Subly → Finn as of 2026-04-24** — display name is "Finn" but bundle id, Xcode project filename, and folder paths (`Subly/`, `Subly.xcodeproj`) stay "Subly" to preserve on-device SwiftData + App Store Connect linkage.
+Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Finn/Finn.md`) and in Linear. **App has completed the visible/project rename to Finn.** Display name, scheme, project file, target, and folder paths are Finn; legacy bundle identifiers (`com.colehollander.subly`) stay unchanged to preserve on-device SwiftData + App Store Connect linkage.
 
 ## Right now
 
@@ -25,7 +25,7 @@ Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Fi
 
 ```bash
 xcodegen  # after adding files
-xcodebuild -project Subly.xcodeproj -scheme Subly \
+xcodebuild -project Finn.xcodeproj -scheme Finn \
   -destination 'generic/platform=iOS' \
   CODE_SIGNING_ALLOWED=NO build
 

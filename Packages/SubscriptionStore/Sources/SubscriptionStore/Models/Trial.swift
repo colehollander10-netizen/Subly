@@ -5,7 +5,7 @@ import SwiftData
 ///
 /// The class is named `Trial` for backwards compatibility with the pre-pivot
 /// codebase; the `entryType` field disambiguates at every read site. A rename
-/// to `SublyEntry` is deferred to v1.1 to keep the pivot's churn bounded.
+/// to `FinnEntry` is deferred to v1.1 to keep the pivot's churn bounded.
 ///
 /// Field lineage (schema v2):
 /// - `chargeDate` replaces `trialEndDate` — the SwiftData `originalName`

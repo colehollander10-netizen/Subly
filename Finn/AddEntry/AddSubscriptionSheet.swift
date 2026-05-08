@@ -5,7 +5,7 @@ import SubscriptionStore
 import SwiftData
 import SwiftUI
 
-private let addSubscriptionLog = Logger(subsystem: "com.subly.Subly", category: "add-subscription")
+private let addSubscriptionLog = Logger(subsystem: "com.colehollander.finn", category: "add-subscription")
 
 struct AddSubscriptionSheet: View {
     @Environment(\.dismiss) private var dismiss

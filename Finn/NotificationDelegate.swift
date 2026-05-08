@@ -4,7 +4,7 @@ import SubscriptionStore
 import SwiftData
 import UserNotifications
 
-private let notificationDelegateLog = Logger(subsystem: "com.subly.Subly", category: "notification-delegate")
+private let notificationDelegateLog = Logger(subsystem: "com.colehollander.finn", category: "notification-delegate")
 
 /// Receives notification tap and delivery callbacks and marks the
 /// corresponding `TrialAlert` row as delivered.

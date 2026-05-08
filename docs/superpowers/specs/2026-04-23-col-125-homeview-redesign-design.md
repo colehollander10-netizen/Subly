@@ -10,11 +10,11 @@
 
 Home's one job: **"what's about to charge you in the next 7 days."** Nothing more. Post-pivot, the screen is cluttered with holdover chrome (demo banner, status line, verbose cancellation hints, redundant gear icon). Strip it to a single calm surface.
 
-The retention thesis: users don't come back to Subly because Home is engaging. They come back because Subly reliably warns them before a charge, and Home should radiate *"you're safe, nothing to worry about this week"* when it's quiet. Sparse-on-purpose.
+The retention thesis: users don't come back to Finn because Home is engaging. They come back because Finn reliably warns them before a charge, and Home should radiate *"you're safe, nothing to worry about this week"* when it's quiet. Sparse-on-purpose.
 
 ## Scope
 
-Rewrite `Subly/HomeView.swift` per the DESIGN.md § Screen Anatomy → HomeView spec, incorporating four product decisions:
+Rewrite `Finn/HomeView.swift` per the DESIGN.md § Screen Anatomy → HomeView spec, incorporating four product decisions:
 
 | # | Decision |
 |---|----------|
@@ -40,7 +40,7 @@ Plus: reserve a 120pt slot in the empty state for the future fox mascot (COL-132
 
 ```
 [small date stamp: Apr 23]
-[Subly wordmark: 30pt rounded heavy, lavender]
+[Finn wordmark: 30pt rounded heavy, lavender]
 ```
 
 No subtitle tagline. No gear icon. No right-side element. Centered-left, clean.
@@ -89,7 +89,7 @@ Centered vertically and horizontally within available scroll height. No button. 
 ```swift
 Image(systemName: "moon.stars.fill")
     .font(.system(size: 64, weight: .light))
-    .foregroundStyle(SublyTheme.accent.opacity(0.4))
+    .foregroundStyle(FinnTheme.accent.opacity(0.4))
     .frame(width: 120, height: 120)
 ```
 
@@ -151,15 +151,15 @@ No new error paths introduced. SwiftData read failures propagate as empty `activ
 - Hero card as Button: `.accessibilityLabel("\(nextTrial.serviceName), charges \(relativeDateString), \(formatUSD(amount))")`
 - Empty state: `.accessibilityElement(children: .combine)` so screen readers announce the full message
 - Mascot placeholder: `.accessibilityHidden(true)` — decorative
-- Wordmark: `.accessibilityLabel("Subly")`
+- Wordmark: `.accessibilityLabel("Finn")`
 
 ## File changes
 
 | File | Change |
 |------|--------|
-| `Subly/HomeView.swift` | Full rewrite per above |
-| `Subly/GlassComponents.swift` | None. CompactTrialRow already exists and works |
-| `Subly/Sheets.swift` | Verify `TrialDetailSheet` exposes a "Mark cancelled" action; if absent, flag as follow-up (do NOT implement in this ticket) |
+| `Finn/HomeView.swift` | Full rewrite per above |
+| `Finn/GlassComponents.swift` | None. CompactTrialRow already exists and works |
+| `Finn/Sheets.swift` | Verify `TrialDetailSheet` exposes a "Mark cancelled" action; if absent, flag as follow-up (do NOT implement in this ticket) |
 
 No new files. No new types. No new dependencies.
 
@@ -178,7 +178,7 @@ No new files. No new types. No new dependencies.
 ## Verification
 
 After code lands:
-1. `xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'generic/platform=iOS Simulator' build` — must succeed
+1. `xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'generic/platform=iOS Simulator' build` — must succeed
 2. Open in simulator with no trials in SwiftData → empty state visible, centered
 3. Add a trial ending in 3 days → hero card visible, tap opens detail sheet
 4. Add 3 more trials ending in 4/5/6 days → "Also this week" section appears with all 3

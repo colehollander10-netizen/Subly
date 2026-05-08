@@ -104,16 +104,16 @@ FINN-016 closes the gap on having to be inside Finn to use this — share from a
 
 ---
 
-## FINN-002: Rename Subly → Finn (mechanical)
+## FINN-002: Rename to Finn (mechanical)
 **Status:** done
 **Started:** 2026-04-24
 **Completed:** 2026-04-29
 **Why:** Align the product name with the locked Finn brand while preserving data-sensitive identifiers where needed.
 
 ### What shipped
-- Merged PR #38 (`chore/rename-subly-to-finn-20260424`).
+- Merged PR #38.
 - Display name and app-facing copy use Finn.
-- Bundle id, Xcode project filename, and folder paths intentionally remain Subly to preserve on-device SwiftData and App Store linkage.
+- Bundle id intentionally remains `com.colehollander.subly` to preserve on-device SwiftData and App Store linkage.
 
 ---
 

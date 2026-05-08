@@ -1,10 +1,10 @@
-# Subly Subscription Pivot — Implementation Plan
+# Finn Subscription Pivot — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extend Subly from trial-only to trial + subscription tracking, with a unified model, 4-tab UI, cancel-assist flow for trials, fox mascot for emotional moments, and StoreKit bulk import.
+**Goal:** Extend Finn from trial-only to trial + subscription tracking, with a unified model, 4-tab UI, cancel-assist flow for trials, fox mascot for emotional moments, and StoreKit bulk import.
 
-**Architecture:** Unified `Trial` SwiftData model (class name kept for v1; `entryType` field disambiguates) extended with `entryType`, `status`, `billingCycle`, `notificationOffset`, `cancelledAt`, and `trialEndDate → chargeDate` rename. Migration via `VersionedSchema` to preserve existing trial data. UI grows from 3 tabs to 4 (Home / Trials / Subscriptions / Settings) with Phosphor icons. Fox system is native SwiftUI, `Subly/Fox/` folder.
+**Architecture:** Unified `Trial` SwiftData model (class name kept for v1; `entryType` field disambiguates) extended with `entryType`, `status`, `billingCycle`, `notificationOffset`, `cancelledAt`, and `trialEndDate → chargeDate` rename. Migration via `VersionedSchema` to preserve existing trial data. UI grows from 3 tabs to 4 (Home / Trials / Subscriptions / Settings) with Phosphor icons. Fox system is native SwiftUI, `Finn/Fox/` folder.
 
 **Tech Stack:** Swift 5.9+, SwiftUI, SwiftData (VersionedSchema migration), StoreKit 2, PhosphorSwift (SPM), XCTest, xcodegen.
 
@@ -25,32 +25,32 @@
 ### New files
 
 ```
-Subly/Fox/
+Finn/Fox/
 ├── FoxState.swift                      // enum: sleeping/happy/veryHappy/proud/curious/alert
 ├── FoxView.swift                       // state-driven native SwiftUI view
 └── FoxAnimation.swift                  // helpers: pulse, blink, ear-wiggle
 
-Subly/Resources/
+Finn/Resources/
 └── CancelGuides.json                   // curated cancel instructions, 15 services
 
-Subly/AddEntry/
+Finn/AddEntry/
 ├── AddSubscriptionSheet.swift          // new sheet
 └── Components/
     ├── ServiceNameField.swift          // extracted from Sheets.swift
     ├── AmountField.swift               // extracted from Sheets.swift
     └── DatePickerField.swift           // extracted from Sheets.swift
 
-Subly/CancelAssist/
+Finn/CancelAssist/
 ├── CancelAssistSheet.swift             // full-screen sheet
 ├── CancelGuide.swift                   // codable model for JSON entries
 └── CancelGuideStore.swift              // loads + queries CancelGuides.json
 
-Subly/Import/
+Finn/Import/
 ├── StoreKitImport.swift                // Transaction.currentEntitlements → ImportableSubscription
 ├── ImportConfirmationSheet.swift       // checkbox list UI
 └── ImportableSubscription.swift        // value type
 
-Subly/
+Finn/
 ├── SubscriptionsView.swift             // new tab
 └── SpendCard.swift                     // "THIS MONTH" hero card
 
@@ -60,7 +60,7 @@ Packages/SubscriptionStore/Sources/SubscriptionStore/Models/
 ├── BillingCycle.swift                  // enum
 ├── SchemaV1.swift                      // pre-pivot schema (current state)
 ├── SchemaV2.swift                      // post-pivot schema
-└── SublyMigrationPlan.swift            // VersionedSchema migration plan
+└── FinnMigrationPlan.swift            // VersionedSchema migration plan
 ```
 
 ### Modified files
@@ -77,23 +77,23 @@ Packages/TrialEngine/Sources/TrialEngine/TrialEngine.swift
 Packages/NotificationEngine/Sources/NotificationEngine/NotificationEngine.swift
   // Add removePending(ids:) for targeted cancellation
 
-Subly/SublyApp.swift
-  // Use SchemaV2 + SublyMigrationPlan instead of raw Schema
+Finn/FinnApp.swift
+  // Use SchemaV2 + FinnMigrationPlan instead of raw Schema
 
-Subly/ContentView.swift
+Finn/ContentView.swift
   // 3 tabs → 4 tabs; Phosphor icons; add SubscriptionsView
 
-Subly/HomeView.swift
+Finn/HomeView.swift
   // H1 layout: trials-forward, spend card, Caught $X, sleeping-fox empty state
 
-Subly/TrialsView.swift
+Finn/TrialsView.swift
   // Add Cancel button on detail; hook into CancelAssistSheet
 
-Subly/Sheets.swift
+Finn/Sheets.swift
   // Extract shared field components; split Add Trial sheet out to its own file
-  // (Subly/AddEntry/AddTrialSheet.swift) for parity with AddSubscriptionSheet
+  // (Finn/AddEntry/AddTrialSheet.swift) for parity with AddSubscriptionSheet
 
-Subly/SettingsView.swift
+Finn/SettingsView.swift
   // Add "Import subscriptions" row; add curious-fox in header
 ```
 
@@ -148,7 +148,7 @@ final class EnumTests: XCTestCase {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test --filter EnumTests
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test --filter EnumTests
 ```
 Expected: FAIL with "Cannot find 'EntryType' in scope"
 
@@ -205,14 +205,14 @@ public enum BillingCycle: String, Codable, Sendable, CaseIterable {
 - [ ] **Step 6: Run test to verify it passes**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test --filter EnumTests
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test --filter EnumTests
 ```
 Expected: PASS
 
 - [ ] **Step 7: Commit**
 
 ```bash
-cd ~/Developer/Subly && git checkout -b colehollander10/sub-pivot-p1-model
+cd ~/Developer/Finn && git checkout -b colehollander10/sub-pivot-p1-model
 git add Packages/SubscriptionStore/Sources/SubscriptionStore/Models/EntryType.swift \
         Packages/SubscriptionStore/Sources/SubscriptionStore/Models/EntryStatus.swift \
         Packages/SubscriptionStore/Sources/SubscriptionStore/Models/BillingCycle.swift \
@@ -234,7 +234,7 @@ import SwiftData
 
 /// Snapshot of the pre-pivot schema. DO NOT MODIFY this file after the
 /// pivot ships — migrations depend on these types staying stable.
-public enum SublySchemaV1: VersionedSchema {
+public enum FinnSchemaV1: VersionedSchema {
     public static var versionIdentifier: Schema.Version { .init(1, 0, 0) }
     public static var models: [any PersistentModel.Type] { [TrialV1.self, TrialAlertV1.self] }
 
@@ -295,7 +295,7 @@ public enum SublySchemaV1: VersionedSchema {
 
 ```bash
 git add Packages/SubscriptionStore/Sources/SubscriptionStore/Models/SchemaV1.swift
-git commit -m "feat(model): snapshot pre-pivot schema as SublySchemaV1"
+git commit -m "feat(model): snapshot pre-pivot schema as FinnSchemaV1"
 ```
 
 ### Task 1.3: Modify `Trial` to reflect new fields; create SchemaV2
@@ -340,7 +340,7 @@ import SwiftData
 /// Represents a user-tracked financial event — a free trial or a recurring
 /// subscription. Named `Trial` for backwards compatibility with the pre-pivot
 /// codebase; `entryType` disambiguates trials from subscriptions. A class
-/// rename to `SublyEntry` is deferred to v1.1.
+/// rename to `FinnEntry` is deferred to v1.1.
 @Model
 public final class Trial {
     @Attribute(.unique) public var id: UUID
@@ -414,7 +414,7 @@ public final class Trial {
 import Foundation
 import SwiftData
 
-public enum SublySchemaV2: VersionedSchema {
+public enum FinnSchemaV2: VersionedSchema {
     public static var versionIdentifier: Schema.Version { .init(2, 0, 0) }
     public static var models: [any PersistentModel.Type] { [Trial.self, TrialAlert.self] }
 }
@@ -423,7 +423,7 @@ public enum SublySchemaV2: VersionedSchema {
 - [ ] **Step 4: Run package build to verify compilation**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift build
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift build
 ```
 Expected: Build succeeds. Model tests still reference `trialEndDate`, so these will FAIL next — fixing in Task 1.5.
 
@@ -434,7 +434,7 @@ Within `Packages/SubscriptionStore/`, any reference to `trialEndDate` is in test
 - [ ] **Step 6: Run model test to verify it passes**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test --filter TrialModelTests
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test --filter TrialModelTests
 ```
 Expected: PASS
 
@@ -450,7 +450,7 @@ git commit -m "feat(model): add subscription-pivot fields + SchemaV2"
 ### Task 1.4: Create migration plan
 
 **Files:**
-- Create: `Packages/SubscriptionStore/Sources/SubscriptionStore/Models/SublyMigrationPlan.swift`
+- Create: `Packages/SubscriptionStore/Sources/SubscriptionStore/Models/FinnMigrationPlan.swift`
 - Test: `Packages/SubscriptionStore/Tests/SubscriptionStoreTests/MigrationTests.swift`
 
 - [ ] **Step 1: Write failing migration test**
@@ -463,16 +463,16 @@ import SwiftData
 
 final class MigrationTests: XCTestCase {
     func testV1ToV2MigrationPreservesTrialData() throws {
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("subly-migration-\(UUID()).store")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("finn-migration-\(UUID()).store")
         defer { try? FileManager.default.removeItem(at: tempURL) }
 
         // Stage 1: populate V1 schema
         do {
-            let v1Schema = Schema(versionedSchema: SublySchemaV1.self)
+            let v1Schema = Schema(versionedSchema: FinnSchemaV1.self)
             let config = ModelConfiguration(schema: v1Schema, url: tempURL)
             let container = try ModelContainer(for: v1Schema, configurations: [config])
             let context = ModelContext(container)
-            let t = SublySchemaV1.TrialV1(
+            let t = FinnSchemaV1.TrialV1(
                 serviceName: "Spotify",
                 trialEndDate: Date(timeIntervalSince1970: 1_700_000_000),
                 chargeAmount: 9.99
@@ -482,11 +482,11 @@ final class MigrationTests: XCTestCase {
         }
 
         // Stage 2: open with V2 schema + migration plan
-        let v2Schema = Schema(versionedSchema: SublySchemaV2.self)
+        let v2Schema = Schema(versionedSchema: FinnSchemaV2.self)
         let config = ModelConfiguration(schema: v2Schema, url: tempURL)
         let container = try ModelContainer(
             for: v2Schema,
-            migrationPlan: SublyMigrationPlan.self,
+            migrationPlan: FinnMigrationPlan.self,
             configurations: [config]
         )
         let context = ModelContext(container)
@@ -506,20 +506,20 @@ final class MigrationTests: XCTestCase {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test --filter MigrationTests
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test --filter MigrationTests
 ```
-Expected: FAIL with "Cannot find 'SublyMigrationPlan'"
+Expected: FAIL with "Cannot find 'FinnMigrationPlan'"
 
-- [ ] **Step 3: Create `SublyMigrationPlan.swift`**
+- [ ] **Step 3: Create `FinnMigrationPlan.swift`**
 
 ```swift
-// SublyMigrationPlan.swift
+// FinnMigrationPlan.swift
 import Foundation
 import SwiftData
 
-public enum SublyMigrationPlan: SchemaMigrationPlan {
+public enum FinnMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [SublySchemaV1.self, SublySchemaV2.self]
+        [FinnSchemaV1.self, FinnSchemaV2.self]
     }
 
     public static var stages: [MigrationStage] {
@@ -527,8 +527,8 @@ public enum SublyMigrationPlan: SchemaMigrationPlan {
     }
 
     static let migrateV1toV2 = MigrationStage.custom(
-        fromVersion: SublySchemaV1.self,
-        toVersion: SublySchemaV2.self,
+        fromVersion: FinnSchemaV1.self,
+        toVersion: FinnSchemaV2.self,
         willMigrate: nil,
         didMigrate: { context in
             // Fill defaults for new fields on every migrated row.
@@ -565,37 +565,37 @@ public var chargeDate: Date
 - [ ] **Step 5: Run migration test**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test --filter MigrationTests
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test --filter MigrationTests
 ```
 Expected: PASS
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add Packages/SubscriptionStore/Sources/SubscriptionStore/Models/SublyMigrationPlan.swift \
+git add Packages/SubscriptionStore/Sources/SubscriptionStore/Models/FinnMigrationPlan.swift \
         Packages/SubscriptionStore/Sources/SubscriptionStore/Models/Trial.swift \
         Packages/SubscriptionStore/Tests/SubscriptionStoreTests/MigrationTests.swift
 git commit -m "feat(model): add V1→V2 migration plan with field rename"
 ```
 
-### Task 1.5: Wire migration plan into SublyApp
+### Task 1.5: Wire migration plan into FinnApp
 
 **Files:**
-- Modify: `Subly/SublyApp.swift:13-38`
+- Modify: `Finn/FinnApp.swift:13-38`
 
 - [ ] **Step 1: Replace `Schema([Trial.self, TrialAlert.self])` with versioned + migration plan**
 
-In `SublyApp.swift`, replace lines 13-21 (the `schema` and initial `try ModelContainer(...)` call):
+In `FinnApp.swift`, replace lines 13-21 (the `schema` and initial `try ModelContainer(...)` call):
 
 ```swift
 private static let modelContainer: ModelContainer = {
-    let schema = Schema(versionedSchema: SublySchemaV2.self)
+    let schema = Schema(versionedSchema: FinnSchemaV2.self)
     let configuration = ModelConfiguration(schema: schema)
 
     do {
         return try ModelContainer(
             for: schema,
-            migrationPlan: SublyMigrationPlan.self,
+            migrationPlan: FinnMigrationPlan.self,
             configurations: [configuration]
         )
     } catch {
@@ -612,7 +612,7 @@ Find every `try ModelContainer(for: schema, configurations: [configuration])` ca
 ```swift
 try ModelContainer(
     for: schema,
-    migrationPlan: SublyMigrationPlan.self,
+    migrationPlan: FinnMigrationPlan.self,
     configurations: [configuration]
 )
 ```
@@ -620,14 +620,14 @@ try ModelContainer(
 - [ ] **Step 3: Build the app**
 
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -configuration Debug build 2>&1 | tail -30
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -configuration Debug build 2>&1 | tail -30
 ```
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 4: Run the app on simulator, confirm no schema wipe on launch**
 
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build test 2>&1 | tail -20
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build test 2>&1 | tail -20
 ```
 
 Manually: launch app, verify trials list is not empty (existing seed data preserved). If this is a fresh sim, add a trial, relaunch, verify it persists.
@@ -639,15 +639,15 @@ Manually: launch app, verify trials list is not empty (existing seed data preser
 - [ ] **Step 7: Commit and push**
 
 ```bash
-git add Subly/SublyApp.swift
-git commit -m "feat(app): wire SublyMigrationPlan into ModelContainer load"
+git add Finn/FinnApp.swift
+git commit -m "feat(app): wire FinnMigrationPlan into ModelContainer load"
 git push -u origin colehollander10/sub-pivot-p1-model
 gh pr create --title "sub-pivot: Phase 1 — unified model + V1→V2 migration" --body "$(cat <<'EOF'
 ## Summary
 - Adds EntryType, EntryStatus, BillingCycle enums
 - Extends Trial with entryType, status, billingCycle, notificationOffset, cancelledAt
 - Renames trialEndDate → chargeDate via SwiftData originalName attribute
-- Adds SublySchemaV1/V2 and SublyMigrationPlan for lossless migration
+- Adds FinnSchemaV1/V2 and FinnMigrationPlan for lossless migration
 
 ## Test plan
 - [x] Package tests pass (EnumTests, TrialModelTests, MigrationTests)
@@ -681,7 +681,7 @@ git checkout main && git pull
 - [ ] **Step 1: Check existing test file**
 
 ```bash
-ls ~/Developer/Subly/Packages/TrialEngine/Tests/
+ls ~/Developer/Finn/Packages/TrialEngine/Tests/
 ```
 
 - [ ] **Step 2: Write failing subscription-plan test**
@@ -723,7 +723,7 @@ final class SubscriptionPlanTests: XCTestCase {
 - [ ] **Step 3: Run test to verify it fails**
 
 ```bash
-cd ~/Developer/Subly/Packages/TrialEngine && swift test --filter SubscriptionPlanTests
+cd ~/Developer/Finn/Packages/TrialEngine && swift test --filter SubscriptionPlanTests
 ```
 Expected: FAIL
 
@@ -797,14 +797,14 @@ public static func planSubscription(
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd ~/Developer/Subly/Packages/TrialEngine && swift test
+cd ~/Developer/Finn/Packages/TrialEngine && swift test
 ```
 Expected: PASS (including existing trial tests)
 
 - [ ] **Step 8: Commit**
 
 ```bash
-cd ~/Developer/Subly && git checkout -b colehollander10/sub-pivot-p2-engines
+cd ~/Developer/Finn && git checkout -b colehollander10/sub-pivot-p2-engines
 git add Packages/TrialEngine/Sources/TrialEngine/TrialEngine.swift \
         Packages/TrialEngine/Tests/TrialEngineTests/SubscriptionPlanTests.swift
 git commit -m "feat(engine): generalize TrialEngine, add planSubscription"
@@ -865,7 +865,7 @@ public func removePending(ids: [String]) async {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd ~/Developer/Subly/Packages/NotificationEngine && swift test
+cd ~/Developer/Finn/Packages/NotificationEngine && swift test
 ```
 Expected: PASS
 
@@ -933,7 +933,7 @@ final class NotificationCopyTests: XCTestCase {
 - [ ] **Step 2: Run to verify fails**
 
 ```bash
-cd ~/Developer/Subly/Packages/NotificationEngine && swift test --filter NotificationCopyTests
+cd ~/Developer/Finn/Packages/NotificationEngine && swift test --filter NotificationCopyTests
 ```
 Expected: FAIL "Cannot find 'NotificationCopy'"
 
@@ -1012,7 +1012,7 @@ public enum NotificationCopy {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd ~/Developer/Subly/Packages/NotificationEngine && swift test --filter NotificationCopyTests
+cd ~/Developer/Finn/Packages/NotificationEngine && swift test --filter NotificationCopyTests
 ```
 Expected: PASS
 
@@ -1026,12 +1026,12 @@ git commit -m "feat(notifications): add type-aware copy templates"
 
 ### Task 2.4: Fix app-layer compilation (trialEndDate → chargeDate callsites)
 
-**Files:** any file in `Subly/` that references `trialEndDate`.
+**Files:** any file in `Finn/` that references `trialEndDate`.
 
 - [ ] **Step 1: Find all callsites**
 
 ```bash
-cd ~/Developer/Subly && grep -rn "trialEndDate" Subly/ Packages/
+cd ~/Developer/Finn && grep -rn "trialEndDate" Finn/ Packages/
 ```
 
 - [ ] **Step 2: Replace `trialEndDate` → `chargeDate` across app-layer code**
@@ -1048,7 +1048,7 @@ Replace each one: simple identifier rename. Keep function/view names that happen
 - [ ] **Step 3: Build**
 
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -30
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -30
 ```
 Expected: BUILD SUCCEEDED
 
@@ -1090,19 +1090,19 @@ git checkout main && git pull
 ### Task 3.1: Extract ServiceNameField
 
 **Files:**
-- Read: `Subly/Sheets.swift` (full file to identify the extraction surface)
-- Create: `Subly/AddEntry/Components/ServiceNameField.swift`
-- Modify: `Subly/Sheets.swift`
+- Read: `Finn/Sheets.swift` (full file to identify the extraction surface)
+- Create: `Finn/AddEntry/Components/ServiceNameField.swift`
+- Modify: `Finn/Sheets.swift`
 
 - [ ] **Step 1: Read existing Sheets.swift to locate the service-name UI block**
 
 ```bash
-cat ~/Developer/Subly/Subly/Sheets.swift | head -200
+cat ~/Developer/Finn/Finn/Sheets.swift | head -200
 ```
 
 - [ ] **Step 2: Write a `ServiceNameField` view matching the existing styling**
 
-Create `Subly/AddEntry/Components/ServiceNameField.swift`. The exact SwiftUI structure should mirror whatever is in `Sheets.swift` for the service-name row — copy it exactly, replacing local `@State` / bindings with a `@Binding var text: String` parameter. Example skeleton:
+Create `Finn/AddEntry/Components/ServiceNameField.swift`. The exact SwiftUI structure should mirror whatever is in `Sheets.swift` for the service-name row — copy it exactly, replacing local `@State` / bindings with a `@Binding var text: String` parameter. Example skeleton:
 
 ```swift
 import SwiftUI
@@ -1117,7 +1117,7 @@ struct ServiceNameField: View {
         TextField(placeholder, text: $text)
             .textFieldStyle(.plain)
             .font(.system(size: 16, weight: .semibold, design: .rounded))
-            .foregroundColor(SublyTheme.primaryText)
+            .foregroundColor(FinnTheme.primaryText)
             // ... match existing container styling
     }
 }
@@ -1128,7 +1128,7 @@ struct ServiceNameField: View {
 - [ ] **Step 4: Build + smoke-test Add Trial sheet visually**
 
 ```bash
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
 ```
 
 Launch app, tap +, open Add Trial, confirm the field looks identical.
@@ -1137,7 +1137,7 @@ Launch app, tap +, open Add Trial, confirm the field looks identical.
 
 ```bash
 git checkout -b colehollander10/sub-pivot-p3-addentry-components
-git add Subly/AddEntry/Components/ServiceNameField.swift Subly/Sheets.swift
+git add Finn/AddEntry/Components/ServiceNameField.swift Finn/Sheets.swift
 git commit -m "refactor(addentry): extract ServiceNameField component"
 ```
 
@@ -1162,7 +1162,7 @@ Commit with message: `refactor(addentry): extract DatePickerField component`.
 ### Task 3.4: Push and merge
 
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -10
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -10
 git push -u origin colehollander10/sub-pivot-p3-addentry-components
 gh pr create --title "sub-pivot: Phase 3 — extract shared add-entry field components" --body "Preparation for Add Subscription sheet. No behavior change."
 gh pr merge --merge --delete-branch
@@ -1182,29 +1182,29 @@ git checkout main && git pull
 - [ ] **Step 1: Run Cursor task**
 
 ```bash
-/cursor:task Create AddSubscriptionSheet in Subly/AddEntry/AddSubscriptionSheet.swift.
+/cursor:task Create AddSubscriptionSheet in Finn/AddEntry/AddSubscriptionSheet.swift.
 
-The sheet is a new SwiftUI view for adding a .subscription entry to the store. It mirrors the existing Add Trial sheet (Subly/Sheets.swift) in styling and structure, but with different fields.
+The sheet is a new SwiftUI view for adding a .subscription entry to the store. It mirrors the existing Add Trial sheet (Finn/Sheets.swift) in styling and structure, but with different fields.
 
 Fields (in order):
-1. SERVICE — use ServiceNameField(text: $serviceName) from Subly/AddEntry/Components/ServiceNameField.swift
+1. SERVICE — use ServiceNameField(text: $serviceName) from Finn/AddEntry/Components/ServiceNameField.swift
 2. NEXT BILLING DATE — use DatePickerField(date: $chargeDate, label: "Next billing date"), default to 30 days from today
 3. BILLING CYCLE — segmented Picker with cases Monthly, Yearly, Weekly, Custom (from BillingCycle enum in SubscriptionStore package)
 4. CHARGE AMOUNT — use AmountField(amount: $chargeAmount)
 
 Save button at bottom: creates a Trial with entryType = .subscription, status = .active, billingCycle set, chargeDate set, chargeAmount set, serviceName set. Inserts into the ModelContext, dismisses sheet, triggers light haptic via Haptics.swift patterns.
 
-Match exactly: GlassComponents.swift card styling, SublyTheme colors, font weights from DESIGN.md (SF Pro Rounded for titles, SF Pro Text for body, .medium or heavier, never .regular). Sheet uses the same backgroundElevated color as the Add Trial sheet. Section labels use tertiaryText, UPPERCASE, tracking 1.8, SF Pro Text 10pt semibold.
+Match exactly: GlassComponents.swift card styling, FinnTheme colors, font weights from DESIGN.md (SF Pro Rounded for titles, SF Pro Text for body, .medium or heavier, never .regular). Sheet uses the same backgroundElevated color as the Add Trial sheet. Section labels use tertiaryText, UPPERCASE, tracking 1.8, SF Pro Text 10pt semibold.
 
 DO NOT:
 - modify Sheets.swift or AddTrialSheet.swift
 - modify Trial.swift or any file in Packages/
 - add any field beyond the 4 listed above
-- use hardcoded colors — only SublyTheme tokens
+- use hardcoded colors — only FinnTheme tokens
 - use SF Symbols — this project uses Phosphor (but no icons are needed in this sheet specifically)
 
 Acceptance:
-- File compiles as part of the Subly target
+- File compiles as part of the Finn target
 - Preview renders correctly in Xcode
 - Tapping Save from a preview with filled fields prints the created Trial to console (temporary diagnostic OK — will be replaced when wired into FAB)
 
@@ -1228,11 +1228,11 @@ While Cursor runs, I proceed to Phase 5 in parallel.
 - [ ] **Step 1: Run Cursor task**
 
 ```bash
-/cursor:task Create a cancel-assist flow in Subly for trials.
+/cursor:task Create a cancel-assist flow in Finn for trials.
 
 Files to create:
 
-1. Subly/Resources/CancelGuides.json — curated cancel instructions for 15 services. Each entry keyed by a normalized service name (lowercased, alphanumeric only). Shape per entry:
+1. Finn/Resources/CancelGuides.json — curated cancel instructions for 15 services. Each entry keyed by a normalized service name (lowercased, alphanumeric only). Shape per entry:
    { "steps": ["step 1 text", "step 2 text", ...], "directURL": "https://...", "notes": null }
 
    The 15 services: Spotify, Netflix, Hulu, Disney+, iCloud+, Apple Music, Amazon Prime, HBO Max, YouTube Premium, ChatGPT, Notion, Adobe Creative Cloud, Canva, Duolingo, Audible.
@@ -1241,12 +1241,12 @@ Files to create:
 
    Steps should be 3-5 actionable lines per service. Use publicly-known cancel paths. Include real directURLs (e.g. https://www.spotify.com/account/subscription/).
 
-2. Subly/CancelAssist/CancelGuide.swift — Codable struct:
+2. Finn/CancelAssist/CancelGuide.swift — Codable struct:
    struct CancelGuide: Codable, Equatable { let steps: [String]; let directURL: String?; let notes: String? }
 
-3. Subly/CancelAssist/CancelGuideStore.swift — loads CancelGuides.json once from the app bundle and exposes `func guide(for serviceName: String) -> CancelGuide?` that normalizes the input (lowercase, alphanumeric-only) and looks up the guide. Use a private lazy static cache. Normalization helper: `private static func normalize(_ s: String) -> String`.
+3. Finn/CancelAssist/CancelGuideStore.swift — loads CancelGuides.json once from the app bundle and exposes `func guide(for serviceName: String) -> CancelGuide?` that normalizes the input (lowercase, alphanumeric-only) and looks up the guide. Use a private lazy static cache. Normalization helper: `private static func normalize(_ s: String) -> String`.
 
-4. Subly/CancelAssist/CancelAssistSheet.swift — full-screen sheet. Takes a Trial as input. Layout:
+4. Finn/CancelAssist/CancelAssistSheet.swift — full-screen sheet. Takes a Trial as input. Layout:
    - Top: close button (✕) top-trailing
    - Title: "How to cancel \(trial.serviceName)" — SF Pro Rounded 28pt bold
    - If CancelGuideStore.guide(for:) returns a guide: render a SurfaceCard containing numbered steps
@@ -1258,9 +1258,9 @@ Files to create:
    
    "I'll do it later" action: just dismiss.
 
-   Sheet must use GlassComponents styling, SublyTheme colors, no SF Symbols (use Phosphor's X icon for close — `Ph.x.regular` or similar). No urgency color ramp in this sheet.
+   Sheet must use GlassComponents styling, FinnTheme colors, no SF Symbols (use Phosphor's X icon for close — `Ph.x.regular` or similar). No urgency color ramp in this sheet.
 
-5. Modify Subly/TrialsView.swift — add a "Cancel" button to the trial detail sheet that presents CancelAssistSheet for that trial. Find the existing trial detail sheet (or the row tap action) and wire the Cancel button there. Do not change the rest of TrialsView.
+5. Modify Finn/TrialsView.swift — add a "Cancel" button to the trial detail sheet that presents CancelAssistSheet for that trial. Find the existing trial detail sheet (or the row tap action) and wire the Cancel button there. Do not change the rest of TrialsView.
 
 DO NOT:
 - modify HomeView.swift (separate phase)
@@ -1290,7 +1290,7 @@ Imports needed: SwiftUI, SwiftData, SubscriptionStore, NotificationEngine, Phosp
 ### Task 6.1: Create `FoxState.swift`
 
 **Files:**
-- Create: `Subly/Fox/FoxState.swift`
+- Create: `Finn/Fox/FoxState.swift`
 
 - [ ] **Step 1: Create file**
 
@@ -1312,15 +1312,15 @@ enum FoxState: String, CaseIterable {
 
 ```bash
 git checkout -b colehollander10/sub-pivot-p6-fox
-git add Subly/Fox/FoxState.swift
+git add Finn/Fox/FoxState.swift
 git commit -m "feat(fox): add FoxState enum"
 ```
 
 ### Task 6.2: Create minimal `FoxView.swift`
 
 **Files:**
-- Create: `Subly/Fox/FoxView.swift`
-- Create: `Subly/Fox/FoxAnimation.swift`
+- Create: `Finn/Fox/FoxView.swift`
+- Create: `Finn/Fox/FoxAnimation.swift`
 
 **v1 implementation approach:** Composite SwiftUI view built from simple shapes (rounded triangles for ears, circles for eyes, an ellipse body) or a single SF-Symbol-styled drawing. The exact illustration is iterable; ship something minimal that is clearly a fox, then refine visually by launching the app and adjusting.
 
@@ -1341,23 +1341,23 @@ struct FoxView: View {
         ZStack {
             // Body
             Ellipse()
-                .fill(SublyTheme.accent.opacity(0.25))
+                .fill(FinnTheme.accent.opacity(0.25))
                 .frame(width: size * 0.9, height: size * 0.7)
                 .offset(y: size * 0.15)
 
             // Head
             Circle()
-                .fill(SublyTheme.accent)
+                .fill(FinnTheme.accent)
                 .frame(width: size * 0.55, height: size * 0.55)
 
             // Ears
             Triangle()
-                .fill(SublyTheme.accent)
+                .fill(FinnTheme.accent)
                 .frame(width: size * 0.18, height: size * 0.22)
                 .offset(x: -size * 0.2, y: -size * 0.28)
                 .rotationEffect(.degrees(wiggleEar ? -8 : 0))
             Triangle()
-                .fill(SublyTheme.accent)
+                .fill(FinnTheme.accent)
                 .frame(width: size * 0.18, height: size * 0.22)
                 .offset(x: size * 0.2, y: -size * 0.28)
                 .rotationEffect(.degrees(wiggleEar ? 8 : 0))
@@ -1378,11 +1378,11 @@ struct FoxView: View {
         Group {
             if state == .sleeping || blinking {
                 Capsule()
-                    .fill(SublyTheme.primaryText)
+                    .fill(FinnTheme.primaryText)
                     .frame(width: size * 0.08, height: size * 0.02)
             } else {
                 Circle()
-                    .fill(SublyTheme.primaryText)
+                    .fill(FinnTheme.primaryText)
                     .frame(width: size * 0.06, height: size * 0.06)
             }
         }
@@ -1452,7 +1452,7 @@ struct Triangle: Shape {
         FoxView(state: .happy)
         FoxView(state: .proud)
     }
-    .background(SublyTheme.background)
+    .background(FinnTheme.background)
 }
 ```
 
@@ -1463,7 +1463,7 @@ Open `FoxView.swift` in Xcode, expand canvas, confirm the fox is recognizable. T
 - [ ] **Step 3: Commit**
 
 ```bash
-git add Subly/Fox/FoxView.swift
+git add Finn/Fox/FoxView.swift
 git commit -m "feat(fox): add minimal composite FoxView"
 ```
 
@@ -1474,7 +1474,7 @@ Deferred to Phase 7 (HomeView rebuild). Placeholder here.
 ### Task 6.4: Wire fox into SettingsView header
 
 **Files:**
-- Modify: `Subly/SettingsView.swift`
+- Modify: `Finn/SettingsView.swift`
 
 - [ ] **Step 1: Add `FoxView(state: .curious, size: 40)` to Settings header**
 
@@ -1483,7 +1483,7 @@ Find the existing header in `SettingsView.swift` (title "Settings" area). Insert
 - [ ] **Step 2: Build + visual check**
 
 ```bash
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
 ```
 
 Launch app, tap Settings tab, confirm the small fox appears and blinks periodically.
@@ -1491,15 +1491,15 @@ Launch app, tap Settings tab, confirm the small fox appears and blinks periodica
 - [ ] **Step 3: Commit**
 
 ```bash
-git add Subly/SettingsView.swift
+git add Finn/SettingsView.swift
 git commit -m "feat(fox): add curious fox to Settings header"
 ```
 
 ### Task 6.5: Wire fox into cancel-celebration sheet
 
 **Files:**
-- Create: `Subly/CancelAssist/CancelCelebrationSheet.swift`
-- Modify: `Subly/CancelAssist/CancelAssistSheet.swift` (to present the celebration on "I canceled it")
+- Create: `Finn/CancelAssist/CancelCelebrationSheet.swift`
+- Modify: `Finn/CancelAssist/CancelAssistSheet.swift` (to present the celebration on "I canceled it")
 
 - [ ] **Step 1: Create celebration sheet**
 
@@ -1517,13 +1517,13 @@ struct CancelCelebrationSheet: View {
             FoxView(state: .proud, size: 160)
             Text("Caught \(formatted(amount))")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(SublyTheme.primaryText)
+                .foregroundColor(FinnTheme.primaryText)
             Text(serviceName)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(SublyTheme.secondaryText)
+                .foregroundColor(FinnTheme.secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(SublyTheme.background.ignoresSafeArea())
+        .background(FinnTheme.background.ignoresSafeArea())
         .onAppear {
             Haptics.success()
             Task {
@@ -1556,7 +1556,7 @@ Run app, create a trial, open TrialsView → trial detail → Cancel → "I canc
 - [ ] **Step 4: Commit**
 
 ```bash
-git add Subly/CancelAssist/CancelCelebrationSheet.swift Subly/CancelAssist/CancelAssistSheet.swift
+git add Finn/CancelAssist/CancelCelebrationSheet.swift Finn/CancelAssist/CancelAssistSheet.swift
 git commit -m "feat(fox): add proud-fox celebration on cancel confirm"
 ```
 
@@ -1567,7 +1567,7 @@ Onboarding fox happiness-meter during StoreKit import is wired in Phase 8. Stub 
 ### Task 6.7: Push + merge Phase 6
 
 ```bash
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -10
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build 2>&1 | tail -10
 git push -u origin colehollander10/sub-pivot-p6-fox
 gh pr create --title "sub-pivot: Phase 6 — fox mascot system v1" --body "Minimal composite FoxView with 6 states (5 used in v1). Wired into Settings header and cancel-celebration sheet. Empty-Home + onboarding wiring in Phases 7 and 8."
 gh pr merge --merge --delete-branch
@@ -1585,7 +1585,7 @@ git checkout main && git pull
 ### Task 7.1: Create SpendCard component
 
 **Files:**
-- Create: `Subly/SpendCard.swift`
+- Create: `Finn/SpendCard.swift`
 
 - [ ] **Step 1: Write the view**
 
@@ -1608,21 +1608,21 @@ struct SpendCard: View {
                 .font(.system(size: 56, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .minimumScaleFactor(0.72)
-                .foregroundColor(SublyTheme.primaryText)
+                .foregroundColor(FinnTheme.primaryText)
 
             Text(countsLine)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(SublyTheme.tertiaryText)
+                .foregroundColor(FinnTheme.tertiaryText)
                 .textCase(.uppercase)
                 .tracking(1.8)
 
             if caughtThisMonth > 0 {
                 Rectangle()
-                    .fill(SublyTheme.divider)
+                    .fill(FinnTheme.divider)
                     .frame(height: 1)
                 Text("Caught $\(caughtString) this month")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(SublyTheme.secondaryText)
+                    .foregroundColor(FinnTheme.secondaryText)
             }
         }
         .padding(20)
@@ -1632,7 +1632,7 @@ struct SpendCard: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(SublyTheme.glassBorder, lineWidth: 1)
+                        .stroke(FinnTheme.glassBorder, lineWidth: 1)
                 )
         )
     }
@@ -1680,19 +1680,19 @@ struct SpendCard: View {
 
 ```bash
 git checkout -b colehollander10/sub-pivot-p7-homeview
-git add Subly/SpendCard.swift
+git add Finn/SpendCard.swift
 git commit -m "feat(home): add SpendCard showing monthly spend + caught-$X"
 ```
 
 ### Task 7.2: Rebuild HomeView with H1 layout
 
 **Files:**
-- Modify: `Subly/HomeView.swift`
+- Modify: `Finn/HomeView.swift`
 
 - [ ] **Step 1: Read current HomeView**
 
 ```bash
-cat ~/Developer/Subly/Subly/HomeView.swift
+cat ~/Developer/Finn/Finn/HomeView.swift
 ```
 
 - [ ] **Step 2: Rewrite HomeView to implement H1**
@@ -1709,7 +1709,7 @@ Critical: use `@Query` filter for "active trials ending in next 7 days" — pred
 - [ ] **Step 3: Build + visual check**
 
 ```bash
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
 ```
 
 Launch. Verify two states:
@@ -1719,7 +1719,7 @@ Launch. Verify two states:
 - [ ] **Step 4: Commit, push, PR, merge**
 
 ```bash
-git add Subly/HomeView.swift
+git add Finn/HomeView.swift
 git commit -m "feat(home): rebuild with H1 layout + spend card + sleeping fox empty state"
 git push -u origin colehollander10/sub-pivot-p7-homeview
 gh pr create --title "sub-pivot: Phase 7 — HomeView H1 layout" --body "Trials-forward + spend card + caught-\$X + sleeping-fox empty state."
@@ -1740,11 +1740,11 @@ git checkout main && git pull
 - [ ] **Step 1: Run Cursor task**
 
 ```bash
-/cursor:task Implement StoreKit bulk-import for Subly.
+/cursor:task Implement StoreKit bulk-import for Finn.
 
 Files to create:
 
-1. Subly/Import/ImportableSubscription.swift — a value type:
+1. Finn/Import/ImportableSubscription.swift — a value type:
    struct ImportableSubscription: Identifiable, Equatable {
      let id: String  // product ID
      let displayName: String
@@ -1753,14 +1753,14 @@ Files to create:
      let nextBillingDate: Date?
    }
 
-2. Subly/Import/StoreKitImport.swift — an actor with one public async method:
+2. Finn/Import/StoreKitImport.swift — an actor with one public async method:
    `func fetchCurrentEntitlements() async throws -> [ImportableSubscription]`
    
    Implementation: iterate Transaction.currentEntitlements. For each verified transaction where productType == .autoRenewable, fetch the Product via Product.products(for: [transaction.productID]).first. Read product.displayName, product.price. Map product.subscription?.subscriptionPeriod.unit to BillingCycle (.day→treat as .weekly for now, .week→.weekly, .month→.monthly, .year→.yearly). Get next billing date from renewalInfo (may be nil).
    
    Skip unverified transactions silently. Skip any product whose subscriptionPeriod is nil.
 
-3. Subly/Import/ImportConfirmationSheet.swift — SwiftUI sheet:
+3. Finn/Import/ImportConfirmationSheet.swift — SwiftUI sheet:
    - Title: "Import from Apple"
    - List of ImportableSubscription rows with a checkbox (default ON), each showing displayName / amount / billingCycle
    - Footer disclosure: "This imports subscriptions billed through Apple. For others, add manually or use Scan Screenshot (coming soon)."
@@ -1770,7 +1770,7 @@ Files to create:
    - On completion: "Imported X subscriptions" success row + fox held at .veryHappy for 2 seconds, then dismiss.
    - Empty list (no App Store subs): show centered message "No App Store subscriptions found" + a button "Add manually" that dismisses.
 
-4. Modify Subly/SettingsView.swift — add a row "Import subscriptions" beneath existing settings rows that presents ImportConfirmationSheet when tapped. Trigger StoreKitImport.fetchCurrentEntitlements() before presenting; show a loading spinner for up to 3 seconds.
+4. Modify Finn/SettingsView.swift — add a row "Import subscriptions" beneath existing settings rows that presents ImportConfirmationSheet when tapped. Trigger StoreKitImport.fetchCurrentEntitlements() before presenting; show a loading spinner for up to 3 seconds.
 
 DO NOT:
 - modify HomeView or TrialsView
@@ -1781,7 +1781,7 @@ DO NOT:
 Acceptance:
 - xcodebuild green on iPhone 16 Pro simulator
 - Tapping "Import subscriptions" in Settings either presents the list or shows "No App Store subscriptions found" gracefully (simulator usually has none — that's expected)
-- Unit test (Subly/Tests if exists, otherwise skip) for the BillingCycle mapping from Product.SubscriptionPeriod.Unit
+- Unit test (Finn/Tests if exists, otherwise skip) for the BillingCycle mapping from Product.SubscriptionPeriod.Unit
 
 Imports needed: SwiftUI, SwiftData, StoreKit, SubscriptionStore.
 
@@ -1801,31 +1801,31 @@ Min iOS: 15. Use StoreKit 2 API exclusively.
 - [ ] **Step 1: Run Cursor task**
 
 ```bash
-/cursor:task Expand Subly's tab bar from 3 to 4 tabs and add a SubscriptionsView.
+/cursor:task Expand Finn's tab bar from 3 to 4 tabs and add a SubscriptionsView.
 
 Files to modify/create:
 
-1. Subly/ContentView.swift — change the TabView from 3 tabs (Home/Trials/Settings) to 4 tabs in this order: Home / Trials / Subscriptions / Settings. Replace all tab-bar SF Symbols with Phosphor:
+1. Finn/ContentView.swift — change the TabView from 3 tabs (Home/Trials/Settings) to 4 tabs in this order: Home / Trials / Subscriptions / Settings. Replace all tab-bar SF Symbols with Phosphor:
    - Home: Ph.houseSimple.regular (unselected) / Ph.houseSimple.fill (selected)
    - Trials: Ph.clock.regular / Ph.clock.fill
    - Subscriptions: Ph.repeat.regular / Ph.repeat.fill
    - Settings: Ph.gearSix.regular / Ph.gearSix.fill
-   Icon size: 22pt. Use SublyTheme.accent for selected label/icon tint, SublyTheme.tertiaryText for unselected. Follow existing TabView structure; do not change the tab-bar background material.
+   Icon size: 22pt. Use FinnTheme.accent for selected label/icon tint, FinnTheme.tertiaryText for unselected. Follow existing TabView structure; do not change the tab-bar background material.
 
-2. Subly/SubscriptionsView.swift (NEW) — structure mirrors TrialsView.swift:
+2. Finn/SubscriptionsView.swift (NEW) — structure mirrors TrialsView.swift:
    - Header: "Subscriptions" title (SF Pro Rounded 28pt bold) + monthly total count subtitle
    - Query: @Query filter for entryTypeRaw == "subscription" AND statusRaw == "active", sorted by chargeDate ascending
    - Groupings: "CHARGING THIS WEEK" (chargeDate within 7 days), "THIS MONTH" (within 30), "LATER"
    - Row: CompactRow-style (match TrialsView.swift's row rendering) — logo, serviceName, "Renews {date}" line, amount
    - Tap row → detail sheet (simple view of the entry with editable fields + delete button). Detail sheet is minimal for v1 — no cancel-assist, no urgency ramp.
    - FAB: primary add button presenting AddSubscriptionSheet (from Phase 4). If Phase 4 hasn't merged when this runs, stub it as an empty sheet for now.
-   - Rows: urgencyCalm color ramp by default; if chargeDate is within 2 days, use SublyTheme.accent as the highlight color (NOT the urgency ramp).
+   - Rows: urgencyCalm color ramp by default; if chargeDate is within 2 days, use FinnTheme.accent as the highlight color (NOT the urgency ramp).
 
-3. Subly/AddEntry/AddEntryRouterSheet.swift (NEW) — small mini-sheet for the Home FAB. Layout:
+3. Finn/AddEntry/AddEntryRouterSheet.swift (NEW) — small mini-sheet for the Home FAB. Layout:
    - Two large pill buttons stacked: "Add Trial" / "Add Subscription"
    - Tapping a button dismisses this sheet and presents the corresponding Add sheet
 
-4. Modify Subly/HomeView.swift — change the FAB to present AddEntryRouterSheet (instead of directly presenting AddTrialSheet). Keep existing FAB placement and styling.
+4. Modify Finn/HomeView.swift — change the FAB to present AddEntryRouterSheet (instead of directly presenting AddTrialSheet). Keep existing FAB placement and styling.
 
 DO NOT:
 - modify any file in Packages/

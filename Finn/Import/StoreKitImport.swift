@@ -4,7 +4,7 @@ import StoreKit
 import SubscriptionStore
 
 actor StoreKitImport {
-    private static let log = Logger(subsystem: "com.subly.Subly", category: "storekit-import")
+    private static let log = Logger(subsystem: "com.colehollander.finn", category: "storekit-import")
 
     /// Convenience for callers that only want the importable rows.
     static func fetchCurrent() async -> [ImportableSubscription] {

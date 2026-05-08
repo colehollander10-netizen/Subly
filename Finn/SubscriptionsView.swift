@@ -5,7 +5,7 @@ import SubscriptionStore
 import SwiftData
 import SwiftUI
 
-private let subscriptionsViewLog = Logger(subsystem: "com.subly.Subly", category: "subscriptions-view")
+private let subscriptionsViewLog = Logger(subsystem: "com.colehollander.finn", category: "subscriptions-view")
 
 struct SubscriptionsView: View {
     @Environment(AppRouter.self) private var appRouter
