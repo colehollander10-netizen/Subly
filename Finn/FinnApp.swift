@@ -6,7 +6,7 @@ import SwiftUI
 import TrialEngine
 import UserNotifications
 
-private let schemaLog = Logger(subsystem: "com.subly.Subly", category: "schema")
+private let schemaLog = Logger(subsystem: "com.colehollander.finn", category: "schema")
 
 @main
 @MainActor

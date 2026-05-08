@@ -4,7 +4,7 @@
 
 **Status:** Approved for implementation planning
 **Supersedes context from:** Finn § subscription-pivot (P1–P10 remain valid; this spec layers on top)
-**Paired docs:** Finn (canonical project state) · [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) (brand layer above this spec) · Finn Content Strategy (positioning) · `~/Developer/Subly/.tasks/backlog.md` (live ticket tracking — Linear "Finn" project archived 2026-04-27)
+**Paired docs:** Finn (canonical project state) · [Finn Brand Foundation](./2026-04-29-finn-brand-foundation-design.md) (brand layer above this spec) · Finn Content Strategy (positioning) · `~/Developer/Finn/.tasks/backlog.md` (live ticket tracking — Linear "Finn" project archived 2026-04-27)
 
 ---
 
@@ -589,7 +589,7 @@ These items do NOT block spec acceptance, but must resolve before App Store subm
 3. **App icon + launch screen.** Still default. Brand-foundation art direction applies here too.
 4. **App Store assets.** Screenshots, preview video, keywords, description. Positioning doc gives raw material.
 5. **README.md + legal/privacy.html.** Still describe pre-amputation Gmail product. Rewrite.
-6. **Rename Subly → Finn (~45 min mechanical).** BundleIdentifier, Info.plist, wordmark, CLAUDE.md, vault, repo.
+6. **Rename to Finn (~45 min mechanical).** BundleIdentifier, Info.plist, wordmark, CLAUDE.md, vault, repo.
 7. **P7 (COL-147) HomeView empty-state.** Folded into Section 3.2 State 1 here; existing ticket remains the implementation vehicle.
 8. **P10 (COL-150) audit findings — 4 HIGH fixes.** All same pattern (save + replan after mutations). Must land before submission. Existing ticket remains the vehicle.
 9. **Pricing ratification with Cole.** Spec assumes $2.99/$24.99/$59 from prior vault state + conversation.
@@ -646,7 +646,7 @@ UI/UX doctrine scored against every v1 surface:
 |---|---|---|
 | Home (all 3 states) | COL-147 (P7) | Extend existing ticket scope |
 | P10 audit fixes | COL-150 (P10) | Complete as scoped |
-| Rename Subly → Finn | TBD | Cut dedicated ticket |
+| Rename to Finn | TBD | Cut dedicated ticket |
 | MascotKit package | TBD | Cut dedicated ticket |
 | VisionCapture package + HuntSheet | TBD | Cut dedicated epic (multi-phase) |
 | IntelligenceCore package + 4 features | TBD | Cut dedicated epic (one ticket per feature) |

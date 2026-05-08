@@ -4,7 +4,7 @@ import SubscriptionStore
 import SwiftData
 import TrialParsingCore
 
-private let shareCaptureLog = Logger(subsystem: "com.subly.Subly", category: "share-capture")
+private let shareCaptureLog = Logger(subsystem: "com.colehollander.finn", category: "share-capture")
 
 @MainActor
 enum SharedCaptureImporter {

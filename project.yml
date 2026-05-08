@@ -1,4 +1,4 @@
-name: Subly
+name: Finn
 options:
   bundleIdPrefix: com.colehollander
   deploymentTarget:
@@ -35,10 +35,10 @@ packages:
     url: https://github.com/phosphor-icons/swift
     branch: main
 schemes:
-  Subly:
+  Finn:
     build:
       targets:
-        Subly: all
+        Finn: all
     run:
       config: Debug
     test:
@@ -51,7 +51,7 @@ schemes:
       config: Release
 
 targets:
-  Subly:
+  Finn:
     type: application
     platform: iOS
     deploymentTarget: "18.0"

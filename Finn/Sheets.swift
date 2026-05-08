@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 import UIKit
 
-private let trialDetailLog = Logger(subsystem: "com.subly.Subly", category: "trial-detail")
+private let trialDetailLog = Logger(subsystem: "com.colehollander.finn", category: "trial-detail")
 
 struct TrialDetailSheet: View {
     @Environment(\.dismiss) private var dismiss

@@ -18,7 +18,7 @@ description: "Master plan + sub-plans for shipping Finn v1 to the App Store. Per
 
 **Goal:** Ship Finn v1 to the App Store with the full feature set from [[Finn v1 Launch Design]] — ~~Duolingo-art mascot with 7 emotional states~~ quiet vector mascot with **3 moods only (Neutral / Concerned / Sleeping)** per [[Finn Brand Foundation]] §3, screenshot-based hunt flow, red alert calendar, 4 intelligence features (hybrid heuristic + Apple Intelligence), contextual paywall, and the full UI/UX doctrine applied to every surface.
 
-**Architecture:** Extend the existing 6-package Subly app with 4 new Swift packages (`MascotKit`, `VisionCapture`, `IntelligenceCore`, `BillingCalendar`) and an `Entitlements` lightweight module in the app target. Schema extended via `@Attribute(originalName:)` lightweight migration — no `VersionedSchema` pre-TestFlight. Screens get audited + rebuilt against the UI/UX doctrine (grid layouts, one action, hierarchy, instant feedback, motion-with-purpose).
+**Architecture:** Extend the existing 6-package Finn app with 4 new Swift packages (`MascotKit`, `VisionCapture`, `IntelligenceCore`, `BillingCalendar`) and an `Entitlements` lightweight module in the app target. Schema extended via `@Attribute(originalName:)` lightweight migration — no `VersionedSchema` pre-TestFlight. Screens get audited + rebuilt against the UI/UX doctrine (grid layouts, one action, hierarchy, instant feedback, motion-with-purpose).
 
 **Tech Stack:** SwiftUI, SwiftData, StoreKit 2, VisionKit (`VNRecognizeTextRequest`), Apple Intelligence / Foundation Models (`SystemLanguageModel` + `LanguageModelSession`), Core ML, `PhaseAnimator` + `TimelineView` for motion, ~~`Canvas` for paw print confetti~~ **REMOVED (Brand Foundation 2026-04-29: confetti is banned)**, `xcodegen` for project file regeneration.
 
@@ -29,7 +29,7 @@ description: "Master plan + sub-plans for shipping Finn v1 to the App Store. Per
 Each sub-plan is a separate Linear ticket + PR. Execute **strictly in order** where dependencies exist. Where independent, they can parallelize, but stay careful — two parallel Cursor/Codex streams in the same codebase generate merge conflicts fast.
 
 ```
-1. Rename Subly → Finn             [mechanical, ~45 min]           ────┐
+1. Rename to Finn             [mechanical, ~45 min]           ────┐
 2. P10 HIGH audit fixes             [blocks launch, 1-2h]               │  MUST be first
 3. P7 Home rebuild (3-state adaptive) [COL-147 upgrade]                 │
                                                                         ▼
@@ -61,10 +61,10 @@ Each sub-plan is a separate Linear ticket + PR. Execute **strictly in order** wh
 
 Each sub-plan is a separate document in this folder. Short version here; full detail in the linked docs as they're written.
 
-### 1. [[Finn Plan 01 — Rename Subly to Finn]] ✅ written
+### 1. [[Finn Plan 01 — Rename Finn to Finn]] ✅ written
 
-- Mechanical rename across bundleIdentifier, Info.plist, Xcode project, CLAUDE.md, README.md, every Swift file that references "Subly" in type or string form.
-- `SublyTheme` → `FinnTheme`, `SublyApp` → `FinnApp`, display-name and bundle-id updates.
+- Mechanical rename across bundleIdentifier, Info.plist, Xcode project, CLAUDE.md, README.md, every Swift file that references "Finn" in type or string form.
+- `FinnTheme` → `FinnTheme`, `FinnApp` → `FinnApp`, display-name and bundle-id updates.
 - Preserves all on-device SwiftData (bundle id change *would* wipe data on real devices, so we keep `com.colehollander.subly` as the bundleIdentifier and only rename the display name + internal types — flagged in the sub-plan).
 
 ### 2. Finn Plan 02 — P10 HIGH audit fixes [stub]
@@ -151,7 +151,7 @@ public enum SourceHint: String, Codable {
 }
 ```
 
-Add schema version bump to `SublyApp.swift` `ModelContainer` (stays lightweight-only, no `VersionedSchema`).
+Add schema version bump to `FinnApp.swift` `ModelContainer` (stays lightweight-only, no `VersionedSchema`).
 
 Package tests target: **existing 12 + 4 new (sourceHint default, PredictiveCandidate CRUD, lastUsedAt query, usageConfidence clamping)** = **16**.
 
@@ -168,7 +168,7 @@ Deliverables:
 > [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
 > HuntSheet is a **flagship interaction** but not an allowed fox surface — it's a data-dense, money-touching capture flow. **All fox presence inside HuntSheet is REMOVED**, including the "pounce" framing and "the hunt" micro-interaction motion spec. The sheet itself remains; the fox inside it does not.
 
-**App-target view:** `Subly/Hunt/HuntSheet.swift`. Full-screen sheet. Entry cards + paste fallback + manual fallback. ~~Pounce → paw-print progress → success/low-conf/no-catch paths.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: HuntSheet is a data-dense capture flow; fox not allowed inside it).** Section 3.6 is the screen spec. ~~Section 2 "the hunt" micro-interaction is the motion spec.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29).**
+**App-target view:** `Finn/Hunt/HuntSheet.swift`. Full-screen sheet. Entry cards + paste fallback + manual fallback. ~~Pounce → paw-print progress → success/low-conf/no-catch paths.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: HuntSheet is a data-dense capture flow; fox not allowed inside it).** Section 3.6 is the screen spec. ~~Section 2 "the hunt" micro-interaction is the motion spec.~~ **REMOVED (banned surface per Brand Foundation 2026-04-29).**
 
 > [!question] Flagged for human review
 > "Paw-print progress" indicator is decorative and not a fox visual per se — but it lives inside a banned surface (HuntSheet), so it's removed by surface-banning. Sheet still needs *a* progress indicator — Cole to spec a neutral one.
@@ -205,7 +205,7 @@ Package tests target: **12**.
 
 ### 8. Finn Plan 08 — Entitlements + Finn Pro + paywall + entry caps [stub]
 
-**New module (in app target):** `Subly/Entitlements/`.
+**New module (in app target):** `Finn/Entitlements/`.
 
 - `SubscriptionTier { .free, .pro }` — StoreKit 2 via `Transaction.currentEntitlements` + `Transaction.updates` listener.
 - `AppleIntelligenceAvailability` — `SystemLanguageModel.default.availability` at launch + scene `.active`.
@@ -230,7 +230,7 @@ Package tests target: **12**.
 
 Pure logic returns `[CalendarDay]` with `{ date, events: [BillEvent], urgency: .quiet | .normal | .alert }`. `alert` assigned via `IntelligenceCore.usageDetection.isInactive(trial:) == true` OR bill within 48h over threshold (default $10).
 
-**App-target view:** `Subly/Calendar/BillingCalendarView.swift`. Full-screen sheet. Month grid, 7-col. Tap day → bottom sheet with per-item actions. Today's cell Vulpine outline + single pulse on open. Red-alert days glow. Month nav horizontal swipe.
+**App-target view:** `Finn/Calendar/BillingCalendarView.swift`. Full-screen sheet. Month grid, 7-col. Tap day → bottom sheet with per-item actions. Today's cell Vulpine outline + single pulse on open. Red-alert days glow. Month nav horizontal swipe.
 
 Reached from Home "Upcoming bills" row OR Subscriptions header calendar icon.
 
@@ -239,7 +239,7 @@ Reached from Home "Upcoming bills" row OR Subscriptions header calendar icon.
 > [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §1 + §3
 > "Kill celebration" framing → **"cancel confirmation"** framing. Confetti, `.proud`, `.celebrating`, and any celebratory motion are **REMOVED** (Brand Foundation §1: "Confetti or celebration animations on cancel" is explicitly ruled out). SavingsView itself is data-dense and money-adjacent — **fox is REMOVED from this view per Brand Foundation §3 banned surfaces**.
 
-**New view:** `Subly/Savings/SavingsView.swift`.
+**New view:** `Finn/Savings/SavingsView.swift`.
 
 - Top: massive "$247 caught" numeric-roll transition. Vulpine orange.
 - ~~Finn `.proud` (or `.celebrating` if < $100).~~ **REMOVED (banned surface per Brand Foundation 2026-04-29: SavingsView is data-dense and money-adjacent; `.proud`/`.celebrating` removed per mood-state remap).**
@@ -258,7 +258,7 @@ Savings total derivation: sum of `(amount × billingCycle.monthlyMultiplier)` ac
 > [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
 > Onboarding is an **allowed fox surface** (one appearance per screen, max). Poses are REMAPPED to the 3 allowed moods. Step 2's `.hunting` and Step 3's `.watching` are FLAGGED-FOR-REVIEW. `.celebrating` (Step 4) is REMOVED (mood not in v1). Step 4's "3s `.watching` Finn pointing at the FAB" lands on HomeView's flagship area and is REMOVED (banned surface). Paw-print trail on step 4 is FLAGGED (decorative, not banned outright).
 
-Modify `Subly/OnboardingView.swift`. Same 4 steps, new copy + Finn poses per Section 3.1:
+Modify `Finn/OnboardingView.swift`. Same 4 steps, new copy + Finn poses per Section 3.1:
 
 | Step | ~~Pose~~ Mood | Headline | Action |
 |---|---|---|---|
@@ -311,7 +311,7 @@ Paw print elements:
 > [!warning] Reconciled 2026-04-29 against [[Finn Brand Foundation]] §3
 > Detail sheets are **data-dense surfaces** — banned for fox visuals. The "Finn's-take pill" is FLAGGED-FOR-REVIEW: if it's a copy-only pill (text only, no fox visual), it's allowed; if the pill includes a fox icon/avatar, the icon is REMOVED. "Kill celebration" reframed to "cancel confirmation" per sub-plan 10.
 
-Modify `Subly/Sheets.swift`:
+Modify `Finn/Sheets.swift`:
 
 - `TrialDetailSheet` (exists) + new `SubscriptionDetailSheet` sharing the same top-level structure: hero row (logo + name + next charge) → grouped fields `SurfaceCard` → Finn's-take pill → primary/secondary actions.
 - Finn's-take pill pulls from `IntelligenceCore`. Free tier: rule-based. Pro tier: FM-generated. **FLAGGED-FOR-REVIEW** (copy-only pill is allowed; fox visual inside the pill would be on a banned surface and would need to be REMOVED — Cole to confirm pill composition).
@@ -357,7 +357,7 @@ Each `[stub]` sub-plan above becomes a full bite-sized TDD plan doc before execu
 
 **When to write each full sub-plan:** right before you execute it, not all upfront. Writing all 16 to full detail now produces ~6000 lines that go stale fast — Linear tickets get added, priorities shift, intermediate sub-plans teach you things that change later sub-plans. Write the next 1-2 at a time.
 
-**Sub-plan 01 (rename) is written in full** as the template and the next actionable task. See [[Finn Plan 01 — Rename Subly to Finn]].
+**Sub-plan 01 (rename) is written in full** as the template and the next actionable task. See [[Finn Plan 01 — Rename Finn to Finn]].
 
 ---
 
@@ -383,25 +383,25 @@ All 9 spec open items map to a sub-plan.
 
 ---
 
-# Sub-plan 01 — Rename Subly → Finn
+# Sub-plan 01 — Rename to Finn
 
-**Goal:** Rename every user-facing and internal-type occurrence of "Subly" → "Finn" while preserving the bundleIdentifier so on-device SwiftData stores survive.
+**Goal:** Rename every user-facing and internal-type occurrence of "Finn" → "Finn" while preserving the bundleIdentifier so on-device SwiftData stores survive.
 
 **Critical constraint:** `CFBundleIdentifier` stays `com.colehollander.subly`. Changing the bundle id invalidates all on-device SwiftData stores, Keychain items, and App Store Connect record. That is a worse launch regression than a mismatched identifier. Display name + every internal type + every user-visible string becomes "Finn."
 
 **Dependencies:** none. Do this first.
 
-**Expected branch:** `docs/rename-subly-to-finn-20260424` — wait, this is code, not docs. Rename: `chore/rename-subly-to-finn-20260424`.
+**Expected branch:** `docs/finn-rename-20260424` — wait, this is code, not docs. Rename: `chore/finn-rename-20260424`.
 
-### Task 1: Audit all "Subly" occurrences
+### Task 1: Audit all "Finn" occurrences
 
 **Files:** none modified yet. Just discovery.
 
 - [ ] **Step 1: Grep the repo**
 
 ```bash
-cd ~/Developer/Subly
-grep -rn "Subly" \
+cd ~/Developer/Finn
+grep -rn "Finn" \
   --include="*.swift" \
   --include="*.md" \
   --include="*.plist" \
@@ -418,7 +418,7 @@ Expected: 200–500 matches. Record the number.
 - [ ] **Step 2: Save the match list**
 
 ```bash
-grep -rn "Subly" \
+grep -rn "Finn" \
   --include="*.swift" \
   --include="*.md" \
   --include="*.plist" \
@@ -427,96 +427,96 @@ grep -rn "Subly" \
   --include="*.json" \
   --include="*.pbxproj" \
   --include="*.entitlements" \
-  > /tmp/subly-occurrences.txt
-wc -l /tmp/subly-occurrences.txt
+  > /tmp/finn-occurrences.txt
+wc -l /tmp/finn-occurrences.txt
 ```
 
 Review this file. Bucket matches into categories:
 
-1. **Type / symbol names** — `SublyTheme`, `SublyApp`, `SublyEntry`, etc. → rename to `Finn*`.
+1. **Type / symbol names** — `FinnTheme`, `FinnApp`, `FinnEntry`, etc. → rename to `Finn*`.
 2. **User-visible strings** — wordmarks, onboarding copy, app name — → rename to "Finn."
 3. **Bundle identifier references** — `com.colehollander.subly` → LEAVE UNCHANGED.
-4. **File paths** — `Subly/`, `Subly.xcodeproj/` etc. → LEAVE UNCHANGED (renaming the folder breaks Xcode project paths; too risky for this phase; address in a follow-up if ever).
-5. **Doc references** — vault + CLAUDE.md + README.md mentions. Many already say "Finn"; update remaining Subly references per doc.
+4. **File paths** — `Finn/`, `Finn.xcodeproj/` etc. → LEAVE UNCHANGED (renaming the folder breaks Xcode project paths; too risky for this phase; address in a follow-up if ever).
+5. **Doc references** — vault + CLAUDE.md + README.md mentions. Many already say "Finn"; update remaining Finn references per doc.
 
 ### Task 2: Rename type symbols
 
-**Files to modify:** every `.swift` file that declares or references `SublyTheme`, `SublyApp`, and any other `Subly*` type names.
+**Files to modify:** every `.swift` file that declares or references `FinnTheme`, `FinnApp`, and any other `Finn*` type names.
 
-- [ ] **Step 1: List declared Subly types**
+- [ ] **Step 1: List declared Finn types**
 
 ```bash
-grep -rn --include="*.swift" -E "(class|struct|enum|protocol|typealias|extension)\s+Subly[A-Z]" ~/Developer/Subly
+grep -rn --include="*.swift" -E "(class|struct|enum|protocol|typealias|extension)\s+Finn[A-Z]" ~/Developer/Finn
 ```
 
 Expected output includes:
-- `SublyTheme` (in `GlassComponents.swift`)
-- `SublyApp` (in `SublyApp.swift`)
+- `FinnTheme` (in `GlassComponents.swift`)
+- `FinnApp` (in `FinnApp.swift`)
 - Possibly others — record the full list.
 
 - [ ] **Step 2: Commit a baseline before renaming**
 
 ```bash
-cd ~/Developer/Subly
+cd ~/Developer/Finn
 git checkout main
 git pull --rebase
-git checkout -b chore/rename-subly-to-finn-20260424
+git checkout -b chore/finn-rename-20260424
 ```
 
-- [ ] **Step 3: Rename `SublyTheme` → `FinnTheme`**
+- [ ] **Step 3: Rename `FinnTheme` → `FinnTheme`**
 
 Use Xcode's refactor tool via project open:
 ```bash
-open ~/Developer/Subly/Subly.xcodeproj
+open ~/Developer/Finn/Finn.xcodeproj
 ```
-- Right-click `SublyTheme` in the Project navigator or any usage → Refactor → Rename → `FinnTheme` → Save.
+- Right-click `FinnTheme` in the Project navigator or any usage → Refactor → Rename → `FinnTheme` → Save.
 - Xcode refactors every call site. Verify with:
 
 ```bash
-grep -rn --include="*.swift" "SublyTheme" ~/Developer/Subly
+grep -rn --include="*.swift" "FinnTheme" ~/Developer/Finn
 ```
 Expected: 0 matches.
 
-- [ ] **Step 4: Rename `SublyApp` → `FinnApp`**
+- [ ] **Step 4: Rename `FinnApp` → `FinnApp`**
 
 Same Xcode refactor flow. Verify:
 
 ```bash
-grep -rn --include="*.swift" "SublyApp" ~/Developer/Subly
+grep -rn --include="*.swift" "FinnApp" ~/Developer/Finn
 ```
-Expected: 0 matches (except the file name `SublyApp.swift` — leave the filename or rename separately in Task 3).
+Expected: 0 matches (except the file name `FinnApp.swift` — leave the filename or rename separately in Task 3).
 
-- [ ] **Step 5: Rename any remaining Subly* type symbols**
+- [ ] **Step 5: Rename any remaining Finn* type symbols**
 
 Repeat the Xcode refactor flow for each entry in the Task 2 Step 1 list. Verify zero remaining refs.
 
 - [ ] **Step 6: Build**
 
 ```bash
-cd ~/Developer/Subly
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | tail -20
+cd ~/Developer/Finn
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | tail -20
 ```
 Expected: `** BUILD SUCCEEDED **`
 
 - [ ] **Step 7: Run package tests**
 
 ```bash
-cd ~/Developer/Subly/Packages/SubscriptionStore && swift test
-cd ~/Developer/Subly/Packages/TrialEngine && swift test
-cd ~/Developer/Subly/Packages/NotificationEngine && swift test
-cd ~/Developer/Subly/Packages/TrialParsingCore && swift test
+cd ~/Developer/Finn/Packages/SubscriptionStore && swift test
+cd ~/Developer/Finn/Packages/TrialEngine && swift test
+cd ~/Developer/Finn/Packages/NotificationEngine && swift test
+cd ~/Developer/Finn/Packages/TrialParsingCore && swift test
 ```
 Expected: all green.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-cd ~/Developer/Subly
+cd ~/Developer/Finn
 git add -A
-git commit -m "refactor: rename Subly type symbols to Finn
+git commit -m "refactor: rename Finn type symbols to Finn
 
-SublyTheme → FinnTheme
-SublyApp → FinnApp
+FinnTheme → FinnTheme
+FinnApp → FinnApp
 (additional renames per grep audit)
 
 Build green, all package tests pass. Bundle identifier, file paths, and
@@ -526,22 +526,22 @@ Connect linkage."
 
 ### Task 3: Update user-visible strings
 
-**Files to modify:** `Subly/OnboardingView.swift`, `Subly/SettingsView.swift`, `Subly/HomeView.swift`, any other view file that renders "Subly" as copy, and `Info.plist` display name.
+**Files to modify:** `Finn/OnboardingView.swift`, `Finn/SettingsView.swift`, `Finn/HomeView.swift`, any other view file that renders "Finn" as copy, and `Info.plist` display name.
 
-- [ ] **Step 1: Find user-visible Subly strings**
+- [ ] **Step 1: Find user-visible Finn strings**
 
 ```bash
-grep -rn --include="*.swift" '"[^"]*Subly[^"]*"' ~/Developer/Subly
+grep -rn --include="*.swift" '"[^"]*Finn[^"]*"' ~/Developer/Finn
 ```
 
-Review the results. Each string literal containing "Subly" is either:
+Review the results. Each string literal containing "Finn" is either:
 - A wordmark / user-facing copy — rename.
 - A log message or reverse-domain identifier — leave.
 
 - [ ] **Step 2: Update Info.plist display name**
 
 ```bash
-grep -n "CFBundleDisplayName\|CFBundleName" ~/Developer/Subly/Subly/Info.plist
+grep -n "CFBundleDisplayName\|CFBundleName" ~/Developer/Finn/Finn/Info.plist
 ```
 
 Modify `CFBundleDisplayName` → `Finn`. Leave `CFBundleIdentifier` alone.
@@ -549,13 +549,13 @@ Modify `CFBundleDisplayName` → `Finn`. Leave `CFBundleIdentifier` alone.
 - [ ] **Step 3: Update each wordmark/copy string**
 
 For each identified string, edit in place. Examples:
-- `"Subly"` → `"Finn"`
-- `"Welcome to Subly"` → `"Welcome to Finn"`
+- `"Finn"` → `"Finn"`
+- `"Welcome to Finn"` → `"Welcome to Finn"`
 
 - [ ] **Step 4: Build**
 
 ```bash
-xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | tail -10
+xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | tail -10
 ```
 Expected: `** BUILD SUCCEEDED **`
 
@@ -564,19 +564,19 @@ Expected: `** BUILD SUCCEEDED **`
 ```bash
 xcrun simctl boot 'iPhone 16' 2>/dev/null; open -a Simulator
 # Install fresh build:
-DERIVED_DATA=$(ls -td ~/Library/Developer/Xcode/DerivedData/Subly-* | head -1)
-APP_PATH=$(ls -td "$DERIVED_DATA"/Build/Products/Debug-iphonesimulator/Subly.app | head -1)
+DERIVED_DATA=$(ls -td ~/Library/Developer/Xcode/DerivedData/Finn-* | head -1)
+APP_PATH=$(ls -td "$DERIVED_DATA"/Build/Products/Debug-iphonesimulator/Finn.app | head -1)
 xcrun simctl install booted "$APP_PATH"
 xcrun simctl launch booted com.colehollander.subly
 ```
 
-Walk onboarding → home → settings. Every user-facing "Subly" should now read "Finn." Home screen app icon label reads "Finn."
+Walk onboarding → home → settings. Every user-facing "Finn" should now read "Finn." Home screen app icon label reads "Finn."
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add -A
-git commit -m "refactor: rename user-visible Subly → Finn strings + Info.plist display name
+git commit -m "refactor: update user-visible Finn strings + Info.plist display name
 
 Bundle identifier preserved. Display name updated to Finn. Onboarding,
 settings, and home wordmarks all say Finn. Visual verification on iPhone 16
@@ -587,10 +587,10 @@ simulator confirms rename end-to-end."
 
 **Files to modify:** `CLAUDE.md`, `README.md`, `DESIGN.md`, any other repo markdown.
 
-- [ ] **Step 1: Find Subly in markdown**
+- [ ] **Step 1: Find Finn in markdown**
 
 ```bash
-grep -rn --include="*.md" "Subly" ~/Developer/Subly
+grep -rn --include="*.md" "Finn" ~/Developer/Finn
 ```
 
 - [ ] **Step 2: Review each match**
@@ -600,7 +600,7 @@ Some will remain — historical session logs, commit references, links to `docs/
 Update active / current-state descriptions only:
 - `CLAUDE.md` header / project description.
 - `README.md` (full rewrite per sub-plan 16, but at least change the title + tagline now).
-- `DESIGN.md` — `SublyTheme` references → `FinnTheme`.
+- `DESIGN.md` — `FinnTheme` references → `FinnTheme`.
 
 - [ ] **Step 3: Commit**
 
@@ -614,13 +614,13 @@ git commit -m "docs: update CLAUDE.md, README.md, DESIGN.md to Finn naming"
 - [ ] **Step 1: Push**
 
 ```bash
-git push -u origin chore/rename-subly-to-finn-20260424
+git push -u origin chore/finn-rename-20260424
 ```
 
 - [ ] **Step 2: Open PR**
 
 ```bash
-gh pr create --title "chore: rename Subly → Finn (display + types)" --body "$(cat <<'EOF'
+gh pr create --title "chore: rename to Finn (display + types)" --body "$(cat <<'EOF'
 ## Summary
 
 Rename to Finn across type symbols, user-visible strings, and docs. Bundle
@@ -629,7 +629,7 @@ on-device SwiftData and App Store Connect linkage.
 
 ## Changes
 
-- Swift type renames via Xcode refactor: SublyTheme → FinnTheme, SublyApp
+- Swift type renames via Xcode refactor: FinnTheme → FinnTheme, FinnApp
   → FinnApp (+ any others discovered in audit).
 - Info.plist CFBundleDisplayName → Finn.
 - User-visible wordmarks, onboarding copy, home header → Finn.
@@ -639,7 +639,7 @@ on-device SwiftData and App Store Connect linkage.
 ## Preserved unchanged
 
 - CFBundleIdentifier (com.colehollander.subly)
-- Xcode project file name (Subly.xcodeproj)
+- Xcode project file name (Finn.xcodeproj)
 - Swift package folder paths (Packages/SubscriptionStore etc.)
 - Historical doc references in session logs
 
@@ -673,7 +673,7 @@ git pull --rebase
 - [ ] **Step 2: Confirm zero remaining refs**
 
 ```bash
-grep -rn --include="*.swift" -E "Subly(Theme|App|Entry)" ~/Developer/Subly | wc -l
+grep -rn --include="*.swift" -E "Finn(Theme|App|Entry)" ~/Developer/Finn | wc -l
 ```
 Expected: 0.
 

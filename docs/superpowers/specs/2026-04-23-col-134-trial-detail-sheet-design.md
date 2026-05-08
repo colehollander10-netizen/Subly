@@ -8,7 +8,7 @@
 
 ## Goal
 
-Rewrite `TrialDetailSheet` in `Subly/Sheets.swift` so the most-used sheet in the app feels crafted — on the level of Copilot Money, Flighty, Sofa. Manual entry IS the product; the sheet has to stop reading like a stock SwiftUI Form.
+Rewrite `TrialDetailSheet` in `Finn/Sheets.swift` so the most-used sheet in the app feels crafted — on the level of Copilot Money, Flighty, Sofa. Manual entry IS the product; the sheet has to stop reading like a stock SwiftUI Form.
 
 Applies to both create mode (`trial: nil`) and edit mode (`trial: Trial`). Not a tweak — a full rewrite.
 
@@ -87,14 +87,14 @@ VStack(alignment: .leading, spacing: 6) {
     SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
     Text(trial == nil ? "Add Trial" : "Edit Trial")
         .font(.system(size: 28, weight: .bold, design: .rounded))
-        .foregroundStyle(SublyTheme.primaryText)
+        .foregroundStyle(FinnTheme.primaryText)
 }
 HairlineDivider()
 ```
 
 ### 3. Compact preview row (new `TrialPreviewRow` primitive)
 
-**Extract to `Subly/GlassComponents.swift`** as a reusable primitive. 72pt tall. Live-updates from the sheet's `@State` values.
+**Extract to `Finn/GlassComponents.swift`** as a reusable primitive. 72pt tall. Live-updates from the sheet's `@State` values.
 
 Layout:
 ```
@@ -117,7 +117,7 @@ HStack(spacing: 12):
   - with date, no amount: `"Ends {formatted}"`
   - with both: `"Ends {formatted} · {formatUSD(amount)}"`
 - `daysLeftText`: `"{N}D LEFT"`, or `"TODAY"` if days ≤ 0
-- `urgencyColor`: `SublyTheme.urgencyColor(daysLeft:)`
+- `urgencyColor`: `FinnTheme.urgencyColor(daysLeft:)`
 
 **Animations:**
 - `.contentTransition(.numericText())` on daysLeftText + amount text
@@ -129,12 +129,12 @@ HStack(spacing: 12):
 
 One `SurfaceCard(padding: 0)` containing the paste row (create mode) + 3 fields, divided by `HairlineDivider` between rows (matching DESIGN.md's SurfaceCard rule).
 
-**Phosphor API (verified from existing `Subly/HomeView.swift` usage):**
+**Phosphor API (verified from existing `Finn/HomeView.swift` usage):**
 
 ```swift
 // Usage pattern — icon is a View, weight is a property, color via .color() modifier
 Ph.briefcase.regular
-    .color(SublyTheme.tertiaryText)
+    .color(FinnTheme.tertiaryText)
     .frame(width: 22, height: 22)
 ```
 
@@ -145,12 +145,12 @@ All icons go on `.regular` weight for field affordances. The Phosphor variant en
 ```swift
 HStack(alignment: .top, spacing: 14):
   icon                                           // Ph.{name}.regular, sized 22×22
-    .color(SublyTheme.tertiaryText)
+    .color(FinnTheme.tertiaryText)
     .frame(width: 24, height: 22, alignment: .center)
     .padding(.top, 2)
   VStack(alignment: .leading, spacing: 6):
     Text(label.uppercased())                     // 10pt semibold, tracking 1.8
-      .foregroundStyle(SublyTheme.secondaryText)
+      .foregroundStyle(FinnTheme.secondaryText)
     content()                                    // 17pt medium, primaryText
 .padding(.horizontal, 16)
 .padding(.vertical, 14)
@@ -158,7 +158,7 @@ HStack(alignment: .top, spacing: 14):
 
 **Field 1 — Paste (create mode only):** Special case, no label. Pure tap target.
 - Default state: `Ph.clipboardText.regular` + `Text("Paste from clipboard")` 15pt medium primaryText
-- Post-paste (3s): `Ph.checkCircle.fill` + `Text("Filled: service, end date, amount")` 15pt medium in `SublyTheme.accent`
+- Post-paste (3s): `Ph.checkCircle.fill` + `Text("Filled: service, end date, amount")` 15pt medium in `FinnTheme.accent`
 - After 3s: auto-fades back to default state via `Task.sleep` + `withAnimation`, cancellable `@State` task handle
 - Tapping invokes existing `applyClipboard()` logic (unchanged)
 - `Haptics.play(.selection)` on tap
@@ -203,16 +203,16 @@ ScrollView(.horizontal, showsIndicators: false):
         Text(preset.label)
           .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
           .monospacedDigit()
-          .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.secondaryText)
+          .foregroundStyle(isSelected ? FinnTheme.background : FinnTheme.secondaryText)
           .padding(.horizontal, 14).padding(.vertical, 8)
           .background(
             Capsule().fill(
-              isSelected ? SublyTheme.accent : SublyTheme.elevated
+              isSelected ? FinnTheme.accent : FinnTheme.elevated
             )
           )
           .overlay(
             Capsule().strokeBorder(
-              isSelected ? .clear : SublyTheme.divider, lineWidth: 1
+              isSelected ? .clear : FinnTheme.divider, lineWidth: 1
             )
           )
       }
@@ -221,14 +221,14 @@ ScrollView(.horizontal, showsIndicators: false):
 ```
 
 **Selected state:**
-- Fill: `SublyTheme.accent` (lavender)
-- Text: `SublyTheme.background` (dark — matches PrimaryButton's WCAG-passing combo)
+- Fill: `FinnTheme.accent` (lavender)
+- Text: `FinnTheme.background` (dark — matches PrimaryButton's WCAG-passing combo)
 - No border
 
 **Unselected state:**
-- Fill: `SublyTheme.elevated` (charcoal, muted)
-- Text: `SublyTheme.secondaryText`
-- 1pt `SublyTheme.divider` border
+- Fill: `FinnTheme.elevated` (charcoal, muted)
+- Text: `FinnTheme.secondaryText`
+- 1pt `FinnTheme.divider` border
 
 **Tap:** `.selection` haptic, 150ms `.easeInOut` transition on fill color.
 
@@ -260,11 +260,11 @@ if let trial {
         } label: {
             HStack(spacing: 8) {
                 Ph.checkCircle.regular
-                    .color(SublyTheme.secondaryText)
+                    .color(FinnTheme.secondaryText)
                     .frame(width: 16, height: 16)
                 Text("Mark as cancelled")
                     .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
@@ -301,14 +301,14 @@ Unchanged except for additions:
 
 ## Phosphor migration scope (bundled into this ticket)
 
-Per Cole's instruction (2026-04-23): Phosphor EVERYWHERE, zero `Image(systemName:)` in Subly app code (excluding OS-required places like toolbar chevron).
+Per Cole's instruction (2026-04-23): Phosphor EVERYWHERE, zero `Image(systemName:)` in Finn app code (excluding OS-required places like toolbar chevron).
 
 Audit and migrate any `Image(systemName:)` found in:
-- `Subly/Sheets.swift` (known: `doc.on.clipboard` line 307)
-- All Subly/*.swift
+- `Finn/Sheets.swift` (known: `doc.on.clipboard` line 307)
+- All Finn/*.swift
 
 Out of scope for this ticket (flag but don't migrate):
-- `Subly/OnboardingView.swift` — will be re-touched in later motion ticket; don't churn twice
+- `Finn/OnboardingView.swift` — will be re-touched in later motion ticket; don't churn twice
 - Swift packages under `Packages/` — those are isolated, separate tickets
 
 If the audit finds more than ~5 unrelated SF Symbol usages outside `Sheets.swift`, file a follow-up ticket instead of bundling. Keep PR scope tight.
@@ -335,23 +335,23 @@ If the audit finds more than ~5 unrelated SF Symbol usages outside `Sheets.swift
 - [ ] Auto-focus on Service field in create mode, no auto-focus in edit mode
 - [ ] No `Image(systemName:)` in `Sheets.swift` after migration
 - [ ] Reduced-motion respected (springs instant, numericText stays)
-- [ ] `xcodebuild` passes for Subly target
+- [ ] `xcodebuild` passes for Finn target
 - [ ] Simulator walkthrough confirms "crafted sheet, not form" feel
 
 ---
 
 ## Files to modify
 
-- `Subly/Sheets.swift` — rewrite `TrialDetailSheet` body (lines 237–522), keep everything else untouched
-- `Subly/GlassComponents.swift` — add `TrialPreviewRow` primitive
+- `Finn/Sheets.swift` — rewrite `TrialDetailSheet` body (lines 237–522), keep everything else untouched
+- `Finn/GlassComponents.swift` — add `TrialPreviewRow` primitive
 
 ## Files NOT to modify
 
-- `Subly/HomeView.swift`
-- `Subly/TrialsView.swift`
-- `Subly/SettingsView.swift`
-- `Subly/OnboardingView.swift`
-- `Subly/PrimaryAddButton.swift`
+- `Finn/HomeView.swift`
+- `Finn/TrialsView.swift`
+- `Finn/SettingsView.swift`
+- `Finn/OnboardingView.swift`
+- `Finn/PrimaryAddButton.swift`
 - Any file under `Packages/`
 - `DESIGN.md`
 
@@ -368,7 +368,7 @@ If the audit finds more than ~5 unrelated SF Symbol usages outside `Sheets.swift
 
 Subtasks 1 and 2 have file overlap (2 imports what 1 exports). Execute sequentially: 1 first, then 2.
 
-No Codex in this plan — this is entirely UI work, which per route skill belongs with Cursor. No business-logic changes, no tests (manual entry UI is verified in simulator walkthrough per Subly's existing testing rhythm).
+No Codex in this plan — this is entirely UI work, which per route skill belongs with Cursor. No business-logic changes, no tests (manual entry UI is verified in simulator walkthrough per Finn's existing testing rhythm).
 
 ---
 
@@ -393,7 +393,7 @@ No Codex in this plan — this is entirely UI work, which per route skill belong
 ## References
 
 - `DESIGN.md` § Component Library, § Typography, § Motion Choreography, § Haptics
-- `Subly/GlassComponents.swift` — existing primitives (SurfaceCard, FlagshipCard, AccentPill, PhosphorIcon)
-- `Subly/HomeView.swift` lines 107–174 — FlagshipCard usage pattern (preview row mirrors this, compact)
+- `Finn/GlassComponents.swift` — existing primitives (SurfaceCard, FlagshipCard, AccentPill, PhosphorIcon)
+- `Finn/HomeView.swift` lines 107–174 — FlagshipCard usage pattern (preview row mirrors this, compact)
 - Previous ticket: COL-126 (TrialsView grouped-rows pattern — same SurfaceCard+HairlineDivider structure)
 - Previous ticket: COL-133 (Mark cancelled action on TrialDetailSheet — preserves destructive action, this ticket changes its visual register)

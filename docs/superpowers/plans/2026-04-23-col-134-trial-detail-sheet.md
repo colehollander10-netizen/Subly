@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This plan is executed by the orchestrator (Claude) via the `route` skill, NOT by subagent-driven-development. The route skill dispatches Cursor (`composer-2-fast`) for Task 1 and Task 2, and Claude executes Tasks 3 and 4 inline. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rewrite `TrialDetailSheet` in `Subly/Sheets.swift` to feel like a crafted sheet (Copilot Money / Flighty / Sofa tier), not a stock SwiftUI form. Applies to both create and edit modes.
+**Goal:** Rewrite `TrialDetailSheet` in `Finn/Sheets.swift` to feel like a crafted sheet (Copilot Money / Flighty / Sofa tier), not a stock SwiftUI form. Applies to both create and edit modes.
 
 **Architecture:** Compact live-updating preview row at top → one `SurfaceCard` with 4 rows (paste, service, trial-ends, charge amount) divided by `HairlineDivider` → `PrimaryButton` Save → muted "Mark as cancelled" text button in edit mode. All icons via Phosphor (`Ph.{name}.{weight}`). New `TrialPreviewRow` primitive extracted to `GlassComponents.swift`.
 
@@ -18,14 +18,14 @@
 
 | File | Role | Change |
 |---|---|---|
-| `Subly/GlassComponents.swift` | Shared primitives | **Add** `TrialPreviewRow` after `AccentPill` (~line 164) |
-| `Subly/Sheets.swift` | Sheet implementations | **Rewrite** `TrialDetailSheet` (lines 237–522). Leave `CancelGuide`, `CancelGuideResolver`, `CancelFlowSheet`, `ManualTrialExtractor` untouched. |
+| `Finn/GlassComponents.swift` | Shared primitives | **Add** `TrialPreviewRow` after `AccentPill` (~line 164) |
+| `Finn/Sheets.swift` | Sheet implementations | **Rewrite** `TrialDetailSheet` (lines 237–522). Leave `CancelGuide`, `CancelGuideResolver`, `CancelFlowSheet`, `ManualTrialExtractor` untouched. |
 
 ## Known codebase facts (verified before writing plan)
 
 - `Haptics` enum cases available: `primaryTap`, `primaryLongPress`, `save`, `validationFail`, `scanStart`, `scanComplete`, `markCanceled`, `scheduleReminder`, `swipeThresholdCrossed`, `rowTap`, `sheetPresent`, `tabSwitch`, `destructiveConfirm`. **No `selection` case.** Plan uses `.primaryTap` where spec says "selection" (already the app's light-tap haptic).
-- `formatUSD(_ value: Decimal) -> String` lives at `Subly/ContentView.swift:120`, globally callable.
-- `urgencyLevel(days:) -> UrgencyLevel` is **private to HomeView** (`Subly/HomeView.swift:252`). Plan computes urgency inline in `TrialPreviewRow` using the same thresholds.
+- `formatUSD(_ value: Decimal) -> String` lives at `Finn/ContentView.swift:120`, globally callable.
+- `urgencyLevel(days:) -> UrgencyLevel` is **private to HomeView** (`Finn/HomeView.swift:252`). Plan computes urgency inline in `TrialPreviewRow` using the same thresholds.
 - Phosphor usage pattern: `Ph.briefcase.regular` is a View; apply `.color(...)` then `.frame(width:height:)`. `.foregroundStyle(...)` does nothing — must use `.color()`.
 - `SurfaceCard(padding:)` initializer has `padding: 18` default. Plan uses `padding: 0` to let rows manage their own insets.
 - `SectionLabel(title:trailing:)` — `trailing` is optional String.
@@ -38,15 +38,15 @@
 
 **Worker:** Cursor `composer-2-fast`
 **Files:**
-- Modify: `Subly/GlassComponents.swift:164` (insert new view after `AccentPill`)
+- Modify: `Finn/GlassComponents.swift:164` (insert new view after `AccentPill`)
 
 - [ ] **Step 1: Read the surrounding context**
 
-Read `Subly/GlassComponents.swift` lines 149–165 to confirm `AccentPill` is at line 149 and the next view (`GlassCard`) starts at line 166. Insert `TrialPreviewRow` between them.
+Read `Finn/GlassComponents.swift` lines 149–165 to confirm `AccentPill` is at line 149 and the next view (`GlassCard`) starts at line 166. Insert `TrialPreviewRow` between them.
 
 - [ ] **Step 2: Write `TrialPreviewRow`**
 
-Insert this block after line 164 (after `AccentPill`'s closing brace) in `Subly/GlassComponents.swift`:
+Insert this block after line 164 (after `AccentPill`'s closing brace) in `Finn/GlassComponents.swift`:
 
 ```swift
 /// Compact live-updating preview row. ~72pt tall. Used in TrialDetailSheet
@@ -68,8 +68,8 @@ struct TrialPreviewRow: View {
     }
 
     private var urgencyColor: Color {
-        guard let days = daysUntilEnd else { return SublyTheme.tertiaryText }
-        return SublyTheme.urgencyColor(daysLeft: days)
+        guard let days = daysUntilEnd else { return FinnTheme.tertiaryText }
+        return FinnTheme.urgencyColor(daysLeft: days)
     }
 
     private var daysLeftText: String {
@@ -98,12 +98,12 @@ struct TrialPreviewRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(displayName)
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
                     .lineLimit(1)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium, design: .default))
                     .monospacedDigit()
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                     .lineLimit(1)
             }
 
@@ -120,11 +120,11 @@ struct TrialPreviewRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(SublyTheme.backgroundElevated)
+                .fill(FinnTheme.backgroundElevated)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(SublyTheme.divider, lineWidth: 1)
+                .stroke(FinnTheme.divider, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
     }
@@ -135,7 +135,7 @@ struct TrialPreviewRow: View {
 
 Run:
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -40
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -40
 ```
 
 Expected: `** BUILD SUCCEEDED **`. If errors, they will be in `GlassComponents.swift` only (nothing else changed yet).
@@ -143,8 +143,8 @@ Expected: `** BUILD SUCCEEDED **`. If errors, they will be in `GlassComponents.s
 - [ ] **Step 4: Commit**
 
 ```bash
-cd ~/Developer/Subly
-git add Subly/GlassComponents.swift
+cd ~/Developer/Finn
+git add Finn/GlassComponents.swift
 git commit -m "feat(col-134): add TrialPreviewRow primitive to GlassComponents"
 ```
 
@@ -154,13 +154,13 @@ git commit -m "feat(col-134): add TrialPreviewRow primitive to GlassComponents"
 
 **Worker:** Cursor `composer-2-fast`
 **Files:**
-- Modify: `Subly/Sheets.swift:237-522` (replace entire `TrialDetailSheet` struct body)
+- Modify: `Finn/Sheets.swift:237-522` (replace entire `TrialDetailSheet` struct body)
 
 **Precondition:** Task 1 committed, `TrialPreviewRow` available in the module.
 
 - [ ] **Step 1: Read the existing struct to preserve call-site signature**
 
-Read `Subly/Sheets.swift:237-291` to confirm the `init` signature. It MUST remain:
+Read `Finn/Sheets.swift:237-291` to confirm the `init` signature. It MUST remain:
 
 ```swift
 init(
@@ -175,7 +175,7 @@ Call sites in HomeView / TrialsView depend on this shape. Do not change it.
 
 - [ ] **Step 2: Replace `TrialDetailSheet` struct**
 
-Replace `Subly/Sheets.swift` lines 237 through 522 (the entire `struct TrialDetailSheet: View` block, inclusive of its closing `}`) with the following. Leave lines 524+ (the `ManualTrialExtractor` enum) untouched.
+Replace `Finn/Sheets.swift` lines 237 through 522 (the entire `struct TrialDetailSheet: View` block, inclusive of its closing `}`) with the following. Leave lines 524+ (the `ManualTrialExtractor` enum) untouched.
 
 ```swift
 struct TrialDetailSheet: View {
@@ -278,11 +278,11 @@ struct TrialDetailSheet: View {
                                 } label: {
                                     HStack(spacing: 8) {
                                         Ph.checkCircle.regular
-                                            .color(SublyTheme.secondaryText)
+                                            .color(FinnTheme.secondaryText)
                                             .frame(width: 16, height: 16)
                                         Text("Mark as cancelled")
                                             .font(.system(size: 15, weight: .medium, design: .default))
-                                            .foregroundStyle(SublyTheme.secondaryText)
+                                            .foregroundStyle(FinnTheme.secondaryText)
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
@@ -300,7 +300,7 @@ struct TrialDetailSheet: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") { dismiss() }
-                            .foregroundStyle(SublyTheme.primaryText)
+                            .foregroundStyle(FinnTheme.primaryText)
                     }
                 }
             }
@@ -325,7 +325,7 @@ struct TrialDetailSheet: View {
             SectionLabel(title: trial == nil ? "New trial" : "Edit trial")
             Text(trial == nil ? "Add Trial" : "Edit Trial")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
         }
     }
 
@@ -356,11 +356,11 @@ struct TrialDetailSheet: View {
                 Group {
                     if pasteShowsSuccess {
                         Ph.checkCircle.fill
-                            .color(SublyTheme.accent)
+                            .color(FinnTheme.accent)
                             .frame(width: 22, height: 22)
                     } else {
                         Ph.clipboardText.regular
-                            .color(SublyTheme.tertiaryText)
+                            .color(FinnTheme.tertiaryText)
                             .frame(width: 22, height: 22)
                     }
                 }
@@ -371,7 +371,7 @@ struct TrialDetailSheet: View {
                      ? "Filled: \(pasteFilledFields.joined(separator: ", "))"
                      : "Paste from clipboard")
                     .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundStyle(pasteShowsSuccess ? SublyTheme.accent : SublyTheme.primaryText)
+                    .foregroundStyle(pasteShowsSuccess ? FinnTheme.accent : FinnTheme.primaryText)
 
                 Spacer()
             }
@@ -384,19 +384,19 @@ struct TrialDetailSheet: View {
 
     @ViewBuilder
     private var serviceField: some View {
-        fieldRow(icon: AnyView(Ph.briefcase.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+        fieldRow(icon: AnyView(Ph.briefcase.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
                  label: "Service") {
             TextField("Cursor Pro", text: $serviceName)
                 .textInputAutocapitalization(.words)
                 .focused($focused)
                 .font(.system(size: 17, weight: .medium, design: .default))
-                .foregroundStyle(SublyTheme.primaryText)
+                .foregroundStyle(FinnTheme.primaryText)
         }
     }
 
     @ViewBuilder
     private var trialEndsField: some View {
-        fieldRow(icon: AnyView(Ph.calendar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+        fieldRow(icon: AnyView(Ph.calendar.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
                  label: "Trial ends") {
             VStack(alignment: .leading, spacing: 12) {
                 DatePicker("", selection: $trialEndDate, displayedComponents: .date)
@@ -413,17 +413,17 @@ struct TrialDetailSheet: View {
 
     @ViewBuilder
     private var chargeAmountField: some View {
-        fieldRow(icon: AnyView(Ph.currencyDollar.regular.color(SublyTheme.tertiaryText).frame(width: 22, height: 22)),
+        fieldRow(icon: AnyView(Ph.currencyDollar.regular.color(FinnTheme.tertiaryText).frame(width: 22, height: 22)),
                  label: "Charge amount") {
             HStack(spacing: 4) {
                 Text("$")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(SublyTheme.tertiaryText)
+                    .foregroundStyle(FinnTheme.tertiaryText)
                 TextField("20.00", text: $chargeAmountText)
                     .keyboardType(.decimalPad)
                     .monospacedDigit()
                     .font(.system(size: 20, weight: .medium, design: .rounded))
-                    .foregroundStyle(SublyTheme.primaryText)
+                    .foregroundStyle(FinnTheme.primaryText)
             }
         }
     }
@@ -442,7 +442,7 @@ struct TrialDetailSheet: View {
                 Text(label.uppercased())
                     .font(.system(size: 10, weight: .semibold, design: .default))
                     .tracking(1.8)
-                    .foregroundStyle(SublyTheme.secondaryText)
+                    .foregroundStyle(FinnTheme.secondaryText)
                 content()
             }
         }
@@ -466,14 +466,14 @@ struct TrialDetailSheet: View {
                         Text(preset.label)
                             .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(isSelected ? SublyTheme.background : SublyTheme.secondaryText)
+                            .foregroundStyle(isSelected ? FinnTheme.background : FinnTheme.secondaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(
-                                Capsule().fill(isSelected ? SublyTheme.accent : SublyTheme.backgroundElevated)
+                                Capsule().fill(isSelected ? FinnTheme.accent : FinnTheme.backgroundElevated)
                             )
                             .overlay(
-                                Capsule().strokeBorder(isSelected ? Color.clear : SublyTheme.divider, lineWidth: 1)
+                                Capsule().strokeBorder(isSelected ? Color.clear : FinnTheme.divider, lineWidth: 1)
                             )
                             .animation(.easeInOut(duration: 0.15), value: isSelected)
                     }
@@ -558,20 +558,20 @@ struct TrialDetailSheet: View {
 
 Run:
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -50
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -50
 ```
 
 Expected: `** BUILD SUCCEEDED **`.
 
 Common issues to watch for:
-- `Ph.checkCircle` / `Ph.clipboardText` / `Ph.briefcase` / `Ph.calendar` / `Ph.currencyDollar` — these are standard Phosphor icon names. If the resolver complains, the Phosphor package may use a different casing; try `Ph.CheckCircle` or grep existing usage with `grep -r "Ph\." --include="*.swift" Subly/` to confirm the convention.
+- `Ph.checkCircle` / `Ph.clipboardText` / `Ph.briefcase` / `Ph.calendar` / `Ph.currencyDollar` — these are standard Phosphor icon names. If the resolver complains, the Phosphor package may use a different casing; try `Ph.CheckCircle` or grep existing usage with `grep -r "Ph\." --include="*.swift" Finn/` to confirm the convention.
 - `AnyView` wrapping Phosphor icons — the Phosphor icon type is generic; some SwiftUI builders require type erasure when it's returned from a function parameter. The plan wraps them in `AnyView` deliberately to keep `fieldRow` signature simple.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-cd ~/Developer/Subly
-git add Subly/Sheets.swift
+cd ~/Developer/Finn
+git add Finn/Sheets.swift
 git commit -m "feat(col-134): rewrite TrialDetailSheet with preview row + grouped fields"
 ```
 
@@ -581,13 +581,13 @@ git commit -m "feat(col-134): rewrite TrialDetailSheet with preview row + groupe
 
 **Worker:** Claude inline
 **Files:**
-- Modify: `Subly/Sheets.swift` (any remaining `Image(systemName:)` calls)
+- Modify: `Finn/Sheets.swift` (any remaining `Image(systemName:)` calls)
 
 - [ ] **Step 1: Grep for remaining SF Symbol usage**
 
 Run:
 ```bash
-cd ~/Developer/Subly && grep -n 'Image(systemName:' Subly/Sheets.swift
+cd ~/Developer/Finn && grep -n 'Image(systemName:' Finn/Sheets.swift
 ```
 
 Expected: **0 matches**. The Task 2 rewrite already removed the `doc.on.clipboard` usage at the old line 307.
@@ -601,7 +601,7 @@ If matches appear, for each one:
 
 Run:
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -20
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'generic/platform=iOS' -configuration Debug build 2>&1 | tail -20
 ```
 
 Expected: `** BUILD SUCCEEDED **`.
@@ -611,8 +611,8 @@ Expected: `** BUILD SUCCEEDED **`.
 If Step 1 found 0 matches, no commit needed — the Task 2 commit already cleaned `Sheets.swift`. Otherwise:
 
 ```bash
-cd ~/Developer/Subly
-git add Subly/Sheets.swift
+cd ~/Developer/Finn
+git add Finn/Sheets.swift
 git commit -m "chore(col-134): migrate remaining SF Symbols in Sheets.swift to Phosphor"
 ```
 
@@ -627,7 +627,7 @@ git commit -m "chore(col-134): migrate remaining SF Symbols in Sheets.swift to P
 
 Run:
 ```bash
-cd ~/Developer/Subly && xcodebuild -project Subly.xcodeproj -scheme Subly -destination 'platform=iOS Simulator,name=iPhone 15' -configuration Debug build 2>&1 | tail -30
+cd ~/Developer/Finn && xcodebuild -project Finn.xcodeproj -scheme Finn -destination 'platform=iOS Simulator,name=iPhone 15' -configuration Debug build 2>&1 | tail -30
 ```
 
 Expected: `** BUILD SUCCEEDED **`. If signing errors: note the error and stop — signing issues block simulator launch but may not block PR.
@@ -654,7 +654,7 @@ Route skill Step 6 cross-check: walk through every AC from the spec and the Line
 - [ ] **Step 4: Open PR**
 
 ```bash
-cd ~/Developer/Subly
+cd ~/Developer/Finn
 git push -u origin colehollander10/col-134-v2-design-14-trialdetailsheet-complete-overhaul-edit-create
 
 gh pr create --title "COL-134 — TrialDetailSheet complete overhaul (edit + create)" --body "$(cat <<'EOF'

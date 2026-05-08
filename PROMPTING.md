@@ -1,4 +1,4 @@
-# Prompting Opus 4.7 for Subly
+# Prompting Opus 4.7 for Finn
 
 A cheat sheet for you, Cole. Not a rule file, not for the model to follow — just tips to reach for when you're about to hit enter on a prompt.
 
@@ -34,11 +34,11 @@ A prompt that hits all five boxes cuts my over-engineering reflex hard.
 
 ---
 
-## 3. Subly defaults — paste at the top of bigger sessions
+## 3. Finn defaults — paste at the top of bigger sessions
 
 ```
 Stack: iOS 18 only, SwiftUI only, SwiftData @Model, Observation framework (@Observable, @Environment — never ObservableObject / @StateObject / @EnvironmentObject), Swift strict concurrency, StoreKit 2.
-Modules: Subly (app), TrialParsingCore, SubscriptionStore, TrialEngine, NotificationEngine, LogoService.
+Modules: Finn (app), TrialParsingCore, SubscriptionStore, TrialEngine, NotificationEngine, LogoService.
 Don't: add files I didn't ask for, add emojis, leave narrative comments, write defensive code around impossible states, upgrade dependencies, log PII.
 ```
 
@@ -114,11 +114,11 @@ Default to Plan for anything that touches more than one SPM module.
 
 **New view:**
 
-> Build `<ViewName>` in `Subly/Views/`. Purpose: `<purpose>`. Owns no state (pure). Bound to: `<@Observable class>`. States: loading / empty / error / loaded. iOS 18 SwiftUI only. Put any preview fixtures in `MockupPreviews.swift`, not inline.
+> Build `<ViewName>` in `Finn/Views/`. Purpose: `<purpose>`. Owns no state (pure). Bound to: `<@Observable class>`. States: loading / empty / error / loaded. iOS 18 SwiftUI only. Put any preview fixtures in `MockupPreviews.swift`, not inline.
 
 **SwiftData model change:**
 
-> Edit `<Model>.swift` in `SubscriptionStore/Models`. `<goal>`. If you add or remove a `@Model`, update the `Schema([...])` in `SublyApp.swift`. If this forces a breaking migration, stop and tell me — don't guess a migration strategy.
+> Edit `<Model>.swift` in `SubscriptionStore/Models`. `<goal>`. If you add or remove a `@Model`, update the `Schema([...])` in `FinnApp.swift`. If this forces a breaking migration, stop and tell me — don't guess a migration strategy.
 
 **StoreKit work:**
 
@@ -147,6 +147,6 @@ Four seconds of checklist saves a 90-second bad turn.
 
 - I can't build Xcode projects. You are the build validator. Assume I wrote something that doesn't compile until you've proven otherwise.
 - I tend to reach for `ObservableObject` on autopilot. Catch me. The correct answer in this repo is almost always `@Observable`.
-- I will often suggest adding a package. The default answer in Subly is no — we have five already, and they cover the surface.
+- I will often suggest adding a package. The default answer in Finn is no — we have five already, and they cover the surface.
 - When I write a long explanation before code, skim the first sentence, skip to the code, then come back. The explanation is usually optional.
 - When I ask you a clarifying question instead of coding, that's a good sign the prompt was under-specified. Note what was missing so the next prompt has it.

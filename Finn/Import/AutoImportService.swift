@@ -20,7 +20,7 @@ import SwiftData
 @MainActor
 @Observable
 final class AutoImportService {
-    @ObservationIgnored private let log = Logger(subsystem: "com.subly.Subly", category: "auto-import")
+    @ObservationIgnored private let log = Logger(subsystem: "com.colehollander.finn", category: "auto-import")
     @ObservationIgnored private var transactionUpdatesTask: Task<Void, Never>?
     /// Coalesces overlapping sync calls (cold start `.task`, scene-active
     /// `.onChange`, and manual "Sync now" can fire within seconds of each

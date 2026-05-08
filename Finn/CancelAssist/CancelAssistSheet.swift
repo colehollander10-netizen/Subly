@@ -5,7 +5,7 @@ import SubscriptionStore
 import SwiftData
 import SwiftUI
 
-private let cancelAssistLog = Logger(subsystem: "com.subly.Subly", category: "cancel-assist")
+private let cancelAssistLog = Logger(subsystem: "com.colehollander.finn", category: "cancel-assist")
 
 struct CancelAssistSheet: View {
     let trial: Trial

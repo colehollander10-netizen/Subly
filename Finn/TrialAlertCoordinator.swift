@@ -5,7 +5,7 @@ import SubscriptionStore
 import SwiftData
 import TrialEngine
 
-private let trialAlertCoordinatorLog = Logger(subsystem: "com.subly.Subly", category: "trial-alert-coordinator")
+private let trialAlertCoordinatorLog = Logger(subsystem: "com.colehollander.finn", category: "trial-alert-coordinator")
 
 /// Plans and schedules local trial-end notifications for every active
 /// (non-dismissed, future-ending) `Trial`. Call `replanAll()` on app launch

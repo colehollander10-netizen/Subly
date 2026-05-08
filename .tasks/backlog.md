@@ -50,7 +50,7 @@ Source of truth: this file + `~/Obsidian/Active/Finn/Finn.md`. Linear is archive
 
 ### Notes
 - Linear (archived): COL-114
-- Bundle id (current): `com.colehollander.subly` — will change in FINN-002
+- Bundle id (current): `com.colehollander.subly` — intentionally preserved after FINN-002 so installed data and App Store linkage survive
 - **Consolidates** COL-106 (UI friction audit, same intent — folded in)
 
 ---
