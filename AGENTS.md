@@ -1,6 +1,6 @@
 # Finn — agent briefing
 
-Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Finn/Finn.md`) and in Linear. **App has completed the visible/project rename to Finn.** Display name, scheme, project file, target, and folder paths are Finn; legacy bundle identifiers (`com.colehollander.subly`) stay unchanged to preserve on-device SwiftData + App Store Connect linkage.
+Slim pointers. Full project context lives in Cole's Obsidian vault (`04 Projects/Finn/Finn.md`) and repo-local `.tasks/`. Linear is archived. **App is renamed Subly → Finn** — display name, project, scheme, and app folder are now "Finn"; protected bundle/App Group identifiers still use `com.colehollander.subly` / `group.com.colehollander.subly` to preserve on-device SwiftData and App Store linkage.
 
 ## Right now
 
@@ -10,6 +10,16 @@ Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Fi
 - **Prior epic done:** COL-140 subscription pivot (P1–P9 merged; P10 audit fixes are sub-plan 02). COL-120 v2 design complete.
 - **Paired vault docs:** [[Finn]] (canonical state) + [[Finn v1 Launch Design]] + [[Finn v1 Implementation Plan]] + [[Finn Content Strategy]].
 
+## Custom agents
+
+- When Cole explicitly asks for subagents, delegation, or parallel agent work,
+  use `finn-impl` for substantial SwiftUI/SwiftData/StoreKit implementation,
+  bug fixes, and scoped refactors in this repo.
+- Use `finn-spec` for fuzzy Finn product ideas, UX/spec work, and implementation
+  plans before code.
+- The main Codex session should coordinate and review agent output while
+  preserving all Finn hard rules below.
+
 ## Hard rules
 
 - **Phosphor icons only** in app-owned UI. Zero `Image(systemName:)`. Use `Ph.<name>.<weight>.color(...)` — not `.foregroundStyle()`, not `.resizable()`. Exception: SwiftUI `.tabItem` slot — SF Symbols only (SwiftUI doesn't honor custom views there).
@@ -18,7 +28,7 @@ Slim pointers. Full project context lives in Cole's Obsidian vault (`Projects/Fi
 - **`PrimaryButton` contrast:** Vulpine orange fill + `FinnTheme.background` (warm charcoal) label. Never white. Reason: WCAG.
 - **No `VersionedSchema` migration plan exists** and it's deliberate — a prior session backed out. Don't rebuild it. Lightweight `@Attribute(originalName:)` migrations only.
 - **PR per ticket.** Never push directly to `main`. Never merge to `main` locally.
-- **Run `route` skill** before writing non-trivial code. Default pattern: Claude plans, Codex executes, Cursor scaffolds UI, Opus reviews.
+- **Run `route` skill** before writing non-trivial code. Default pattern: Codex plans, Codex executes, Cursor scaffolds UI, Opus reviews.
 - **Docs to vault first.** All specs/plans/design docs go to `/Users/colehollander/Obsidian/Projects/Finn/` as the canonical copy; repo copies (`docs/superpowers/`) are secondary.
 
 ## Build
@@ -81,42 +91,3 @@ This project is indexed by GitNexus as **Subly** (526 symbols, 506 relationships
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
-
-<!-- code-review-graph MCP tools -->
-## MCP Tools: code-review-graph
-
-**IMPORTANT: This project has a knowledge graph. ALWAYS use the
-code-review-graph MCP tools BEFORE using Grep/Glob/Read to explore
-the codebase.** The graph is faster, cheaper (fewer tokens), and gives
-you structural context (callers, dependents, test coverage) that file
-scanning cannot.
-
-### When to use graph tools FIRST
-
-- **Exploring code**: `semantic_search_nodes` or `query_graph` instead of Grep
-- **Understanding impact**: `get_impact_radius` instead of manually tracing imports
-- **Code review**: `detect_changes` + `get_review_context` instead of reading entire files
-- **Finding relationships**: `query_graph` with callers_of/callees_of/imports_of/tests_for
-- **Architecture questions**: `get_architecture_overview` + `list_communities`
-
-Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
-
-### Key Tools
-
-| Tool | Use when |
-|------|----------|
-| `detect_changes` | Reviewing code changes — gives risk-scored analysis |
-| `get_review_context` | Need source snippets for review — token-efficient |
-| `get_impact_radius` | Understanding blast radius of a change |
-| `get_affected_flows` | Finding which execution paths are impacted |
-| `query_graph` | Tracing callers, callees, imports, tests, dependencies |
-| `semantic_search_nodes` | Finding functions/classes by name or keyword |
-| `get_architecture_overview` | Understanding high-level codebase structure |
-| `refactor_tool` | Planning renames, finding dead code |
-
-### Workflow
-
-1. The graph auto-updates on file changes (via hooks).
-2. Use `detect_changes` for code review.
-3. Use `get_affected_flows` to understand impact.
-4. Use `query_graph` pattern="tests_for" to check coverage.

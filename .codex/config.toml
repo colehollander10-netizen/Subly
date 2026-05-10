@@ -1,0 +1,38 @@
+[mcp_servers.xcodebuildmcp]
+args = [
+    "-y",
+    "xcodebuildmcp@latest",
+    "mcp",
+]
+command = "npx"
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+enabled = true
+
+[mcp_servers.github]
+command = "bash"
+args = ["-lc", 'GITHUB_PERSONAL_ACCESS_TOKEN="$(gh auth token)" exec npx -y @modelcontextprotocol/server-github']
+enabled = true
+
+[mcp_servers.sequential-thinking]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+enabled = true
+
+[mcp_servers.code-review-graph]
+command = "uvx"
+args = ["code-review-graph", "serve"]
+enabled = true
+
+[mcp_servers.todoist]
+enabled = false
+
+[plugins."build-ios-apps@openai-curated"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."figma@openai-curated"]
+enabled = true
