@@ -2,7 +2,19 @@
   "mcpServers": {
     "xcodebuildmcp": {
       "command": "npx",
-      "args": ["-y", "xcodebuildmcp@latest", "mcp"]
+      "args": [
+        "-y",
+        "xcodebuildmcp@latest",
+        "mcp"
+      ]
+    },
+    "code-review-graph": {
+      "command": "uvx",
+      "args": [
+        "code-review-graph",
+        "serve"
+      ],
+      "type": "stdio"
     }
   }
 }

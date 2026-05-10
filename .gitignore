@@ -14,3 +14,7 @@ tmp/
 
 # macOS
 .DS_Store
+.gitnexus
+# Added by code-review-graph
+.code-review-graph/
+.hatch-runs/
